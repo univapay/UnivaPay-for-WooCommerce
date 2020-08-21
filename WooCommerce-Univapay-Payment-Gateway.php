@@ -191,6 +191,7 @@ function Univapay_init_gateway_class() {
             $response = curl_exec($curl);
             $error = curl_error($curl);
             curl_close($curl);
+            var_dump($error);
             var_dump($response);
          
             if( !$error ) {
