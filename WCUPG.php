@@ -110,7 +110,7 @@ function Univapay_init_gateway_class() {
             if ( $this->description ) {
                 // you can instructions for test mode, I mean test card numbers etc.
                 if ( $this->testmode ) {
-                    $this->description .= ' TEST MODE ENABLED. In test mode, you can use the card numbers listed in <a href="#" target="_blank" rel="noopener noreferrer">documentation</a>.';
+                    $this->description .= ' TEST MODE ENABLED. In test mode.';
                     $this->description  = trim( $this->description );
                 }
                 // display the description with <p> tags etc.
@@ -129,8 +129,6 @@ function Univapay_init_gateway_class() {
             <p>カード番号：  <input type="text" id="cardno"></p>
             <p>セキュリティコード：  <input type="text" id="securitycode"></p>
             <p>カード有効期限：  <input type="text" id="expire_month">/<input type="text" id="expire_year"></p>
-            <p>カード名（名）：  <input type="text" id="holderfirstname">   
-            カード名（姓）：  <input type="text" id="holderlastname"></p>
             <input type="hidden" name="upcmemberid" id="upcmemberid">';
             do_action( 'woocommerce_credit_card_form_end', $this->id );
 		}
@@ -188,12 +186,12 @@ function Univapay_init_gateway_class() {
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_total().'&sisf1='.$order->get_total_shipping());
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             $response = curl_exec($curl);
             $error = curl_error($curl);
             curl_close($curl);
-            var_dump($error);
+            var_dump($response);
          
             if( !$error ) {
                 $result_array = explode('&', $response['body']);  

@@ -19,8 +19,8 @@ function tokenRequest() {
     securitycode = document.getElementById('securitycode').value;  
     expire = document.getElementById('expire_month').value + '' +  
     document.getElementById('expire_year').value;  
-    holderfirstname = document.getElementById('holderfirstname').value;  
-    holderlastname = document.getElementById('holderlastname').value;  
+    holderfirstname = document.getElementById('billing_first_name').value;  
+    holderlastname = document.getElementById('billing_last_name').value;  
     email = document.getElementById('billing_email').value;  
     phonenumber = document.getElementById('billing_phone').value;  
     Multipayment.init(univapay_params.publishableKey); //当社発行の店舗ID  
