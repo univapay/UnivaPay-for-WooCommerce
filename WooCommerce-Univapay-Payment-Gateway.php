@@ -208,7 +208,7 @@ function Univapay_init_gateway_class() {
                 $result_array = explode('&', $response);
                 $data = [];
                 foreach($result_array as $value) {
-                    $data = explode('=', $value)
+                    $data = explode('=', $value);
                 }
                 if ( (int)$data[1] == 1 ) {  
                     /* 決済処理成功の場合はここに処理内容を記載 */  
