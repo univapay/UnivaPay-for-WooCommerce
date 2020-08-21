@@ -1,8 +1,6 @@
 function settoken(response) {
     if (response.resultCode !== "000" && response.resultCode !== 0) {
-        var lang = "ja";
-        if (document.getElementById('lang') != null)  
-            lang = document.getElementById('lang').value;
+        lang = document.getElementById('lang').value;
         window.alert('Error: ' + getResultCodeDetail(response.resultCode, lang));
     } else {
         var checkout_form = jQuery('form.woocommerce-checkout');

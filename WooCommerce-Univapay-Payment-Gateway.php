@@ -129,15 +129,15 @@ function Univapay_init_gateway_class() {
             // Add this action hook if you want your custom payment gateway to support it
             do_action( 'woocommerce_credit_card_form_start', $this->id );
             // I recommend to use inique IDs, because other gateways could already use #ccNo, #expdate, #cvc
-            echo '<p>言語：<select id="lang">  
-            <option value="ja">日本語（ja）</option>  
-            <option value="en">英語（en）</option>  
-            <option value="cn">中国語簡体字 （cn）</option>  
-            <option value="tw">中国語繁体字（tw）</option>  
+            echo '<p>Language<select id="lang">
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="cn">簡体字</option>
+            <option value="tw">繁体字</option>
             </select></p>
-            <p>カード番号：  <input type="text" id="cardno"></p>
-            <p>セキュリティコード：  <input type="text" id="securitycode"></p>
-            <p>カード有効期限：  <input type="text" id="expire_month">/<input type="text" id="expire_year"></p>
+            <p>Card number<input type="text" id="cardno"></p>
+            <p>CVV2<input type="text" id="securitycode"></p>
+            <p>Card expiration date<input type="text" id="expire_month">/<input type="text" id="expire_year"></p>
             <input type="hidden" name="upcmemberid" id="upcmemberid">';
             do_action( 'woocommerce_credit_card_form_end', $this->id );
 		}
