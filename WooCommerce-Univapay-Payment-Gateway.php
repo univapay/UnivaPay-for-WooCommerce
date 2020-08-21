@@ -51,6 +51,7 @@ function Univapay_init_gateway_class() {
             $this->enabled = $this->get_option( 'enabled' );
             $this->testmode = 'yes' === $this->get_option( 'testmode' );
             $this->publishable_key = $this->get_option( 'publishable_key' );
+            $this->seclevel = 'yse' === $this->get_option( 'seclevel' );
          
             // This action hook saves the settings
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -98,7 +99,15 @@ function Univapay_init_gateway_class() {
                 'publishable_key' => array(
                     'title'       => 'Live Store ID',
                     'type'        => 'number'
-                )
+                ),
+                'seclevel' => array(
+                    'title'       => 'Lower SECLEVEL',
+                    'label'       => 'Enable Lower SECLEVEL',
+                    'type'        => 'checkbox',
+                    'description' => 'In some older environments, unchecking the box may result in a successful payment.',
+                    'default'     => 'yes',
+                    'desc_tip'    => true,
+                ),
             );        
 	 	}
  
@@ -186,7 +195,8 @@ function Univapay_init_gateway_class() {
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_total().'&sisf1='.$order->get_total_shipping());
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
-            curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
+            if($this->seclevel)
+                curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             $response = curl_exec($curl);
             $error = curl_error($curl);
