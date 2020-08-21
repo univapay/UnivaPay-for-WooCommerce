@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name: WooCommerce UnivaPay Plugin
+ * Plugin Name: WooCommerce Univapay Payment Gateway
  * Plugin URI: https://
  * Description: Take credit card payments on your store.
  * Author: Ryuki Maruyama
@@ -29,7 +29,7 @@ function Univapay_init_gateway_class() {
  		 * Class constructor, more about it in Step 3
  		 */
  		public function __construct() {
-            $this->id = 'wcupp'; // payment gateway plugin ID
+            $this->id = 'wcupg'; // payment gateway plugin ID
             $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
             $this->has_fields = true; // in case you need a custom credit card form
             $this->method_title = 'Univapay Gateway';
@@ -182,17 +182,20 @@ function Univapay_init_gateway_class() {
             // we need it to get any order detailes
             $order = wc_get_order( $order_id );
             /*
-              * Array with parameters for API interaction
-             */
-            $args = array();
-            /*
              * Your API interaction could be built with wp_remote_post()
               */
             $sod = $this->testmode ? '&sod=testtransaction' : '';
-            var_dump($_POST);
-            $response = wp_remote_post('https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_total().'&sisf1='.$order->get_total_shipping(), $args);
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, 'https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_total().'&sisf1='.$order->get_total_shipping());
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($curl);
+            $error = curl_error($curl);
+            curl_close($curl);
+            var_dump($error);
          
-            if( !is_wp_error( $response ) ) {
+            if( !$error ) {
                 $result_array = explode('&', $response['body']);  
                 for( $i = 0; $i < count( $result_array ); $i++ ) {  
                     $target_array = explode( '=', $result_array[$i] );  

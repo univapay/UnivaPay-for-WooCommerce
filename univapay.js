@@ -5,15 +5,13 @@ function settoken(response) {
             lang = document.getElementById('lang').value;
         window.alert('Error: ' + getResultCodeDetail(response.resultCode, lang));
     } else {
-        jQuery(function($) {
-            var checkout_form = $('form.woocommerce-checkout');
-            // add a token to our hidden input field
-            checkout_form.find('#upcmemberid').val(response.tokenObject.token);
-            // deactivate the tokenRequest function event
-            checkout_form.off('checkout_place_order', tokenRequest);
-            // submit the form now
-            // checkout_form.submit();
-        });
+        var checkout_form = jQuery('form.woocommerce-checkout');
+        // add a token to our hidden input field
+        checkout_form.find('#upcmemberid').val(response.tokenObject.token);
+        // deactivate the tokenRequest function event
+        checkout_form.off('checkout_place_order', tokenRequest);
+        // submit the form now
+        checkout_form.submit();
     }
 }
 function tokenRequest() {
@@ -36,7 +34,8 @@ function tokenRequest() {
         email: email, //メール  
         phonenumber: phonenumber//電話番号  
     }, settoken);
+    return false;
 }
-jQuery(function($) {
-    $('form.woocommerce-checkout').on('checkout_place_order', tokenRequest);
+jQuery(document).ready(function(){
+    jQuery('form.woocommerce-checkout').on('checkout_place_order', tokenRequest);
 });
