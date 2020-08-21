@@ -205,12 +205,12 @@ function Univapay_init_gateway_class() {
             var_dump($response);
          
             if( !$error ) {
-                $result_array = explode('&', $response['body']);  
-                for( $i = 0; $i < count( $result_array ); $i++ ) {  
-                    $target_array = explode( '=', $result_array[$i] );  
-                    if( $target_array[0] == "rst" ) {break;}  
-                }  
-                if ( (int)$target_array[1] == 1 ) {  
+                $result_array = explode('&', $response);
+                $data = [];
+                foreach($result_array as $value) {
+                    $data = explode('=', $value)
+                }
+                if ( (int)$data[1] == 1 ) {  
                     /* 決済処理成功の場合はここに処理内容を記載 */  
                     // we received the payment
                     $order->payment_complete();
