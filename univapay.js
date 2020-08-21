@@ -8,8 +8,6 @@ function settoken(response) {
         var checkout_form = jQuery('form.woocommerce-checkout');
         // add a token to our hidden input field
         checkout_form.find('#upcmemberid').val(response.tokenObject.token);
-        // deactivate the tokenRequest function event
-        checkout_form.off('checkout_place_order', tokenRequest);
         // submit the form now
         checkout_form.submit();
     }
