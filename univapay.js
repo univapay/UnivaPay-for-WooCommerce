@@ -16,7 +16,7 @@ function settoken(response) {
         });
     }
 }
-function gettoken() {
+function tokenRequest() {
     cardno = document.getElementById('cardno').value;  
     securitycode = document.getElementById('securitycode').value;  
     expire = document.getElementById('expire_month').value + '' +  
@@ -38,5 +38,5 @@ function gettoken() {
     }, settoken);
 }
 jQuery(function($) {
-    $('form.woocommerce-checkout').on('checkout_place_order', gettoken);
+    $('form.woocommerce-checkout').on('checkout_place_order', tokenRequest);
 });

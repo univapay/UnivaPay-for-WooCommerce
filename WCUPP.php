@@ -192,9 +192,9 @@ function Univapay_init_gateway_class() {
             var_dump($_POST);
             $response = wp_remote_post('https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_total().'&sisf1='.$order->get_total_shipping(), $args);
          
-             if( !is_wp_error( $response ) ) {
-                 $result_array = explode('&', $response['body']);  
-                 for( $i = 0; $i < count( $result_array ); $i++ ) {  
+            if( !is_wp_error( $response ) ) {
+                $result_array = explode('&', $response['body']);  
+                for( $i = 0; $i < count( $result_array ); $i++ ) {  
                     $target_array = explode( '=', $result_array[$i] );  
                     if( $target_array[0] == "rst" ) {break;}  
                 }  
@@ -214,11 +214,11 @@ function Univapay_init_gateway_class() {
                     );
                 } else {  
                     /* 決済処理失敗の場合はここに処理内容を記載 */  
-                    wc_add_notice(  'Please try again.', 'error' );
+                    wc_add_notice('Please try again.', 'error');
                     return;
                 }
             } else {
-                wc_add_notice(  'Connection error.', 'error' );
+                wc_add_notice('Connection error.', 'error');
                 return;
             }
 	 	}
