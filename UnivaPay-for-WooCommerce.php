@@ -175,7 +175,7 @@ function Univapay_init_gateway_class() {
                 }
             }
             $res = wp_remote_get('https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_subtotal().'&sisf1='.$order->get_total_shipping());
-            $response = $res->body;
+            $response = $res["body"];
          
             if( !is_wp_error($res) ) {
                 $result_array = explode('&', $response);
