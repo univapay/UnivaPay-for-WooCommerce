@@ -25,7 +25,7 @@ function Univapay_init_gateway_class() {
  		 * Class constructor
  		 */
  		public function __construct() {
-            $this->id = 'wcupg'; // payment gateway plugin ID
+            $this->id = 'upfw'; // payment gateway plugin ID
             $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
             $this->has_fields = true; // in case you need a custom credit card form
             $this->method_title = 'Univapay Gateway';
