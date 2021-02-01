@@ -1,10 +1,10 @@
 <?php
 /*
  * Plugin Name: UnivaPay for WooCommerce
- * Plugin URI: https://
- * Description: Take credit card payments on your store.
- * Author: Ryuki Maruyama
- * Author URI: https://daco.dev/
+ * Plugin URI: https://univapay.com
+ * Description: UnivaPayを使用して店舗でクレジットカード決済が可能です。
+ * Author: UnivaPay
+ * Author URI: https://univapay.com
  * Version: 0.1
  *
  /*
