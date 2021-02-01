@@ -29,7 +29,7 @@ function Univapay_init_gateway_class() {
             $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
             $this->has_fields = true; // in case you need a custom credit card form
             $this->method_title = 'Univapay Gateway';
-            $this->method_description = 'Credit card payment by univapay'; // will be displayed on the options page
+            $this->method_description = __('UnivaPayによるカード支払い', 'upfw'); // will be displayed on the options page
             // gateways can support subscriptions, refunds, saved payment methods
             $this->supports = array(
                 'products'
@@ -58,42 +58,42 @@ function Univapay_init_gateway_class() {
  		public function init_form_fields(){
             $this->form_fields = array(
                 'enabled' => array(
-                    'title'       => 'Enable/Disable',
-                    'label'       => 'Enable Univapay Gateway',
+                    'title'       => __('有効/無効', 'upfw'),
+                    'label'       => 'UnivaPay Gatewayを有効にする',
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no'
                 ),
                 'title' => array(
-                    'title'       => 'Title',
+                    'title'       => __('タイトル', 'upfw'),
                     'type'        => 'text',
-                    'description' => 'This controls the title which the user sees during checkout.',
-                    'default'     => 'Credit Card',
+                    'description' => __('これは、ユーザーがチェックアウト時に表示するタイトルを制御します。', 'upfw'),
+                    'default'     => __('カード支払い', 'upfw'),
                     'desc_tip'    => true,
                 ),
                 'description' => array(
-                    'title'       => 'Description',
+                    'title'       => __('説明', 'upfw'),
                     'type'        => 'textarea',
-                    'description' => 'This controls the description which the user sees during checkout.',
-                    'default'     => 'Pay with your credit card via our super-cool payment gateway.',
+                    'description' => __('これは、チェックアウト時にユーザーが見る説明を制御します。', 'upfw'),
+                    'default'     => __('この支払はUnivaPayを介して行われます。', 'upfw'),
                 ),
                 'testmode' => array(
-                    'title'       => 'Test mode',
-                    'label'       => 'Enable Test Mode',
+                    'title'       => __('テストモード', 'upfw'),
+                    'label'       => __('テストモードを有効化', 'upfw'),
                     'type'        => 'checkbox',
-                    'description' => 'Place the payment gateway in test mode using test gateway.',
+                    'description' => __('テストモードで決済を行います。', 'upfw'),
                     'default'     => 'yes',
                     'desc_tip'    => true,
                 ),
                 'publishable_key' => array(
-                    'title'       => 'Live Store ID',
+                    'title'       => __('店舗ID', 'upfw'),
                     'type'        => 'number'
                 ),
                 'seclevel' => array(
-                    'title'       => 'Lower SECLEVEL',
-                    'label'       => 'Enable Lower SECLEVEL',
+                    'title'       => __('低いSECLEVEL', 'upfw'),
+                    'label'       => __('低いSECLEVELを有効化', 'upfw'),
                     'type'        => 'checkbox',
-                    'description' => 'In some older environments, unchecking the box may result in a successful payment.',
+                    'description' => __('古い環境では、チェックを外すと支払いが成功する場合があります。', 'upfw'),
                     'default'     => 'yes',
                     'desc_tip'    => true,
                 ),
@@ -108,7 +108,7 @@ function Univapay_init_gateway_class() {
             if ( $this->description ) {
                 // instructions for test mode
                 if ( $this->testmode ) {
-                    $this->description .= ' TEST MODE ENABLED. In test mode.';
+                    $this->description .= __('<br>テストモードが有効です。', 'upfw');
                     $this->description  = trim( $this->description );
                 }
                 // display the description with <p> tags etc.
@@ -181,15 +181,17 @@ function Univapay_init_gateway_class() {
                 $result_array = explode('&', $response);
                 $data = [];
                 foreach($result_array as $value) {
-                    $data[] = explode('=', $value);
+                    list($k, $v) = explode('=', $value);
+                    $data[$k] = $v;
                 }
-                if ( (int)$data[1] == 1 ) {  
+                var_dump($data);
+                if ( (int)$data['rst'] == 1 ) {
                     /* 決済処理成功の場合はここに処理内容を記載 */  
                     // we received the payment
                     $order->payment_complete();
                     $order->reduce_order_stock();
                     // some notes to customer (replace true with false to make it private)
-                    $order->add_order_note( 'Hey, your order is paid! Thank you!', true );
+                    $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
                     // Empty cart
                     $woocommerce->cart->empty_cart();
                     // Redirect to the thank you page
@@ -199,11 +201,11 @@ function Univapay_init_gateway_class() {
                     );
                 } else {  
                     /* 決済処理失敗の場合はここに処理内容を記載 */  
-                    wc_add_notice('Please try again.', 'error');
+                    wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw'), 'error');
                     return;
                 }
             } else {
-                wc_add_notice('Connection error.', 'error');
+                wc_add_notice(__('接続エラー', 'upfw'), 'error');
                 return;
             }
 	 	}

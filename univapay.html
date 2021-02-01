@@ -3,10 +3,12 @@
         font-family:"Yu Gothic",YuGothic,"Hiragino Kaku Gothic Pro","メイリオ", "Meiryo", "Osaka", "ＭＳ Ｐゴシック", "MS PGothic", "sans-serif";
         margin: 0;
         padding: 4px;
-        display: flex;
         background: white;
     }
-    #upfw>input {
+    #upfw>div {
+        display: flex;
+    }
+    #upfw input {
         margin: 0;
         padding: 0;
         border: none;
@@ -17,6 +19,9 @@
         background: none;
         color: black;
         font-family: inherit;
+    }
+    #holderfirstname, #holderlastname {
+        width: 50%;
     }
     #cardno {
         width: 60%;
@@ -30,9 +35,15 @@
     }
 </style>
 <div id="upfw">
-    <input inputmode="numeric" autocomplete="cc-number" id="cardno" placeholder="Card number">
-    <input inputmode="numeric" autocomplete="cc-exp" id="expire" placeholder="MM / YY">
-    <input inputmode="numeric" autocomplete="cc-csc" id="securitycode" placeholder="CVC2">
+    <div>
+        <input autocomplete="cc-given-name" id="holderfirstname" placeholder="名" required>
+        <input autocomplete="cc-family-name" id="holderlastname" placeholder="姓" required>
+    </div>
+    <div>
+        <input inputmode="numeric" autocomplete="cc-number" id="cardno" placeholder="Card number">
+        <input inputmode="numeric" autocomplete="cc-exp" id="expire" placeholder="MM / YY">
+        <input inputmode="numeric" autocomplete="cc-csc" id="securitycode" placeholder="CVC2">
+    </div>
     <input type="hidden" name="upcmemberid" id="upcmemberid">
 </div>
 <script>

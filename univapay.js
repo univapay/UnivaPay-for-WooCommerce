@@ -17,9 +17,9 @@ function tokenRequest() {
     cardno = document.getElementById('cardno').value.replace(/\s+/g, "");
     expire = document.getElementById('expire').value.replace(/[\s\/]+/g, "");
     securitycode = document.getElementById('securitycode').value;
-    holderfirstname = document.getElementById('billing_first_name').value;  
-    holderlastname = document.getElementById('billing_last_name').value;  
-    email = document.getElementById('billing_email').value;  
+    holderfirstname = document.getElementById('holderfirstname').value;
+    holderlastname = document.getElementById('holderlastname').value;
+    email = document.getElementById('billing_email').value;
     phonenumber = document.getElementById('billing_phone').value;  
     Multipayment.init(univapay_params.publishableKey);
     Multipayment.getMember({
