@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name: UnivaPay for WC
+ * Plugin Name: UnivaPay for WooCommerce
  * Plugin URI: https://
  * Description: Take credit card payments on your store.
  * Author: Ryuki Maruyama
