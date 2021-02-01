@@ -1,4 +1,4 @@
-=== Univapay for WooCommerce ===
+=== WooCommerce Univapay Payment Gateway ===
 Contributors: 5ym
 Tags: credit card, payment request, woocommerce
 Requires at least: 4.4
