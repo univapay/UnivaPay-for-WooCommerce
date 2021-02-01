@@ -43,7 +43,7 @@ function Univapay_init_gateway_class() {
             $this->enabled = $this->get_option( 'enabled' );
             $this->testmode = 'yes' === $this->get_option( 'testmode' );
             $this->publishable_key = $this->get_option( 'publishable_key' );
-            $this->seclevel = 'yse' === $this->get_option( 'seclevel' );
+            $this->seclevel = 'yes' === $this->get_option( 'seclevel' );
             // This action hook saves the settings
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
             // enqueue script and style sheet
@@ -166,17 +166,18 @@ function Univapay_init_gateway_class() {
             // we need it to get any order detailes
             $order = wc_get_order( $order_id );
             $sod = $this->testmode ? '&sod=testtransaction' : '';
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, 'https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_subtotal().'&sisf1='.$order->get_total_shipping());
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
-            if($this->seclevel)
-                curl_setopt($curl, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            $response = curl_exec($curl);
-            $error = curl_error($curl);
-            curl_close($curl);
+            // add low security option
+            if($this->seclevel) {
+                add_action( 'http_api_curl', 'lowsec_config', 10, 3 );
+                function lowsec_config(&$handle, $args, $url){
+                    curl_setopt($handle, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
+                    return $handle;
+                }
+            }
+            $res = wp_remote_get('https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_subtotal().'&sisf1='.$order->get_total_shipping());
+            $response = $res->body;
          
-            if( !$error ) {
+            if( !is_wp_error($res) ) {
                 $result_array = explode('&', $response);
                 $data = [];
                 foreach($result_array as $value) {
