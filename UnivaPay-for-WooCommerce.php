@@ -170,7 +170,6 @@ function Univapay_init_gateway_class() {
                     list($k, $v) = explode('=', $value);
                     $data[$k] = $v;
                 }
-                var_dump($data);
                 if ( (int)$data['rst'] == 1 ) {
                     /* 決済処理成功の場合はここに処理内容を記載 */  
                     // we received the payment
