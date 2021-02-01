@@ -12,16 +12,18 @@ UnivaPayを使用して店舗でクレジットカード決済が可能です。
 
 == Description ==
 
-WooCommerceのUnivaPay支払いゲートウェイを使用して、ストアでVisa、MasterCard、American Express、Discover、JCB、Diners Clubを直接受け入れます。
+WooCommerceのUnivaPay支払いゲートウェイを使用して、ストアでVisa、MasterCard、American Express、Discover、JCB、Diners Clubの決済が利用可能になります。
+利用には別途、申込が必要です。
+https://www.univapay.com/contactus/form/
 
 = Privacy Policy =
 
-This plugin sends product information, shipping costs and phone number to UnivaPay when you make a payment.
+Our plugin sends your email address and phone number to UnivaPay side for consumer support.
 Please read our privacy policy and terms and conditions.
 https://www.univapay.com/terms/
 https://www.univapay.com/yakkan/
 
-当プラグインで決済時商品情報や送料また電話番号等をUnivaPay側に送信しております。
+当プラグインでは、消費者サポートのためにメールアドレスと電話番号等をUnivaPay側に送信しております。
 下記プライバシーポリシーと約款をご一読ください。
 https://www.univapay.com/terms/
 https://www.univapay.com/yakkan/
