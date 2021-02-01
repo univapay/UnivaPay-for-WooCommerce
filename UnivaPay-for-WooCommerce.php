@@ -41,7 +41,6 @@ function Univapay_init_gateway_class() {
             $this->title = $this->get_option( 'title' );
             $this->description = $this->get_option( 'description' );
             $this->enabled = $this->get_option( 'enabled' );
-            $this->testmode = 'yes' === $this->get_option( 'testmode' );
             $this->publishable_key = $this->get_option( 'publishable_key' );
             $this->seclevel = 'yes' === $this->get_option( 'seclevel' );
             // This action hook saves the settings
@@ -77,14 +76,6 @@ function Univapay_init_gateway_class() {
                     'description' => __('これは、チェックアウト時にユーザーが見る説明を制御します。', 'upfw'),
                     'default'     => __('この支払はUnivaPayを介して行われます。', 'upfw'),
                 ),
-                'testmode' => array(
-                    'title'       => __('テストモード', 'upfw'),
-                    'label'       => __('テストモードを有効化', 'upfw'),
-                    'type'        => 'checkbox',
-                    'description' => __('テストモードで決済を行います。', 'upfw'),
-                    'default'     => 'yes',
-                    'desc_tip'    => true,
-                ),
                 'publishable_key' => array(
                     'title'       => __('店舗ID', 'upfw'),
                     'type'        => 'number'
@@ -106,11 +97,6 @@ function Univapay_init_gateway_class() {
 		public function payment_fields() {
             // display some description before the payment form
             if ( $this->description ) {
-                // instructions for test mode
-                if ( $this->testmode ) {
-                    $this->description .= __('<br>テストモードが有効です。', 'upfw');
-                    $this->description  = trim( $this->description );
-                }
                 // display the description with <p> tags etc.
                 echo wpautop( wp_kses_post( $this->description ) );
             }
@@ -136,8 +122,8 @@ function Univapay_init_gateway_class() {
             // no reason to enqueue JavaScript if Shop id are not set
             if ( empty( $this->publishable_key ) )
                 return;
-            // do not work with card detailes without SSL unless your website is in a test mode
-            if ( ! $this->testmode && ! is_ssl() )
+            // do not work with card detailes without SSL
+            if ( ! is_ssl() )
                 return;
             // payment processor JavaScript that allows to obtain a token
             wp_enqueue_script( 'univapay_js', 'https://token.ccps.jp/UpcTokenPaymentMini.js' );
@@ -165,7 +151,7 @@ function Univapay_init_gateway_class() {
             global $woocommerce;
             // we need it to get any order detailes
             $order = wc_get_order( $order_id );
-            $sod = $this->testmode ? '&sod=testtransaction' : '';
+            $sod = '&sod='.$order_id;
             // add low security option
             if($this->seclevel) {
                 add_action( 'http_api_curl', 'lowsec_config', 10, 3 );
@@ -175,15 +161,16 @@ function Univapay_init_gateway_class() {
                 }
             }
             $res = wp_remote_get('https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.$order->get_subtotal().'&sisf1='.$order->get_total_shipping());
-            $response = $res["body"];
          
             if( !is_wp_error($res) ) {
+                $response = $res["body"];
                 $result_array = explode('&', $response);
                 $data = [];
                 foreach($result_array as $value) {
                     list($k, $v) = explode('=', $value);
                     $data[$k] = $v;
                 }
+                var_dump($data);
                 if ( (int)$data['rst'] == 1 ) {
                     /* 決済処理成功の場合はここに処理内容を記載 */  
                     // we received the payment
@@ -204,7 +191,7 @@ function Univapay_init_gateway_class() {
                     return;
                 }
             } else {
-                wc_add_notice(__('接続エラー', 'upfw'), 'error');
+                wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
                 return;
             }
 	 	}
