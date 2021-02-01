@@ -28,6 +28,13 @@ https://www.univapay.com/yakkan/
 https://www.univapay.com/terms/
 https://www.univapay.com/yakkan/
 
+= Privacy Policy =
+
+当プラグインで決済時商品情報や送料また電話番号等をUnivaPay側に送信しております。
+下記プライバシーポリシーと約款をご一読ください。
+https://www.univapay.com/terms/
+https://www.univapay.com/yakkan/
+
 == Screenshots ==
 
 1. 設定画面
