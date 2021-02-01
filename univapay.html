@@ -97,7 +97,6 @@
         }
     });
     expire.addEventListener('input', function(e) {
-        console.log(e);
         if(e.target.value.length === 0)
             cardno.focus();
         exp = e.target.value.replace(/[\s\/]+/g, "");
