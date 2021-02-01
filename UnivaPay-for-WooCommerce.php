@@ -170,12 +170,12 @@ function Univapay_init_gateway_class() {
                     list($k, $v) = explode('=', $value);
                     $data[$k] = $v;
                 }
-                var_dump($data);
                 if ( (int)$data['rst'] == 1 ) {
                     /* 決済処理成功の場合はここに処理内容を記載 */  
                     // we received the payment
                     $order->payment_complete();
-                    $order->reduce_order_stock();
+                    // Change the number of stock
+                    wc_reduce_stock_levels($order_id);
                     // some notes to customer (replace true with false to make it private)
                     $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
                     // Empty cart
@@ -187,7 +187,7 @@ function Univapay_init_gateway_class() {
                     );
                 } else {  
                     /* 決済処理失敗の場合はここに処理内容を記載 */  
-                    wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw'), 'error');
+                    wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$data['ec'], 'error');
                     return;
                 }
             } else {
