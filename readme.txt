@@ -18,18 +18,6 @@ https://www.univapay.com/contactus/form/
 
 = Privacy Policy =
 
-Our plugin sends your email address and phone number to UnivaPay side for consumer support.
-Please read our privacy policy and terms and conditions.
-https://www.univapay.com/terms/
-https://www.univapay.com/yakkan/
-
-当プラグインでは、消費者サポートのためにメールアドレスと電話番号等をUnivaPay側に送信しております。
-下記プライバシーポリシーと約款をご一読ください。
-https://www.univapay.com/terms/
-https://www.univapay.com/yakkan/
-
-= Privacy Policy =
-
 This plugin sends product information, shipping costs and phone number to UnivaPay when you make a payment.
 Please read our privacy policy and terms and conditions.
 https://www.univapay.com/terms/
