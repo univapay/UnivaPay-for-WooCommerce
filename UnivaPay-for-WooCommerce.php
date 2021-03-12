@@ -97,11 +97,6 @@ function Univapay_init_gateway_class() {
 		public function payment_fields() {
             // display some description before the payment form
             if ( $this->description ) {
-                // instructions for test mode
-                if ( ! is_ssl() ) {
-                    $this->description .= __('<br>TLSが無効のため決済はできません。', 'upfw');
-                    $this->description  = trim( $this->description );
-                }
                 // display the description with <p> tags etc.
                 echo wpautop( wp_kses_post( $this->description ) );
             }
@@ -128,8 +123,8 @@ function Univapay_init_gateway_class() {
             if ( empty( $this->publishable_key ) )
                 return;
             // do not work with card detailes without SSL
-            if ( ! is_ssl() )
-                return;
+            // if ( ! is_ssl() )
+            //     return;
             // payment processor JavaScript that allows to obtain a token
             wp_enqueue_script( 'univapay_js', 'https://token.ccps.jp/UpcTokenPaymentMini.js' );
             // and this is our custom JS in your plugin directory that works with token.js
