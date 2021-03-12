@@ -97,6 +97,11 @@ function Univapay_init_gateway_class() {
 		public function payment_fields() {
             // display some description before the payment form
             if ( $this->description ) {
+                // instructions for test mode
+                if ( ! is_ssl() ) {
+                    $this->description .= __('<br>TLSが無効のため決済はできません。', 'upfw');
+                    $this->description  = trim( $this->description );
+                }
                 // display the description with <p> tags etc.
                 echo wpautop( wp_kses_post( $this->description ) );
             }
