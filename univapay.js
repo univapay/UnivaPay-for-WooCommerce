@@ -14,26 +14,28 @@ function settoken(response) {
     }
 }
 function tokenRequest() {
-    cardno = document.getElementById('cardno').value.replace(/\s+/g, "");
-    expire = document.getElementById('expire').value.replace(/[\s\/]+/g, "");
-    securitycode = document.getElementById('securitycode').value;
-    holderfirstname = document.getElementById('holderfirstname').value;
-    holderlastname = document.getElementById('holderlastname').value;
-    email = document.getElementById('billing_email').value;
-    phonenumber = document.getElementById('billing_phone').value;  
-    Multipayment.init(univapay_params.publishableKey);
-    Multipayment.getMember({
-        cardno: cardno, //カード番号
-        securitycode: securitycode, //セキュリティコード
-        expire: expire, //カード有効期限
-        holderfirstname: holderfirstname, //カードホルダー名
-        holderlastname: holderlastname, //カードホルダー姓
-        membercode: univapay_params.user_ID == 0 ? null : univapay_params.user_ID, //会員コード
-        email: email, //メール
-        phonenumber: phonenumber //電話番号
-    }, settoken);
-    return false;
+    if(document.getElementById("payment_method_upfw").checked) {
+        cardno = document.getElementById('cardno').value.replace(/\s+/g, "");
+        expire = document.getElementById('expire').value.replace(/[\s\/]+/g, "");
+        securitycode = document.getElementById('securitycode').value;
+        holderfirstname = document.getElementById('holderfirstname').value;
+        holderlastname = document.getElementById('holderlastname').value;
+        email = document.getElementById('billing_email').value;
+        phonenumber = document.getElementById('billing_phone').value;  
+        Multipayment.init(univapay_params.publishableKey);
+        Multipayment.getMember({
+            cardno: cardno, //カード番号
+            securitycode: securitycode, //セキュリティコード
+            expire: expire, //カード有効期限
+            holderfirstname: holderfirstname, //カードホルダー名
+            holderlastname: holderlastname, //カードホルダー姓
+            membercode: univapay_params.user_ID == 0 ? null : univapay_params.user_ID, //会員コード
+            email: email, //メール
+            phonenumber: phonenumber //電話番号
+        }, settoken);
+        return false;
+    }
 }
-jQuery(document).ready(function(){
-    jQuery('form.woocommerce-checkout').on('checkout_place_order', tokenRequest);
+jQuery(function($) {
+    $('form.woocommerce-checkout').on("checkout_place_order", tokenRequest);
 });
