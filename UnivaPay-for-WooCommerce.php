@@ -161,8 +161,11 @@ function Univapay_init_gateway_class() {
                 }
             }
             $total_shipping = $order->get_shipping_total()+$order->get_shipping_tax();
-            $res = wp_remote_get('https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.($order->get_total()-$total_shipping).'&sisf1='.$total_shipping);
-
+            $res = wp_remote_get(
+                'https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.($order->get_total()-$total_shipping).'&sisf1='.$total_shipping,
+                ["timeout" => 30]
+            );
+            
             if( !is_wp_error($res) ) {
                 $response = $res["body"];
                 $result_array = explode('&', $response);
