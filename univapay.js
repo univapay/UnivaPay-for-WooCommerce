@@ -36,6 +36,6 @@ function tokenRequest() {
         return false;
     }
 }
-jQuery(function($) {
+jQuery(document).ready(function($) {
     $('form.woocommerce-checkout').on("checkout_place_order", tokenRequest);
 });

@@ -5,7 +5,7 @@
  * Description: UnivaPayを使用して店舗でクレジットカード決済が可能です。
  * Author: UnivaPay
  * Author URI: https://univapay.com
- * Version: 0.2.6
+ * Version: 0.2.7
  *
  /*
  * This action hook registers our PHP class as a WooCommerce payment gateway
