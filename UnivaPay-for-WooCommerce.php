@@ -5,7 +5,7 @@
  * Description: UnivaPayを使用して店舗でクレジットカード決済が可能です。
  * Author: UnivaPay
  * Author URI: https://univapay.com
- * Version: 0.2.7
+ * Version: 0.2.8
  *
  /*
  * This action hook registers our PHP class as a WooCommerce payment gateway
@@ -163,7 +163,7 @@ function Univapay_init_gateway_class() {
             $total_shipping = $order->get_shipping_total()+$order->get_shipping_tax();
             $res = wp_remote_get(
                 'https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.($order->get_total()-$total_shipping).'&sisf1='.$total_shipping,
-                ["timeout" => 30]
+                ["timeout" => 40]
             );
             
             if( !is_wp_error($res) ) {
