@@ -8,11 +8,11 @@ Stable tag: 0.2.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-UnivaPayを使用して店舗でクレジットカード決済が可能です。
+UnivaPayを使用して、WooCommerceでクレジットカード決済を可能にするプラグインです。
 
 == Description ==
 
-WooCommerceのUnivaPay支払いゲートウェイを使用して、ストアでVisa、MasterCard、American Express、Discover、JCB、Diners Clubの決済が利用可能になります。
+UnivaPayを使用して、WooCommerceでVisa、MasterCard、American Express、Discover、JCB、Diners Clubの決済が利用可能になります。
 利用には別途、申込が必要です。
 https://www.univapay.com/contactus/form/
 
