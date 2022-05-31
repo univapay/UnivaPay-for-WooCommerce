@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: mariadb
+    volumes:
+      - mariadb:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: wordpress
+  wordpress:
+    image: wordpress
+    ports:
+      - "1080:80"
+    volumes:
+      - ./UnivaPay-for-WooCommerce:/var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce
+    environment:
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: 1
+volumes:
+  mariadb: {}

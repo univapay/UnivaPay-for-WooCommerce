@@ -4,8 +4,8 @@
  * Plugin URI: https://univapay.com
  * Description: UnivaPayを使用して店舗でクレジットカード決済が可能です。
  * Author: UnivaPay
- * Author URI: https://univapay.com
- * Version: 0.2.9
+ * Author URI: https://univapay.com/service/
+ * Version: 0.3.0
  *
  /*
  * This action hook registers our PHP class as a WooCommerce payment gateway
@@ -41,8 +41,10 @@ function Univapay_init_gateway_class() {
             $this->title = $this->get_option( 'title' );
             $this->description = $this->get_option( 'description' );
             $this->enabled = $this->get_option( 'enabled' );
-            $this->publishable_key = $this->get_option( 'publishable_key' );
-            $this->seclevel = 'yes' === $this->get_option( 'seclevel' );
+            $this->widget = $this->get_option( 'widget' );
+            $this->api = $this->get_option( 'api' );
+            $this->token = $this->get_option( 'token' );
+            $this->secret = $this->get_option( 'secret' );
             // This action hook saves the settings
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
             // enqueue script and style sheet
@@ -76,17 +78,23 @@ function Univapay_init_gateway_class() {
                     'description' => __('これは、チェックアウト時にユーザーが見る説明を制御します。', 'upfw'),
                     'default'     => __('この支払はUnivaPayを介して行われます。', 'upfw'),
                 ),
-                'publishable_key' => array(
-                    'title'       => __('店舗ID', 'upfw'),
-                    'type'        => 'number'
+                'widget' => array(
+                    'title'       => __('ウィジェット URL', 'upfw'),
+                    'type'        => 'text',
+                    'default'     => 'https://widget.univapay.com'
                 ),
-                'seclevel' => array(
-                    'title'       => __('低いSECLEVEL', 'upfw'),
-                    'label'       => __('低いSECLEVELを有効化', 'upfw'),
-                    'type'        => 'checkbox',
-                    'description' => __('古い環境では、チェックを外すと支払いが成功する場合があります。', 'upfw'),
-                    'default'     => 'yes',
-                    'desc_tip'    => true,
+                'api' => array(
+                    'title'       => __('API URL', 'upfw'),
+                    'type'        => 'text',
+                    'default'     => 'https://api.univapay.com'
+                ),
+                'token' => array(
+                    'title'       => __('トークン', 'upfw'),
+                    'type'        => 'text'
+                ),
+                'secret' => array(
+                    'title'       => __('シークレット', 'upfw'),
+                    'type'        => 'password'
                 ),
             );        
 	 	}
@@ -100,19 +108,11 @@ function Univapay_init_gateway_class() {
                 // display the description with <p> tags etc.
                 echo wpautop( wp_kses_post( $this->description ) );
             }
-            // Add this action hook that custom payment gateway to support it
-            do_action( 'woocommerce_credit_card_form_start', $this->id );
-            include(__DIR__.'/univapay.html');
-            do_action( 'woocommerce_credit_card_form_end', $this->id );
         }
         // enqueue script and style sheet
 	 	public function payment_scripts() {
             // get user id
             global $user_ID;
-            // UnivaPay側のエラーメッセージ設定用言語取得
-            $lang = substr(get_locale(), 0, 2);
-            if(!($lang=='ja' || $lang=='cn' || $lang=='tw'))
-                $lang = 'en';
             // need JavaScript to process a token only on cart/checkout pages
             if ( ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) )
                 return;
@@ -120,22 +120,17 @@ function Univapay_init_gateway_class() {
             if ( 'no' === $this->enabled )
                 return;
             // no reason to enqueue JavaScript if Shop id are not set
-            if ( empty( $this->publishable_key ) )
+            if ( empty( $this->token ) )
                 return;
-            // do not work with card detailes without SSL
-            // if ( ! is_ssl() )
-            //     return;
             // payment processor JavaScript that allows to obtain a token
-            wp_enqueue_script( 'univapay_js', 'https://token.ccps.jp/UpcTokenPaymentMini.js' );
+            wp_enqueue_script( 'univapay_checkout', $this->widget.'/client/checkout.js' );
             // and this is our custom JS in your plugin directory that works with token.js
-            wp_register_script( 'woocommerce_univapay', plugins_url( 'univapay.js', __FILE__ ), array( 'jquery', 'univapay_js' ) );
+            wp_register_script( 'univapay_woocommerce', plugins_url( 'univapay.js', __FILE__ ), array( 'jquery', 'univapay_checkout' ) );
             // have to use Shop id to obtain a token
-            wp_localize_script( 'woocommerce_univapay', 'univapay_params', array(
-                'publishableKey' => $this->publishable_key,
-                'user_ID' => $user_ID,
-                'lang' => $lang
+            wp_localize_script( 'univapay_woocommerce', 'univapay_params', array(
+                'token' => $this->token
             ) );
-            wp_enqueue_script( 'woocommerce_univapay' );
+            wp_enqueue_script( 'univapay_woocommerce' );
 	 	}
  
 		/*
@@ -151,49 +146,21 @@ function Univapay_init_gateway_class() {
             global $woocommerce;
             // we need it to get any order detailes
             $order = wc_get_order( $order_id );
-            $sod = '&sod='.$order_id;
-            // add low security option
-            if($this->seclevel) {
-                add_action( 'http_api_curl', 'lowsec_config', 10, 3 );
-                function lowsec_config(&$handle, $args, $url){
-                    curl_setopt($handle, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
-                    return $handle;
-                }
-            }
-            $total_shipping = $order->get_shipping_total()+$order->get_shipping_tax();
-            $res = wp_remote_get(
-                'https://gw.ccps.jp/memberpay.aspx?sid='.$this->publishable_key.'&svid=1&ptype=1&job=CAPTURE&rt=2&upcmemberid='.$_POST['upcmemberid'].$sod.'&siam1='.($order->get_total()-$total_shipping).'&sisf1='.$total_shipping,
-                ["timeout" => 40]
-            );
             
-            if( !is_wp_error($res) ) {
-                $response = $res["body"];
-                $result_array = explode('&', $response);
-                $data = [];
-                foreach($result_array as $value) {
-                    list($k, $v) = explode('=', $value);
-                    $data[$k] = $v;
-                }
-                if ( (int)$data['rst'] == 1 ) {
-                    /* 決済処理成功の場合はここに処理内容を記載 */  
-                    // we received the payment
-                    $order->payment_complete();
-                    // Change the number of stock
-                    wc_reduce_stock_levels($order_id);
-                    // some notes to customer (replace true with false to make it private)
-                    $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
-                    // Empty cart
-                    $woocommerce->cart->empty_cart();
-                    // Redirect to the thank you page
-                    return array(
-                        'result' => 'success',
-                        'redirect' => $this->get_return_url( $order )
-                    );
-                } else {  
-                    /* 決済処理失敗の場合はここに処理内容を記載 */  
-                    wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$data['ec'], 'error');
-                    return;
-                }
+            if(isset($_POST['checkout_token'])) {
+                // we received the payment
+                $order->payment_complete();
+                // Change the number of stock
+                wc_reduce_stock_levels($order_id);
+                // some notes to customer (replace true with false to make it private)
+                $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+                // Empty cart
+                $woocommerce->cart->empty_cart();
+                // Redirect to the thank you page
+                return array(
+                    'result' => 'success',
+                    'redirect' => $this->get_return_url( $order )
+                );
             } else {
                 wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
                 return;
