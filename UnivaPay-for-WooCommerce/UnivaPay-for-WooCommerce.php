@@ -125,12 +125,11 @@ function Univapay_init_gateway_class() {
             // payment processor JavaScript that allows to obtain a token
             wp_enqueue_script( 'univapay_checkout', $this->widget.'/client/checkout.js' );
             // and this is our custom JS in your plugin directory that works with token.js
-            wp_register_script( 'univapay_woocommerce', plugins_url( 'univapay.js', __FILE__ ), array( 'jquery', 'univapay_checkout' ) );
+            wp_enqueue_script( 'univapay_woocommerce', plugins_url( 'univapay.js', __FILE__ ), array( 'jquery', 'univapay_checkout' ) );
             // have to use Shop id to obtain a token
             wp_localize_script( 'univapay_woocommerce', 'univapay_params', array(
                 'token' => $this->token
             ) );
-            wp_enqueue_script( 'univapay_woocommerce' );
 	 	}
  
 		/*
