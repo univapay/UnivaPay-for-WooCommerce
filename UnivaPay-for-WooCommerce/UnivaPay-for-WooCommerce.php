@@ -12,6 +12,9 @@ if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
 }
 use Univapay\Resources\Authentication\AppJWT;
 use Univapay\UnivapayClient;
+use Univapay\UnivapayClientOptions;
+use Money\Money;
+use Money\Currency;
 /*
  * This action hook registers our PHP class as a WooCommerce payment gateway
  */
@@ -150,28 +153,34 @@ function Univapay_init_gateway_class() {
             global $woocommerce;
             // we need it to get any order detailes
             $order = wc_get_order( $order_id );
-
-            $client = new UnivapayClient(AppJWT::createToken($this->token, $this->secret));
-            var_dump($client);
             
-            if(isset($_POST['charge_token'])) {
-                // we received the payment
-                $order->payment_complete();
-                // Change the number of stock
-                wc_reduce_stock_levels($order_id);
-                // some notes to customer (replace true with false to make it private)
-                $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
-                // Empty cart
-                $woocommerce->cart->empty_cart();
-                // Redirect to the thank you page
-                return array(
-                    'result' => 'success',
-                    'redirect' => $this->get_return_url( $order )
-                );
-            } else {
+            if(!isset($_POST['charge_token'])) {
                 wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
                 return;
             }
+            // charge from charge token
+            $clientOptions = new UnivapayClientOptions($this->api);
+            $token = AppJWT::createToken($this->token, $this->secret);
+            $client = new UnivapayClient($token, $clientOptions);
+            $money = new Money(1000, new Currency('JPY'));
+            $charge = $client->createCharge($_POST['charge_token'], $money)->awaitResult();
+            if(!in_array($charge->status->getValue(), ['successful', 'pending'])) {
+                wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$data['ec'], 'error');
+                return;
+            }
+            // we received the payment
+            $order->payment_complete();
+            // Change the number of stock
+            wc_reduce_stock_levels($order_id);
+            // some notes to customer (replace true with false to make it private)
+            $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+            // Empty cart
+            $woocommerce->cart->empty_cart();
+            // Redirect to the thank you page
+            return array(
+                'result' => 'success',
+                'redirect' => $this->get_return_url( $order )
+            );
 	 	}
  
 		/*
