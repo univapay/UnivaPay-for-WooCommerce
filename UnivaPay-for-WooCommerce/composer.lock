@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "399d22a1f08ae37e359fd2301f028464",
+    "content-hash": "9177c9f7a1863670edabace548917c55",
     "packages": [
         {
             "name": "moneyphp/money",
@@ -86,10 +86,6 @@
                 "money",
                 "vo"
             ],
-            "support": {
-                "issues": "https://github.com/moneyphp/money/issues",
-                "source": "https://github.com/moneyphp/money/tree/master"
-            },
             "time": "2020-03-18T17:49:59+00:00"
         },
         {
@@ -166,11 +162,6 @@
                 "iri",
                 "sockets"
             ],
-            "support": {
-                "docs": "https://requests.ryanmccue.info/",
-                "issues": "https://github.com/WordPress/Requests/issues",
-                "source": "https://github.com/WordPress/Requests"
-            },
             "time": "2022-05-10T08:42:27+00:00"
         },
         {
@@ -215,10 +206,6 @@
                 "payment",
                 "univapay"
             ],
-            "support": {
-                "issues": "https://github.com/univapay/univapay-php-sdk/issues",
-                "source": "https://github.com/univapay/univapay-php-sdk/tree/6.0.0"
-            },
             "time": "2022-03-29T04:29:42+00:00"
         }
     ],
@@ -230,5 +217,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "1.1.0"
 }

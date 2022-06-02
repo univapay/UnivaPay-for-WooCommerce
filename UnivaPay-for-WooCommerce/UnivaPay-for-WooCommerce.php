@@ -6,8 +6,13 @@
  * Author: UnivaPay
  * Author URI: https://univapay.com/service/
  * Version: 0.3.0
- *
- /*
+ */
+if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
+    require __DIR__ . '/vendor/autoload.php';
+}
+use Univapay\Resources\Authentication\AppJWT;
+use Univapay\UnivapayClient;
+/*
  * This action hook registers our PHP class as a WooCommerce payment gateway
  */
 add_filter( 'woocommerce_payment_gateways', 'Univapay_add_gateway_class' );
@@ -123,9 +128,9 @@ function Univapay_init_gateway_class() {
             if ( empty( $this->token ) )
                 return;
             // payment processor JavaScript that allows to obtain a token
-            wp_enqueue_script( 'univapay_checkout', $this->widget.'/client/checkout.js' );
+            wp_enqueue_script( 'univapay_checkout', $this->widget.'/client/checkout.js', array(), null, true );
             // and this is our custom JS in your plugin directory that works with token.js
-            wp_enqueue_script( 'univapay_woocommerce', plugins_url( 'univapay.js', __FILE__ ), array( 'jquery', 'univapay_checkout' ) );
+            wp_enqueue_script( 'univapay_woocommerce', plugins_url( 'univapay.js', __FILE__ ), array( 'jquery', 'univapay_checkout' ), null, true );
             // have to use Shop id to obtain a token
             wp_localize_script( 'univapay_woocommerce', 'univapay_params', array(
                 'token' => $this->token
@@ -145,8 +150,11 @@ function Univapay_init_gateway_class() {
             global $woocommerce;
             // we need it to get any order detailes
             $order = wc_get_order( $order_id );
+
+            $client = new UnivapayClient(AppJWT::createToken($this->token, $this->secret));
+            var_dump($client);
             
-            if(isset($_POST['checkout_token'])) {
+            if(isset($_POST['charge_token'])) {
                 // we received the payment
                 $order->payment_complete();
                 // Change the number of stock

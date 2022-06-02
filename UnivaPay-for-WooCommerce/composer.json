@@ -1,4 +1,12 @@
 {
+    "name": "univapay/checkout",
+    "type": "wordpress-plugin",
+    "authors": [
+        {
+            "name": "5ym",
+            "email": "16yuim@gmail.com"
+        }
+    ],
     "require": {
         "univapay/php-sdk": "^6.0"
     }

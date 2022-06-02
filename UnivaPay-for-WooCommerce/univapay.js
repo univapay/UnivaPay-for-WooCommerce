@@ -11,7 +11,10 @@ function doCheckout(e) {
             token.name = "charge_token";
             token.value = result.response.id;
             e.target.appendChild(token);
-            e.target.submit();
+            var form = jQuery(e.target);
+            form.off("checkout_place_order", doCheckout);
+            form.submit();
+            form.on("checkout_place_order", doCheckout);
         },
         onError: () => {
             alert("エラーが発生しました。サイト管理者にお問い合わせください。");
