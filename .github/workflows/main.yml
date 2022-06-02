@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - uses: "shivammathur/setup-php@v2"
+      with:
+        php-version: "latest"
+    - uses: "ramsey/composer-install@v2"
+      with:
+        working-directory: "UnivaPay-for-WooCommerce"
     - name: WordPress Plugin Deploy
       uses: 10up/action-wordpress-plugin-deploy@stable
       env:
