@@ -1,10 +1,11 @@
 function doCheckout(e) {
+    var email = e.target.querySelector('#billing_email');
     var checkout = UnivapayCheckout.create({
         appId: univapay_params.token,
         checkout: "token",
         tokenType: "one_time",
         autoClose: true,
-        email: e.target.querySelector('#billing_email').value,
+        email: email?.value,
         onSuccess: (result) => {
             token = document.createElement("input");
             token.type = "hidden";
@@ -28,5 +29,5 @@ function doCheckout(e) {
     return false;
 }
 jQuery(document).ready(function($) {
-    $('form.woocommerce-checkout').on("checkout_place_order", doCheckout);
+    $('.woocommerce-checkout form').on("checkout_place_order", doCheckout);
 });
