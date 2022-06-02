@@ -21,11 +21,11 @@ function doCheckout(e) {
             return false;
         },
         closed: () => {
-            alert("決済が中断されました");
             return false;
         }
     });
     checkout.open();
+    return false;
 }
 jQuery(document).ready(function($) {
     $('form.woocommerce-checkout').on("checkout_place_order", doCheckout);

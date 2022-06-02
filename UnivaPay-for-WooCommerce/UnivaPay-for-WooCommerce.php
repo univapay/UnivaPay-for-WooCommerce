@@ -162,10 +162,10 @@ function Univapay_init_gateway_class() {
             $clientOptions = new UnivapayClientOptions($this->api);
             $token = AppJWT::createToken($this->token, $this->secret);
             $client = new UnivapayClient($token, $clientOptions);
-            $money = new Money(1000, new Currency('JPY'));
+            $money = new Money($order->data["total"], new Currency($order->data["currency"]));
             $charge = $client->createCharge($_POST['charge_token'], $money)->awaitResult();
-            if(!in_array($charge->status->getValue(), ['successful', 'pending'])) {
-                wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$data['ec'], 'error');
+            if($charge->error) {
+                wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$charge->error["details"], 'error');
                 return;
             }
             // we received the payment
