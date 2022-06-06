@@ -104,6 +104,13 @@ function Univapay_init_gateway_class() {
                     'title'       => __('シークレット', 'upfw'),
                     'type'        => 'password'
                 ),
+                'capture' => array(
+                    'title'       => __('有効/無効', 'upfw'),
+                    'label'       => '常時Captureを取る',
+                    'type'        => 'checkbox',
+                    'description' => '',
+                    'default'     => 'yes'
+                ),
             );        
 	 	}
  
@@ -163,7 +170,7 @@ function Univapay_init_gateway_class() {
             $token = AppJWT::createToken($this->token, $this->secret);
             $client = new UnivapayClient($token, $clientOptions);
             $money = new Money($order->data["total"], new Currency($order->data["currency"]));
-            $charge = $client->createCharge($_POST['charge_token'], $money)->awaitResult();
+            $charge = $client->createCharge($_POST['charge_token'], $money, $this->capture === 'yes')->awaitResult();
             if($charge->error) {
                 wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$charge->error["details"], 'error');
                 return;
