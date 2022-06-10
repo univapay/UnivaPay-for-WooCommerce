@@ -53,6 +53,7 @@ function Univapay_init_gateway_class() {
             $this->api = $this->get_option( 'api' );
             $this->token = $this->get_option( 'token' );
             $this->secret = $this->get_option( 'secret' );
+            $this->capture = $this->get_option( 'capture' );
             // This action hook saves the settings
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
             // enqueue script and style sheet
@@ -170,17 +171,25 @@ function Univapay_init_gateway_class() {
             $token = AppJWT::createToken($this->token, $this->secret);
             $client = new UnivapayClient($token, $clientOptions);
             $money = new Money($order->data["total"], new Currency($order->data["currency"]));
-            $charge = $client->createCharge($_POST['charge_token'], $money, $this->capture === 'yes')->awaitResult();
+            $capture = $this->capture === 'yes';
+            $charge = $client->createCharge($_POST['charge_token'], $money, $capture)->awaitResult();
             if($charge->error) {
                 wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$charge->error["details"], 'error');
                 return;
             }
-            // we received the payment
-            $order->payment_complete();
+            if($capture) {
+                // we received the payment
+                $order->payment_complete();
+                // add comment for order can see admin panel
+                $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+            } else {
+                // add comment for order can see admin panel
+                $order->add_order_note( __('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true );
+            }
+            // save charge id
+            $order->update_meta_data('univapay_charge_id', $charge->id);
             // Change the number of stock
             wc_reduce_stock_levels($order_id);
-            // some notes to customer (replace true with false to make it private)
-            $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
             // Empty cart
             $woocommerce->cart->empty_cart();
             // Redirect to the thank you page
