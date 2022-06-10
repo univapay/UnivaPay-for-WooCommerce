@@ -58,14 +58,23 @@ function Univapay_init_gateway_class() {
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
             // enqueue script and style sheet
             add_action( 'wp_enqueue_scripts', array( $this, 'payment_scripts' ) );
+            // add custom field for order detail
+            add_action('add_meta_boxes', array($this, 'add_custom_boxes'));
             // You can also register a webhook here
-            // add_action( 'woocommerce_api_{webhook name}', array( $this, 'webhook' ) ); 
+            // add_action( 'woocommerce_api_{webhook name}', array( $this, 'webhook' ) );
  		}
- 
+
+        public function add_custom_boxes() {
+            add_meta_box( 'univapay_status_box', __( 'UnivaPayステータス' ), array($this, 'custom_metabox_content'), ['shop_order', 'product'], 'side', 'default');
+        }
+        public function custom_metabox_content() {
+            echo 'test';
+        }
+
 		/**
  		 * Plugin options, we deal with it in Step 3 too
  		 */
- 		public function init_form_fields(){
+ 		public function init_form_fields() {
             $this->form_fields = array(
                 'enabled' => array(
                     'title'       => __('有効/無効', 'upfw'),
