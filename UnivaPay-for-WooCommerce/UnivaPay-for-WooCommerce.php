@@ -18,7 +18,7 @@ use Money\Currency;
 /*
  * This action hook registers our PHP class as a WooCommerce payment gateway
  */
-add_filter( 'woocommerce_payment_gateways', 'Univapay_add_gateway_class' );
+add_filter( 'woocommerce_payment_gateways', 'univapay_add_gateway_class' );
 function univapay_add_gateway_class( $gateways ) {
 	$gateways[] = 'WC_Univapay_Gateway';
 	return $gateways;
@@ -26,8 +26,36 @@ function univapay_add_gateway_class( $gateways ) {
 /*
  * The class itself, please note that it is inside plugins_loaded action hook
  */
-add_action( 'plugins_loaded', 'Univapay_init_gateway_class' );
-function Univapay_init_gateway_class() {
+add_action( 'plugins_loaded', 'univapay_init_gateway_class' );
+function univapay_init_gateway_class() {
+    // plugins_loaded時実行
+    // order詳細画面にunivapayのステータスを表示する
+    function add_custom_boxes() {
+        global $post;
+        if(get_post_meta($post->ID, '_payment_method')[0] !== 'upfw')
+            return;
+        add_meta_box( 'univapay_status_box', __( 'UnivaPayステータス' ), 'custom_metabox_content', 'shop_order', 'side', 'default');
+    }
+    function custom_metabox_content($post) {
+        $settings = WC()->payment_gateways->payment_gateways()['upfw'];
+        $clientOptions = new UnivapayClientOptions($settings->get_option('api'));
+        $token = AppJWT::createToken($settings->get_option('token'), $settings->get_option('secret'));
+        $client = new UnivapayClient($token, $clientOptions);
+        $charge = $client->getCharge($token->storeId, get_post_meta($post->ID, 'univapay_charge_id')[0]);
+        echo '<h4>ステータス: '.$charge->status->getValue().'</h4>';
+        if($charge->status->getValue() === 'authorized') {
+            echo '<a class="button button-primary" href="#" onclick="capture(event)">キャプチャ</a>';
+            ?>
+                <script>
+                    capture = (e) => {
+                        e.preventDefault();
+
+                    }
+                </script>
+            <?php
+        }
+    }
+    add_action('add_meta_boxes', 'add_custom_boxes');
 	class WC_Univapay_Gateway extends WC_Payment_Gateway {
  		/**
  		 * Class constructor
@@ -58,18 +86,9 @@ function Univapay_init_gateway_class() {
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
             // enqueue script and style sheet
             add_action( 'wp_enqueue_scripts', array( $this, 'payment_scripts' ) );
-            // add custom field for order detail
-            add_action('add_meta_boxes', array($this, 'add_custom_boxes'));
             // You can also register a webhook here
             // add_action( 'woocommerce_api_{webhook name}', array( $this, 'webhook' ) );
  		}
-
-        public function add_custom_boxes() {
-            add_meta_box( 'univapay_status_box', __( 'UnivaPayステータス' ), array($this, 'custom_metabox_content'), 'shop_order', 'side', 'default');
-        }
-        public function custom_metabox_content() {
-            echo 'test';
-        }
 
 		/**
  		 * Plugin options, we deal with it in Step 3 too
@@ -196,7 +215,7 @@ function Univapay_init_gateway_class() {
                 $order->add_order_note( __('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true );
             }
             // save charge id
-            $order->update_meta_data('univapay_charge_id', $charge->id);
+            update_post_meta($order_id, 'univapay_charge_id', $charge->id);
             // Change the number of stock
             wc_reduce_stock_levels($order_id);
             // Empty cart
