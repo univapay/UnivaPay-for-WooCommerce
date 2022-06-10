@@ -65,7 +65,7 @@ function Univapay_init_gateway_class() {
  		}
 
         public function add_custom_boxes() {
-            add_meta_box( 'univapay_status_box', __( 'UnivaPayステータス' ), array($this, 'custom_metabox_content'), ['shop_order', 'product'], 'side', 'default');
+            add_meta_box( 'univapay_status_box', __( 'UnivaPayステータス' ), array($this, 'custom_metabox_content'), 'shop_order', 'side', 'default');
         }
         public function custom_metabox_content() {
             echo 'test';
