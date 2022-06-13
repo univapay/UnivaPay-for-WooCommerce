@@ -42,18 +42,49 @@ function univapay_init_gateway_class() {
         $token = AppJWT::createToken($settings->get_option('token'), $settings->get_option('secret'));
         $client = new UnivapayClient($token, $clientOptions);
         $charge = $client->getCharge($token->storeId, get_post_meta($post->ID, 'univapay_charge_id')[0]);
-        echo '<h4>ステータス: '.$charge->status->getValue().'</h4>';
-        if($charge->status->getValue() === 'authorized') {
-            echo '<a class="button button-primary" href="#" onclick="capture(event)">キャプチャ</a>';
-            ?>
-                <script>
-                    capture = (e) => {
-                        e.preventDefault();
-
-                    }
-                </script>
-            <?php
+        // get ajax
+        $data = json_decode(file_get_contents('php://input'), true);
+        if(isset($data['univapay_update'])) {
+            $order = wc_get_order( $post );
+            switch ($data['univapay_update']) {
+                case 'capture':
+                    $charge->capture();
+                    $order->payment_complete();
+                    // add comment for order can see admin panel
+                    $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+                    break;
+                default:
+                    break;
+            }
+            $order->save();
         }
+
+        echo '<h4>ステータス: '.$charge->status->getValue().'</h4>';
+        switch ($charge->status->getValue()) {
+            case 'authorized':
+                echo '<button type="button" class="button button-primary" onclick="update(event)" value="capture">キャプチャ</button>';
+                break;
+            default:
+                break;
+        }
+        ?>
+            <script>
+                update = (e) => {
+                    e.preventDefault();
+                    e.target.disabled = true;
+                    const xhttp = new XMLHttpRequest();
+                    xhttp.onload = function() {
+                        if(this.status !== 200) {
+                            alert('エラーが発生しました。再度お試しください。');
+                        }
+                        location.reload();
+                    }
+                    xhttp.open("POST", "", true);
+                    xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                    xhttp.send(JSON.stringify({univapay_update: e.target.value}));
+                }
+            </script>
+        <?php
     }
     add_action('add_meta_boxes', 'add_custom_boxes');
 	class WC_Univapay_Gateway extends WC_Payment_Gateway {
@@ -206,7 +237,6 @@ function univapay_init_gateway_class() {
                 return;
             }
             if($capture) {
-                // we received the payment
                 $order->payment_complete();
                 // add comment for order can see admin panel
                 $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
