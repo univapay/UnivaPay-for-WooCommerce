@@ -239,7 +239,7 @@ function univapay_init_gateway_class() {
                 wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$charge->error["details"], 'error');
                 return;
             }
-            if($capture) {
+            if($capture || $_POST['payment_type'] !== 'card') {
                 $order->payment_complete();
                 // add comment for order can see admin panel
                 $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
