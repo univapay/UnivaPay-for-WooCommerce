@@ -18,9 +18,15 @@ function doCheckout(e) {
             token.value = result.response.paymentType;
             e.target.appendChild(token);
             var form = jQuery(e.target);
-            form.off("checkout_place_order", doCheckout);
-            form.submit();
-            form.on("checkout_place_order", doCheckout);
+            if(e.type === 'submit') {
+                form.off("submit", doCheckout);
+                form.submit();
+                form.on("submit", doCheckout);
+            } else {
+                form.off("checkout_place_order", doCheckout);
+                form.submit();
+                form.on("checkout_place_order", doCheckout);
+            }
         },
         onError: () => {
             alert("エラーが発生しました。サイト管理者にお問い合わせください。");
@@ -35,4 +41,6 @@ function doCheckout(e) {
 }
 jQuery(document).ready(function($) {
     $('.woocommerce-checkout form').on("checkout_place_order", doCheckout);
+    // pay for order
+    $('form#order_review').on('submit', doCheckout);
 });
