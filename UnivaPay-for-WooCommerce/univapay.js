@@ -12,6 +12,11 @@ function doCheckout(e) {
             token.name = "charge_token";
             token.value = result.response.id;
             e.target.appendChild(token);
+            token = document.createElement("input");
+            token.type = "hidden";
+            token.name = "payment_type";
+            token.value = result.response.paymentType;
+            e.target.appendChild(token);
             var form = jQuery(e.target);
             form.off("checkout_place_order", doCheckout);
             form.submit();

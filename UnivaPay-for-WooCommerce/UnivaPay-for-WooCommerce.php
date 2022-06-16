@@ -231,7 +231,10 @@ function univapay_init_gateway_class() {
             $client = new UnivapayClient($token, $clientOptions);
             $money = new Money($order->data["total"], new Currency($order->data["currency"]));
             $capture = $this->capture === 'yes';
-            $charge = $client->createCharge($_POST['charge_token'], $money, $capture)->awaitResult();
+            $charge = $client->createCharge(
+                $_POST['charge_token'],
+                $money, $_POST['payment_type'] === 'card' ? $capture : NULL
+            )->awaitResult();
             if($charge->error) {
                 wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$charge->error["details"], 'error');
                 return;
