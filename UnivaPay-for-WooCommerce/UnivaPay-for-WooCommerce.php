@@ -240,9 +240,9 @@ function univapay_init_gateway_class() {
                 // add comment for order can see admin panel
                 $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
             } else {
+                $order->update_status('on-hold', __('キャプチャ待ちです', 'upfw'));
                 // add comment for order can see admin panel
                 $order->add_order_note( __('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true );
-                $order->update_status('on-hold', __('キャプチャ待ちです', 'upfw'));
             }
             // save charge id
             update_post_meta($order_id, 'univapay_charge_id', $charge->id);
