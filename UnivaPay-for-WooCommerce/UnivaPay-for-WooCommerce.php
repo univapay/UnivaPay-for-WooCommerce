@@ -109,6 +109,7 @@ function univapay_init_gateway_class() {
             $this->token = $this->get_option( 'token' );
             $this->secret = $this->get_option( 'secret' );
             $this->capture = $this->get_option( 'capture' );
+            $this->optional = $this->get_option( 'optional' );
             // This action hook saves the settings
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
             // enqueue script and style sheet
@@ -206,7 +207,8 @@ function univapay_init_gateway_class() {
             wp_enqueue_script( 'univapay_woocommerce', plugins_url( 'univapay.js', __FILE__ ), array( 'jquery', 'univapay_checkout' ), null, true );
             // have to use Shop id to obtain a token
             wp_localize_script( 'univapay_woocommerce', 'univapay_params', array(
-                'token' => $this->token
+                'token' => $this->token,
+                'optional' => $this->optional
             ) );
 	 	}
  

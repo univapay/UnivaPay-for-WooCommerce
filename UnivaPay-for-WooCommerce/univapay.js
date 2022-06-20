@@ -49,6 +49,17 @@ function render() {
     jQuery("#place_order").hide();
     if(jQuery('#upfw_order').length !== 0)
         return;
+    if(univapay_params.optional === 'yes') {
+        jQuery('<a>その他決済</a>').attr({
+            type: 'button',
+            id: 'upfw_optional',
+            class: 'button',
+        }).css({
+            'width': '100%',
+            'box-sizing': 'border-box',
+            'line-height': '1.2'
+        }).on("click", console.log('test')).appendTo(".place-order");
+    }
     jQuery('<a>カード決済</a>').attr({
         type: 'button',
         id: 'upfw_card',
