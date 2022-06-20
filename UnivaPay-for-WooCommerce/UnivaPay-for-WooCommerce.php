@@ -232,7 +232,7 @@ function univapay_init_gateway_class() {
                 $money, $_POST['payment_type'] === 'card' ? $capture : NULL
             )->awaitResult();
             if($charge->error) {
-                wc_add_notice(__('決済エラー入力内容を確認するか、タイムアウトのため再度入力してください。', 'upfw').$charge->error["details"], 'error');
+                wc_add_notice(__('タイムアウトのため決済情報を再度入力してください。', 'upfw').$charge->error["details"], 'error');
                 // トークンを削除するためにリロード
                 return array(
                     'result' => 'success',

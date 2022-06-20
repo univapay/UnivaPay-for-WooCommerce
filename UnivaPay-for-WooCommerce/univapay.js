@@ -8,6 +8,7 @@ function doCheckout(e) {
         checkout: "token",
         tokenType: "one_time",
         autoClose: true,
+        cvvAuthorize: true,
         email: email?.value,
         onSuccess: (result) => {
             token = document.createElement("input");
