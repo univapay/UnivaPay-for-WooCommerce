@@ -1,50 +1,67 @@
-function doCheckout(e) {
-    var email = e.target.querySelector('#billing_email');
-    // カード情報入力済みの場合はスキップ
-    if(document.getElementsByName("charge_token").length !== 0)
-        return true;
-    var checkout = UnivapayCheckout.create({
-        appId: univapay_params.token,
-        checkout: "token",
-        tokenType: "one_time",
-        autoClose: true,
-        cvvAuthorize: true,
-        email: email?.value,
-        onSuccess: (result) => {
-            token = document.createElement("input");
-            token.type = "hidden";
-            token.name = "charge_token";
-            token.value = result.response.id;
-            e.target.appendChild(token);
-            token = document.createElement("input");
-            token.type = "hidden";
-            token.name = "payment_type";
-            token.value = result.response.paymentType;
-            e.target.appendChild(token);
-            var form = jQuery(e.target);
-            if(e.type === 'submit') {
-                form.off("submit", doCheckout);
-                form.submit();
-                form.on("submit", doCheckout);
-            } else {
-                form.off("checkout_place_order_upfw", doCheckout);
-                form.submit();
-                form.on("checkout_place_order_upfw", doCheckout);
-            }
-        },
-        onError: () => {
-            alert("エラーが発生しました。サイト管理者にお問い合わせください。");
-            return false;
-        },
-        closed: () => {
-            return false;
-        }
+function doCheckout() {
+    // clear before token
+    document.querySelectorAll('[name="univapayTokenId"]').forEach(function(v) {
+        v.parentNode.removeChild(v);
     });
-    checkout.open();
-    return false;
+    var iFrame = document.querySelector("#upfw_checkout iframe");
+    UnivapayCheckout.submit(iFrame)
+        .then(() => {
+            document.querySelector('#place_order').click();
+        })
+        .catch((errors) => {
+            alert("入力内容をご確認ください");
+            console.error(errors);
+        });
+}
+function createForm() {
+    jQuery("#upfw_card").remove();
+    jQuery('<div></div>').attr({
+        'id': 'upfw_checkout'
+    }).appendTo(".place-order");
+    jQuery('<span></span>').attr({
+        'data-app-id': univapay_params.token,
+        'data-checkout': "token",
+        'data-token-type': "one_time",
+        'data-inline': true,
+        'data-email': getEmail(),
+    }).appendTo("#upfw_checkout");
+    jQuery('<a>注文する</a>').attr({
+        type: 'button',
+        id: 'upfw_order',
+        class: 'button',
+    }).css({
+        'width': '100%',
+        'box-sizing': 'border-box',
+        'line-height': '1.2'
+    }).on("click", doCheckout).appendTo(".place-order");
+}
+function getEmail() {
+    return jQuery("#billing_email").val();
+}
+function checkSelect() {
+    jQuery("#place_order").show();
+    jQuery("#upfw_card").remove();
+    if(selected()) {
+        render();
+    }
+}
+function render() {
+    jQuery("#place_order").hide();
+    if(jQuery('#upfw_order').length !== 0)
+        return;
+    jQuery('<a>カード決済</a>').attr({
+        type: 'button',
+        id: 'upfw_card',
+        class: 'button',
+    }).css({
+        'width': '100%',
+        'box-sizing': 'border-box',
+        'line-height': '1.2'
+    }).on("click", createForm).appendTo(".place-order");
+}
+function selected() {
+    return jQuery('.woocommerce-checkout #payment_method_upfw').prop('checked');
 }
 jQuery(document).ready(function($) {
-    $('.woocommerce-checkout form').on("checkout_place_order_upfw", doCheckout);
-    // pay for order
-    $('form#order_review').on('submit', doCheckout);
+    $(document.body).on("updated_checkout payment_method_selected", checkSelect);
 });

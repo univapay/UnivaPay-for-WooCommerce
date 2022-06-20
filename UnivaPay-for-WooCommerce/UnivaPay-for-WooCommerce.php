@@ -96,7 +96,7 @@ function univapay_init_gateway_class() {
             $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
             $this->has_fields = true; // in case you need a custom credit card form
             $this->method_title = 'Univapay Gateway';
-            $this->method_description = __('UnivaPayによるカード支払い', 'upfw'); // will be displayed on the options page
+            $this->method_description = __('UnivaPayで様々な決済手段を提供します', 'upfw'); // will be displayed on the options page
             // Method with all the options fields
             $this->init_form_fields();
             // Load the settings.
@@ -133,7 +133,7 @@ function univapay_init_gateway_class() {
                     'title'       => __('タイトル', 'upfw'),
                     'type'        => 'text',
                     'description' => __('これは、ユーザーがチェックアウト時に表示するタイトルを制御します。', 'upfw'),
-                    'default'     => __('カード支払い', 'upfw'),
+                    'default'     => __('UnivaPay', 'upfw'),
                     'desc_tip'    => true,
                 ),
                 'description' => array(
@@ -165,7 +165,14 @@ function univapay_init_gateway_class() {
                     'label'       => '常時Captureを取る',
                     'type'        => 'checkbox',
                     'description' => '',
-                    'default'     => 'yes'
+                    'default'     => 'no'
+                ),
+                'optional' => array(
+                    'title'       => __('有効/無効', 'upfw'),
+                    'label'       => 'その他の支払い方法を有効にする',
+                    'type'        => 'checkbox',
+                    'description' => 'Alipay, PayPay等の決済を有効化します',
+                    'default'     => 'no'
                 ),
             );        
 	 	}
@@ -216,8 +223,8 @@ function univapay_init_gateway_class() {
             global $woocommerce;
             // we need it to get any order detailes
             $order = wc_get_order( $order_id );
-            
-            if(!isset($_POST['charge_token'])) {
+
+            if(!isset($_POST['univapayTokenId'])) {
                 wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
                 return;
             }
@@ -227,19 +234,13 @@ function univapay_init_gateway_class() {
             $client = new UnivapayClient($token, $clientOptions);
             $money = new Money($order->data["total"], new Currency($order->data["currency"]));
             $capture = $this->capture === 'yes';
-            $charge = $client->createCharge(
-                $_POST['charge_token'],
-                $money, $_POST['payment_type'] === 'card' ? $capture : NULL
-            )->awaitResult();
+            $charge = $client->createCharge($_POST['univapayTokenId'], $money, $capture)->awaitResult();
             if($charge->error) {
-                wc_add_notice(__('タイムアウトのため決済情報を再度入力してください。', 'upfw').$charge->error["details"], 'error');
+                wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw').$charge->error["details"], 'error');
                 // トークンを削除するためにリロード
-                return array(
-                    'result' => 'success',
-                    'redirect' => ''
-                );
+                return;
             }
-            if($capture || $_POST['payment_type'] !== 'card') {
+            if($capture) {
                 $order->payment_complete();
                 // add comment for order can see admin panel
                 $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
