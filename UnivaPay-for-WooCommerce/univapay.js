@@ -23,9 +23,9 @@ function doCheckout(e) {
                 form.submit();
                 form.on("submit", doCheckout);
             } else {
-                form.off("checkout_place_order", doCheckout);
+                form.off("checkout_place_order_upfw", doCheckout);
                 form.submit();
-                form.on("checkout_place_order", doCheckout);
+                form.on("checkout_place_order_upfw", doCheckout);
             }
         },
         onError: () => {

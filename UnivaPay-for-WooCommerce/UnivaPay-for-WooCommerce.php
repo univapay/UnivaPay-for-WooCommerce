@@ -207,6 +207,7 @@ function univapay_init_gateway_class() {
  		 * Fields validation
 		 */
 		public function validate_fields() {
+            return;
 		}
  
 		/*
