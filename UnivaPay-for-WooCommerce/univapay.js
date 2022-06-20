@@ -40,7 +40,7 @@ function doCheckout(e) {
     return false;
 }
 jQuery(document).ready(function($) {
-    $('.woocommerce-checkout form').on("checkout_place_order", doCheckout);
+    $('.woocommerce-checkout form').on("checkout_place_order_upfw", doCheckout);
     // pay for order
     $('form#order_review').on('submit', doCheckout);
 });
