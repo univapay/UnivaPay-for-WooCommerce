@@ -1,5 +1,8 @@
 function doCheckout(e) {
     var email = e.target.querySelector('#billing_email');
+    // カード情報入力済みの場合はスキップ
+    if(document.getElementsByName("charge_token").length !== 0)
+        return true;
     var checkout = UnivapayCheckout.create({
         appId: univapay_params.token,
         checkout: "token",

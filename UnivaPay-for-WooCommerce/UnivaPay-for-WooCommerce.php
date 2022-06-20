@@ -207,7 +207,6 @@ function univapay_init_gateway_class() {
  		 * Fields validation
 		 */
 		public function validate_fields() {
-            return;
 		}
  
 		/*
@@ -233,8 +232,12 @@ function univapay_init_gateway_class() {
                 $money, $_POST['payment_type'] === 'card' ? $capture : NULL
             )->awaitResult();
             if($charge->error) {
-                wc_add_notice(__('決済エラー入力内容を確認してください。', 'upfw').$charge->error["details"], 'error');
-                return;
+                wc_add_notice(__('決済エラー入力内容を確認するか、タイムアウトのため再度入力してください。', 'upfw').$charge->error["details"], 'error');
+                // トークンを削除するためにリロード
+                return array(
+                    'result' => 'success',
+                    'redirect' => ''
+                );
             }
             if($capture || $_POST['payment_type'] !== 'card') {
                 $order->payment_complete();
