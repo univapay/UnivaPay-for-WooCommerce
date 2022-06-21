@@ -256,8 +256,6 @@ function univapay_init_gateway_class() {
             }
             // save charge id
             update_post_meta($order_id, 'univapay_charge_id', $charge->id);
-            // Change the number of stock
-            wc_reduce_stock_levels($order_id);
             // Empty cart
             $woocommerce->cart->empty_cart();
             // Redirect to the thank you page
