@@ -205,7 +205,7 @@ function univapay_init_gateway_class() {
                     'title'       => __('フォームURL', 'upfw'),
                     'label'       => 'カード決済以外のフォーム用URL',
                     'type'        => 'text',
-                    'description' => 'appIdより前のURLを入力してください。',
+                    'description' => '?appIdより前のURLを入力してください。',
                     'default'     => ''
                 ),
             );        
