@@ -50,6 +50,7 @@ function getEmail() {
 function checkSelect() {
     jQuery("#place_order").show();
     jQuery("#upfw_card").remove();
+    jQuery("#upfw_optional").remove();
     if(selected()) {
         render();
     }
