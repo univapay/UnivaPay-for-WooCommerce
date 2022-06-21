@@ -255,7 +255,6 @@ function univapay_init_gateway_class() {
 		 * We're processing the payments here, everything about
 		 */
 		public function process_payment( $order_id ) {
-            var_dump($this->get_return_url( $order ));exit;
             $order = wc_get_order( $order_id );
             $money = new Money($order->data["total"], new Currency($order->data["currency"]));
             if(isset($_POST['univapayOptional']) && $_POST['univapayOptional'] === 'true') {
