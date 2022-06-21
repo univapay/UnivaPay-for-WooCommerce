@@ -109,7 +109,7 @@ function univapay_init_gateway_class() {
             $this->token = $this->get_option( 'token' );
             $this->secret = $this->get_option( 'secret' );
             $this->capture = $this->get_option( 'capture' );
-            $this->optional = $this->get_option( 'optional' );
+            $this->formurl = $this->get_option( 'formurl' );
             // This action hook saves the settings
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
             // enqueue script and style sheet
@@ -168,12 +168,12 @@ function univapay_init_gateway_class() {
                     'description' => '',
                     'default'     => 'no'
                 ),
-                'optional' => array(
-                    'title'       => __('有効/無効', 'upfw'),
-                    'label'       => 'その他の支払い方法を有効にする',
-                    'type'        => 'checkbox',
-                    'description' => 'Alipay, PayPay等の決済を有効化します',
-                    'default'     => 'no'
+                'formurl' => array(
+                    'title'       => __('フォームURL', 'upfw'),
+                    'label'       => 'カード決済以外のフォーム用URL',
+                    'type'        => 'text',
+                    'description' => 'appIdより前のURLを入力してください。',
+                    'default'     => ''
                 ),
             );        
 	 	}
@@ -208,7 +208,7 @@ function univapay_init_gateway_class() {
             // have to use Shop id to obtain a token
             wp_localize_script( 'univapay_woocommerce', 'univapay_params', array(
                 'token' => $this->token,
-                'optional' => $this->optional
+                'formurl' => $this->formurl
             ) );
 	 	}
  
@@ -222,10 +222,14 @@ function univapay_init_gateway_class() {
 		 * We're processing the payments here, everything about
 		 */
 		public function process_payment( $order_id ) {
-            global $woocommerce;
-            // we need it to get any order detailes
             $order = wc_get_order( $order_id );
-
+            $money = new Money($order->data["total"], new Currency($order->data["currency"]));
+            if(isset($_POST['univapayOptional']) && $_POST['univapayOptional'] === 'true') {
+                return array(
+                    'result' => 'success',
+                    'redirect' => $this->formurl.'?appId='.$this->token.'&amount='.$money->getAmount().'&currency='.$money->getCurrency()
+                );
+            }
             if(!isset($_POST['univapayTokenId'])) {
                 wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
                 return;
@@ -234,14 +238,13 @@ function univapay_init_gateway_class() {
             $clientOptions = new UnivapayClientOptions($this->api);
             $token = AppJWT::createToken($this->token, $this->secret);
             $client = new UnivapayClient($token, $clientOptions);
-            $money = new Money($order->data["total"], new Currency($order->data["currency"]));
             $capture = $this->capture === 'yes';
             $charge = $client->createCharge($_POST['univapayTokenId'], $money, $capture)->awaitResult();
             if($charge->error) {
                 wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw').$charge->error["details"], 'error');
-                // トークンを削除するためにリロード
                 return;
             }
+            global $woocommerce;
             if($capture) {
                 $order->payment_complete();
                 // add comment for order can see admin panel
