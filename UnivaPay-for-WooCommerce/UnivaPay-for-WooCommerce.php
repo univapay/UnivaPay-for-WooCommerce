@@ -240,9 +240,16 @@ function univapay_init_gateway_class() {
             // and this is our custom JS in your plugin directory that works with token.js
             wp_enqueue_script( 'univapay_woocommerce', plugins_url( 'univapay.js', __FILE__ ), array( 'jquery', 'univapay_checkout' ), null, true );
             // have to use Shop id to obtain a token
+            $order = wc_get_order( get_query_var( 'order-pay' ) );
+            if($order)
+                $order = $order->get_data();
             wp_localize_script( 'univapay_woocommerce', 'univapay_params', array(
                 'token' => $this->token,
-                'formurl' => $this->formurl
+                'formurl' => $this->formurl,
+                'total' => $order ? $order["total"] : null,
+                'currency' => $order ? $order["currency"] : null,
+                'email' => $order ? $order["billing"]["email"] : null,
+                'capture' => $this->capture
             ) );
 	 	}
  
@@ -257,14 +264,14 @@ function univapay_init_gateway_class() {
 		 */
 		public function process_payment( $order_id ) {
             $order = wc_get_order( $order_id );
-            $money = new Money($order->data["total"], new Currency($order->data["currency"]));
+            $money = new Money($order->get_data()["total"], new Currency($order->get_data()["currency"]));
             if(isset($_POST['univapayOptional']) && $_POST['univapayOptional'] === 'true') {
                 return array(
                     'result' => 'success',
                     'redirect' => $this->formurl.'?appId='.$this->token.'&amount='.$money->getAmount().'&currency='.$money->getCurrency()
                 );
             }
-            if(!isset($_POST['univapayTokenId'])) {
+            if(!isset($_POST['univapayTokenId']) && !isset($_POST["univapayChargeId"])) {
                 wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
                 return;
             }
@@ -273,7 +280,12 @@ function univapay_init_gateway_class() {
             $token = AppJWT::createToken($this->token, $this->secret);
             $client = new UnivapayClient($token, $clientOptions);
             $capture = $this->capture === 'yes';
-            $charge = $client->createCharge($_POST['univapayTokenId'], $money, $capture)->awaitResult();
+            // pay for order
+            if(isset($_POST["univapayChargeId"])) {
+                $charge = $client->getCharge($token->storeId, $_POST["univapayChargeId"]);
+            } else {
+                $charge = $client->createCharge($_POST['univapayTokenId'], $money, $capture)->awaitResult();
+            }
             if($charge->error) {
                 wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw').$charge->error["details"], 'error');
                 return;

@@ -81,8 +81,40 @@ function render() {
     }).on("click", createForm).appendTo(".place-order");
 }
 function selected() {
-    return jQuery('form.woocommerce-checkout #payment_method_upfw').prop('checked');
+    return jQuery('#payment_method_upfw').prop('checked');
+}
+function payfororder(e) {
+    if(!selected())
+        return;
+    e.preventDefault();
+    var checkout = UnivapayCheckout.create({
+        appId: univapay_params.token,
+        checkout: 'payment',
+        amount: univapay_params.total,
+        currency: univapay_params.currency,
+        email: univapay_params.email,
+        onSuccess: (result) => {
+            jQuery('<input>').attr({
+                'type': 'hidden',
+                'name': 'univapayChargeId',
+                'value': result.response.id
+            }).appendTo(e.target);
+            jQuery(e.target).off("submit");
+            e.target.submit();
+            jQuery(e.target).on("submit", payfororder);
+        },
+        onError: () => {
+            alert("エラーが発生しました。サイト管理者にお問い合わせください。");
+            location.href = "";
+        },
+        closed: () => {
+            alert("決済が中断されました");
+            location.href = "";
+        }
+    });
+    checkout.open();
 }
 jQuery(document).ready(function($) {
     $(document.body).on("updated_checkout payment_method_selected", checkSelect);
+    $('#order_review').on("submit", payfororder);
 });
