@@ -32,7 +32,8 @@ function univapay_init_gateway_class() {
     // order詳細画面にunivapayのステータスを表示する
     function add_custom_boxes() {
         global $post;
-        if(get_post_meta($post->ID, '_payment_method')[0] !== 'upfw')
+        $paymentMethod = get_post_meta($post->ID, '_payment_method');
+        if(empty($paymentMethod) || $paymentMethod[0] !== 'upfw')
             return;
         add_meta_box( 'univapay_status_box', __( 'UnivaPayステータス' ), 'custom_metabox_content', 'shop_order', 'side', 'default');
     }
@@ -202,11 +203,10 @@ function univapay_init_gateway_class() {
                     'default'     => 'no'
                 ),
                 'formurl' => array(
-                    // 'title'       => __('フォームURL', 'upfw'),
-                    // 'label'       => 'カード決済以外のフォーム用URL',
-                    // 'type'        => 'text',
-                    // 'description' => '?appIdより前のURLを入力してください。',
-                    'type'        => 'hidden',
+                    'title'       => __('フォームURL', 'upfw'),
+                    'label'       => 'カード決済以外のフォーム用URL',
+                    'type'        => 'text',
+                    'description' => '?appIdより前のURLを入力してください。',
                     'default'     => ''
                 ),
             );        
@@ -268,7 +268,13 @@ function univapay_init_gateway_class() {
             if(isset($_POST['univapayOptional']) && $_POST['univapayOptional'] === 'true') {
                 return array(
                     'result' => 'success',
-                    'redirect' => $this->formurl.'?appId='.$this->token.'&amount='.$money->getAmount().'&currency='.$money->getCurrency()
+                    'redirect' => $this->formurl.
+                        '?appId='.$this->token.
+                        '&amount='.$money->getAmount().
+                        '&currency='.$money->getCurrency().
+                        '&successRedirectUrl='.urlencode($this->get_return_url( $order )).
+                        '&failureRedirectUrl='.urlencode($this->get_return_url( $order )).
+                        '&pendingRedirectUrl='.urlencode($this->get_return_url( $order ))
                 );
             }
             if(!isset($_POST['univapayTokenId']) && !isset($_POST["univapayChargeId"])) {
