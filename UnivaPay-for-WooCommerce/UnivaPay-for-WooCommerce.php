@@ -90,7 +90,7 @@ function univapay_init_gateway_class() {
     add_action('add_meta_boxes', 'add_custom_boxes');
     // for EC form redirect
     function maybe_process_redirect_order() {
-        if ( ! is_order_received_page() || empty( $_GET['charge_token'] ) ) {
+        if ( ! is_order_received_page() || empty( $_GET['univapayChargeId'] ) ) {
             return;
         }
         try{
@@ -100,7 +100,7 @@ function univapay_init_gateway_class() {
             $clientOptions = new UnivapayClientOptions($settings->get_option('api'));
             $token = AppJWT::createToken($settings->get_option('token'), $settings->get_option('secret'));
             $client = new UnivapayClient($token, $clientOptions);
-            $charge = $client->getCharge($token->storeId, $_GET['charge_token']);
+            $charge = $client->getCharge($token->storeId, $_GET['univapayChargeId']);
             if($charge->error) {
                 wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw').$charge->error["details"], 'error');
                 wp_safe_redirect( wc_get_checkout_url() );
