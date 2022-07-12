@@ -94,7 +94,8 @@ function univapay_init_gateway_class() {
             return;
         }
         try{
-            $order_id = $_GET['order_id'];
+            global $wp;
+            $order_id = absint($wp->query_vars['order-received']);
             $order = wc_get_order( $order_id );
             $settings = WC()->payment_gateways->payment_gateways()['upfw'];
             $clientOptions = new UnivapayClientOptions($settings->get_option('api'));
@@ -106,10 +107,18 @@ function univapay_init_gateway_class() {
                 wp_safe_redirect( wc_get_checkout_url() );
                 exit;
             }
+            $capture = $settings->get_option('capture') === 'yes';
+            $paymentType = $client->getTransactionToken($charge->transactionTokenId)->paymentType->getValue();
             global $woocommerce;
-            $order->payment_complete();
-            // add comment for order can see admin panel
-            $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+            if($capture || !in_array($paymentType, ['card', 'paidy'])) {
+                $order->payment_complete();
+                // add comment for order can see admin panel
+                $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+            } else {
+                $order->update_status('on-hold', __('キャプチャ待ちです', 'upfw'));
+                // add comment for order can see admin panel
+                $order->add_order_note( __('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true );
+            }
             // save charge id
             update_post_meta($order_id, 'univapay_charge_id', $charge->id);
             // Empty cart
