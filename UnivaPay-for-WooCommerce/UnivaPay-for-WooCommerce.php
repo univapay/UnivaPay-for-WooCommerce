@@ -5,7 +5,7 @@
  * Description: UnivaPayを使用して店舗でクレジットカード決済が可能です。
  * Author: UnivaPay
  * Author URI: https://univapay.com/service/
- * Version: 0.3.0
+ * Version: 0.3.1
  */
 if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
     require __DIR__ . '/vendor/autoload.php';
@@ -152,6 +152,7 @@ function univapay_init_gateway_class() {
             $this->token = $this->get_option( 'token' );
             $this->secret = $this->get_option( 'secret' );
             $this->capture = $this->get_option( 'capture' );
+            $this->status = $this->get_option( 'status' );
             $this->formurl = $this->get_option( 'formurl' );
             // This action hook saves the settings
             add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -210,6 +211,18 @@ function univapay_init_gateway_class() {
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no'
+                ),
+                'status' => array(
+                    'title'       => __('オーソリ時のステータス', 'upfw'),
+                    'label'       => 'オーソリ完了後作成される注文データのステータス',
+                    'type'        => 'select',
+                    'description' => '',
+                    'default'     => 'on-hold',
+                    'options'     => array(
+                        'on-hold' => '保留',
+                        'processing' => '処理中',
+                        'pending-payment' => '支払待ち'
+                    )
                 ),
                 'formurl' => array(
                     'title'       => __('フォームURL', 'upfw'),
@@ -311,7 +324,7 @@ function univapay_init_gateway_class() {
                 // add comment for order can see admin panel
                 $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
             } else {
-                $order->update_status('on-hold', __('キャプチャ待ちです', 'upfw'));
+                $order->update_status($this->status, __('キャプチャ待ちです', 'upfw'));
                 // add comment for order can see admin panel
                 $order->add_order_note( __('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true );
             }
