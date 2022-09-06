@@ -42,7 +42,12 @@ function univapay_init_gateway_class() {
         $clientOptions = new UnivapayClientOptions($settings->get_option('api'));
         $token = AppJWT::createToken($settings->get_option('token'), $settings->get_option('secret'));
         $client = new UnivapayClient($token, $clientOptions);
-        $charge = $client->getCharge($token->storeId, get_post_meta($post->ID, 'univapay_charge_id')[0]);
+        $chargeId = get_post_meta($post->ID, 'univapay_charge_id');
+        if(!$chargeId) {
+            echo 'UnivaPayで決済を試みましたが、決済が完了していません。';
+            return;
+        }
+        $charge = $client->getCharge($token->storeId, $chargeId[0]);
         // get ajax
         $data = json_decode(file_get_contents('php://input'), true);
         if(isset($data['univapay_update'])) {
