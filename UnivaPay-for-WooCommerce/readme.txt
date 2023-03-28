@@ -1,10 +1,10 @@
 === UnivaPay for WooCommerce ===
 Contributors: yui5m
 Tags: credit card, payment request, woocommerce
-Requires at least: 5.2
-Tested up to: 6.0
-Requires PHP: 7.0
-Stable tag: 0.3.1
+Requires at least: 5.4
+Tested up to: 6.1
+Requires PHP: 8.0
+Stable tag: 0.3.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -43,3 +43,6 @@ https://www.univapay.com/yakkan/
 
 = 0.3.1 - 2022-09-05 =
 * 注文ステータス変更機能を追加
+
+= 0.3.2 - 2023-03-28 =
+* その他決済を利用しない場合カードフォームを自動表示するように修正

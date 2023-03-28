@@ -69,16 +69,18 @@ function render() {
             'box-sizing': 'border-box',
             'line-height': '1.2'
         }).on("click", optional).appendTo(".place-order");
+        jQuery('<a>カード決済</a>').attr({
+            type: 'button',
+            id: 'upfw_card',
+            class: 'button',
+        }).css({
+            'width': '100%',
+            'box-sizing': 'border-box',
+            'line-height': '1.2'
+        }).on("click", createForm).appendTo(".place-order");
+    } else {
+        createForm();
     }
-    jQuery('<a>カード決済</a>').attr({
-        type: 'button',
-        id: 'upfw_card',
-        class: 'button',
-    }).css({
-        'width': '100%',
-        'box-sizing': 'border-box',
-        'line-height': '1.2'
-    }).on("click", createForm).appendTo(".place-order");
 }
 function selected() {
     return jQuery('#payment_method_upfw').prop('checked');
