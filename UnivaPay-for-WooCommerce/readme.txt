@@ -4,7 +4,7 @@ Tags: credit card, payment request, woocommerce
 Requires at least: 5.4
 Tested up to: 6.1
 Requires PHP: 8.0
-Stable tag: 0.3.2
+Stable tag: 0.3.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -46,3 +46,6 @@ https://www.univapay.com/yakkan/
 
 = 0.3.2 - 2023-03-28 =
 * その他決済を利用しない場合カードフォームを自動表示するように修正
+
+= 0.3.3 - 2023-03-30 =
+* カード決済時、決済ステータスが保留の場合決済完了まで再取得するよう修正
