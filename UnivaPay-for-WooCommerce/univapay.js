@@ -1,3 +1,6 @@
+function selected() {
+    return jQuery('#payment_method_upfw').prop('checked');
+}
 function doCheckout() {
     // clear before token
     document.querySelectorAll('[name="univapayTokenId"]').forEach(function(v) {
@@ -21,11 +24,14 @@ function optional() {
     }).appendTo('form.woocommerce-checkout');
     jQuery('#place_order').click();
 }
-function createForm() {
-    jQuery("#upfw_card").remove();
-    jQuery('<div></div>').attr({
-        'id': 'upfw_checkout'
-    }).appendTo(".place-order");
+function getEmail() {
+    return jQuery("#billing_email").val();
+}
+function render() {
+    jQuery("#place_order").before(
+        jQuery('<div></div>').attr({
+            'id': 'upfw_checkout'
+    }));
     jQuery('<span></span>').attr({
         'data-app-id': univapay_params.token,
         'data-checkout': "token",
@@ -34,56 +40,35 @@ function createForm() {
         'data-email': getEmail(),
         'data-inline-item-style': 'padding: 0 2px',
     }).appendTo("#upfw_checkout");
-    jQuery('<a>注文する</a>').attr({
-        type: 'button',
-        id: 'upfw_order',
-        class: 'button',
-    }).css({
-        'width': '100%',
-        'box-sizing': 'border-box',
-        'line-height': '1.2'
-    }).on("click", doCheckout).appendTo(".place-order");
-}
-function getEmail() {
-    return jQuery("#billing_email").val();
+    jQuery("#place_order").after(
+        jQuery('<a>注文する</a>').attr({
+            type: 'button',
+            id: 'upfw_checkout',
+            class: 'button wp-element-button',
+        }).css({
+            'width': '100%',
+            'box-sizing': 'border-box',
+            'line-height': '1.2'
+        }).on("click", doCheckout));
+    if(univapay_params.formurl !== '') {
+        jQuery("#place_order").after(
+            jQuery('<a>その他決済</a>').attr({
+                type: 'button',
+                id: 'upfw_optional',
+                class: 'button wp-element-button',
+            }).css({
+                'width': '100%',
+                'box-sizing': 'border-box',
+                'line-height': '1.2'
+            }).on("click", optional));
+    }
 }
 function checkSelect() {
-    jQuery("#place_order").show();
-    jQuery("#upfw_card").remove();
-    jQuery("#upfw_optional").remove();
+    jQuery("#place_order").hide();
+    jQuery("#upfw_checkout").remove();
     if(selected()) {
         render();
     }
-}
-function render() {
-    jQuery("#place_order").hide();
-    if(jQuery('#upfw_order').length !== 0)
-        return;
-    if(univapay_params.formurl !== '') {
-        jQuery('<a>その他決済</a>').attr({
-            type: 'button',
-            id: 'upfw_optional',
-            class: 'button',
-        }).css({
-            'width': '100%',
-            'box-sizing': 'border-box',
-            'line-height': '1.2'
-        }).on("click", optional).appendTo(".place-order");
-        jQuery('<a>カード決済</a>').attr({
-            type: 'button',
-            id: 'upfw_card',
-            class: 'button',
-        }).css({
-            'width': '100%',
-            'box-sizing': 'border-box',
-            'line-height': '1.2'
-        }).on("click", createForm).appendTo(".place-order");
-    } else {
-        createForm();
-    }
-}
-function selected() {
-    return jQuery('#payment_method_upfw').prop('checked');
 }
 function payfororder(e) {
     if(!selected())
