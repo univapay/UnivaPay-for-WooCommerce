@@ -43,7 +43,7 @@ function render() {
     jQuery("#place_order").after(
         jQuery('<a>注文する</a>').attr({
             type: 'button',
-            id: 'upfw_checkout',
+            id: 'upfw_order',
             class: 'button wp-element-button',
         }).css({
             'width': '100%',
@@ -66,6 +66,8 @@ function render() {
 function checkSelect() {
     jQuery("#place_order").hide();
     jQuery("#upfw_checkout").remove();
+    jQuery("#upfw_order").remove();
+    jQuery("#upfw_optional").remove();
     if(selected()) {
         render();
     }
