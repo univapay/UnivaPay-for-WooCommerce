@@ -4,7 +4,7 @@ Tags: credit card, payment request, woocommerce
 Requires at least: 5.4
 Tested up to: 6.1
 Requires PHP: 8.0
-Stable tag: 0.3.4
+Stable tag: 0.3.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
