@@ -70,6 +70,8 @@ function checkSelect() {
     jQuery("#upfw_optional").remove();
     if(selected()) {
         render();
+    } else {
+        jQuery("#place_order").show();
     }
 }
 function payfororder(e) {
