@@ -5,7 +5,7 @@
  * Description: UnivaPayを使用して店舗でクレジットカード決済が可能です。
  * Author: UnivaPay
  * Author URI: https://univapay.com/service/
- * Version: 0.3.5
+ * Version: 0.3.6
  */
 if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
     require __DIR__ . '/vendor/autoload.php';
@@ -319,9 +319,8 @@ function univapay_init_gateway_class() {
             } else {
                 $charge = $client->createCharge($_POST['univapayTokenId'], $money, $capture)->awaitResult();
             }
-            if($charge->status->getValue() === 'pending') {
-                $charge = $charge->awaitResult();
-            }
+            // Sometimes status is not updated
+            $charge = $charge->awaitResult();
             if($charge->error) {
                 wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw').$charge->error["details"], 'error');
                 return;
