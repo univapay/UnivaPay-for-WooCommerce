@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "50a86602fe05bc8117c799bb33abd13c",
+    "content-hash": "2e296ab636ff14a4daded575a3e3bac3",
     "packages": [
         {
             "name": "moneyphp/money",
@@ -94,16 +94,16 @@
         },
         {
             "name": "rmccue/requests",
-            "version": "v2.0.6",
+            "version": "v2.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress/Requests.git",
-                "reference": "7d0f8394ea7846a7086978318c306123118445dc"
+                "reference": "e14a6f4e7438d3f8da3f2657759e6367b906ee23"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress/Requests/zipball/7d0f8394ea7846a7086978318c306123118445dc",
-                "reference": "7d0f8394ea7846a7086978318c306123118445dc",
+                "url": "https://api.github.com/repos/WordPress/Requests/zipball/e14a6f4e7438d3f8da3f2657759e6367b906ee23",
+                "reference": "e14a6f4e7438d3f8da3f2657759e6367b906ee23",
                 "shasum": ""
             },
             "require": {
@@ -171,20 +171,20 @@
                 "issues": "https://github.com/WordPress/Requests/issues",
                 "source": "https://github.com/WordPress/Requests"
             },
-            "time": "2023-04-04T09:01:49+00:00"
+            "time": "2023-06-02T07:35:42+00:00"
         },
         {
             "name": "univapay/php-sdk",
-            "version": "6.2.2",
+            "version": "6.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/univapay/univapay-php-sdk.git",
-                "reference": "b5b2fe3ce8ce23bc43cfd2a01e2999d7ccffb7d1"
+                "reference": "e06916e97823e60b13ff2b4a670a2ca966232485"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/univapay/univapay-php-sdk/zipball/b5b2fe3ce8ce23bc43cfd2a01e2999d7ccffb7d1",
-                "reference": "b5b2fe3ce8ce23bc43cfd2a01e2999d7ccffb7d1",
+                "url": "https://api.github.com/repos/univapay/univapay-php-sdk/zipball/e06916e97823e60b13ff2b4a670a2ca966232485",
+                "reference": "e06916e97823e60b13ff2b4a670a2ca966232485",
                 "shasum": ""
             },
             "require": {
@@ -217,9 +217,9 @@
             ],
             "support": {
                 "issues": "https://github.com/univapay/univapay-php-sdk/issues",
-                "source": "https://github.com/univapay/univapay-php-sdk/tree/6.2.2"
+                "source": "https://github.com/univapay/univapay-php-sdk/tree/6.5.0"
             },
-            "time": "2023-03-02T09:20:29+00:00"
+            "time": "2023-07-14T10:28:55+00:00"
         }
     ],
     "packages-dev": [],

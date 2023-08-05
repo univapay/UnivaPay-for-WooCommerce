@@ -8,6 +8,6 @@
         }
     ],
     "require": {
-        "univapay/php-sdk": "6.2.2"
+        "univapay/php-sdk": "6.5.0"
     }
 }
