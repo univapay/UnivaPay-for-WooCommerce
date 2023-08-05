@@ -21,6 +21,13 @@ services:
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DEBUG: 1
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "4080:8025"
+    volumes:
+      - mailpit:/data
 volumes:
   mariadb:
   wordpress:
+  mailpit:
