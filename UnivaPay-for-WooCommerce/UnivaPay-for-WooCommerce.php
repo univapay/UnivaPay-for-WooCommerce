@@ -136,6 +136,48 @@ function univapay_init_gateway_class() {
     }
     add_action( 'wp', 'maybe_process_redirect_order' );
 	class WC_Univapay_Gateway extends WC_Payment_Gateway {
+        /**
+         * widget URL
+         * @var string
+         */
+        protected $widget;
+
+        /**
+         * API URL
+         * @var string
+         */
+        protected $api;
+
+        /**
+         * token
+         * @var string
+         */
+        protected $token;
+
+        /**
+         * secret
+         * @var string
+         */
+        protected $secret;
+
+        /**
+         * capture
+         * @var
+         */
+        protected $capture;
+
+        /**
+         * status
+         * @var
+         */
+        protected $status;
+
+        /**
+         * formurl
+         * @var string
+         */
+        protected $formurl;
+
  		/**
  		 * Class constructor
  		 */
