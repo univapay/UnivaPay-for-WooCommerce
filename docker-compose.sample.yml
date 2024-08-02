@@ -54,3 +54,4 @@ volumes:
   wp-mariadb:
   wp-wordpress:
   wp-cli-tmp:
+  
