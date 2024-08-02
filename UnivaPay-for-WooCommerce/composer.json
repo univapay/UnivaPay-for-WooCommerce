@@ -1,7 +1,7 @@
 {
     "name": "univapay/checkout",
     "type": "wordpress-plugin",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "authors": [
         {
             "name": "5ym",
