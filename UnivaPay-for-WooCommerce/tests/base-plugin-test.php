@@ -28,13 +28,6 @@ class BasePluginTest extends WP_UnitTestCase {
      */
     public function setUp(): void {
         parent::setUp();
-
         error_reporting(E_ALL);
-
-        if (!is_plugin_active($this->woocommerce_slug))
-            activate_plugin($this->woocommerce_slug);
-
-        if (!is_plugin_active($this->plugin_slug))
-            activate_plugin($this->plugin_slug);
     }
 }

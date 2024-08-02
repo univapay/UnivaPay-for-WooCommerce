@@ -25,8 +25,25 @@ if ( ! file_exists( "{$_tests_dir}/includes/functions.php" ) ) {
 // Give access to tests_add_filter() function.
 require_once "{$_tests_dir}/includes/functions.php";
 
+$plugin_dir = "/tmp/wordpress/wp-content/plugins/";
+
+function _manually_load_plugin($plugin_dir) {
+    require_once $plugin_dir . '/UnivaPay-for-WooCommerce/UnivaPay-for-WooCommerce.php';
+    require_once $plugin_dir . '/woocommerce/woocommerce.php';
+}
+
+tests_add_filter( 'muplugins_loaded', function() use ($plugin_dir) {
+    _manually_load_plugin($plugin_dir);
+});
+
+tests_add_filter( 'setup_theme', function() {
+	// Hook into 'setup_theme' to run the WooCommerce installation
+	// force WooCommerce to install and create the necessary tables
+    WC_Install::install();
+});
+
 // Start up the WP testing environment.
 require_once $_tests_dir . '/includes/bootstrap.php';
 
 // Include the base plugin test class
-require_once '/tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce/tests/base-plugin-test.php';
+require_once $plugin_dir.'/UnivaPay-for-WooCommerce/tests/base-plugin-test.php';
