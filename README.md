@@ -3,8 +3,7 @@ WooCommerce用のUnivaPay導入プラグイン
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-対応するWordPressバージョン: 6.5  
-対応するWooCommerceバージョン: 9.1.4
+[WordPressおよびWooCommerceに関する情報](./UnivaPay-for-WooCommerce/readme.txt)
 
 ## 環境
 

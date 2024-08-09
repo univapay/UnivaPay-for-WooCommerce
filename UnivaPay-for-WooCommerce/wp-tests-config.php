@@ -16,7 +16,6 @@ define('WP_TESTS_FORCE_KNOWN_BUGS', false);
 define('WP_DEBUG', true);
 
 // ** DB settings ** //
-// TODO: change locally for easy setup on CI
 define('DB_NAME', 'wordpress_test');
 define('DB_USER', 'root');
 define('DB_PASSWORD', 'wordpress');

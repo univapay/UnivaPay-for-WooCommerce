@@ -2,12 +2,6 @@
     "name": "univapay/checkout",
     "type": "wordpress-plugin",
     "version": "0.3.7",
-    "authors": [
-        {
-            "name": "5ym",
-            "email": "16yuim@gmail.com"
-        }
-    ],
     "scripts": {
         "init-local": [
             "wp core install --url=http://localhost:3080 --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",

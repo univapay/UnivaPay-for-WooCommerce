@@ -8,7 +8,7 @@ services:
       MYSQL_DATABASE: wordpress
 
   wp:
-    image: wordpress:6.5
+    image: wordpress:latest # 6.6.1
     ports:
       - "3080:80"
     volumes:

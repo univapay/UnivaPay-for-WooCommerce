@@ -3,8 +3,7 @@ UnivaPay Integration Plugin for WooCommerce
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Supported WordPress version: 6.5  
-Supported WooCommerce version: 9.1.4
+[WordPress and WooCommerce related information](./UnivaPay-for-WooCommerce/readme.txt)
 
 ## Environment
 
