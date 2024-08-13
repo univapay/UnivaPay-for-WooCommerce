@@ -1,0 +1,11 @@
+FROM wordpress:cli-php7.4
+
+USER root
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Install SVN, necessary to run install-wp-tests.sh
+RUN apk update && apk add --no-cache subversion
+
+USER www-data

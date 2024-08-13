@@ -1,12 +1,79 @@
-name: Deploy to WordPress.org
 on:
   push:
     tags:
-    - "*"
+      - "*"
+  pull_request:
+    branches:
+      - main
+
 jobs:
-  tag:
-    name: New tag
+  test:
+    strategy:
+      fail-fast: true
+      matrix:
+        php-version: ['7.4', '8.2']
+        wordpress-version: ['6.2.2', 'latest']
+        woocommerce-version: ['8.2.0', '9.1.4']
+        exclude:
+          - wordpress-version: '6.2.2'
+            woocommerce-version: '9.1.4'
+      max-parallel: 2
+    name: Run Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: UnivaPay-for-WooCommerce
+    services:
+      wp-db:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: wordpress
+          MYSQL_DATABASE: wordpress_test
+        options: >-
+          --health-cmd "mysqladmin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache Composer dependencies
+      uses: actions/cache@v2
+      with:
+        path: vendor
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+    - name: Install Composer dependencies
+      run: composer install
+    - name: WP-CLI
+      run: |
+        curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+        chmod +x wp-cli.phar
+        sudo mv wp-cli.phar /usr/local/bin/wp
+    - name: Prep WordPress & plugins environment
+      run: |
+        bin/install-wp-tests.sh wordpress_test root wordpress 127.0.0.1 ${{ matrix.wordpress-version }}
+        cp wp-tests-config.php /tmp/wordpress-tests-lib/wp-tests-config.php
+        wp config create --dbname=wordpress_test --dbuser=root --dbpass=wordpress --dbhost=127.0.0.1 --path=/tmp/wordpress
+        wp core install --url=http://localhost --title=TestWP --admin_user=admin --admin_password=admin --admin_email=test@example.com --path=/tmp/wordpress
+        wp plugin install woocommerce --version=${{ matrix.woocommerce-version }} --activate --path=/tmp/wordpress
+        cp -r . /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce
+        rm -rf /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce/vendor
+    - name: Update wp-tests-config.php
+      run: sed -i "s/define('DB_HOST', .*/define('DB_HOST', '127.0.0.1:3306');/" /tmp/wordpress-tests-lib/wp-tests-config.php
+    - name: Run test
+      run: ./vendor/bin/phpunit --configuration phpunit.xml
+
+  deploy:
+    name: Deploy to WordPress.org
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
     - uses: actions/checkout@master
     - uses: "shivammathur/setup-php@v2"
@@ -15,6 +82,7 @@ jobs:
     - uses: "ramsey/composer-install@v2"
       with:
         working-directory: "UnivaPay-for-WooCommerce"
+        args: "--no-dev"
     - name: WordPress Plugin Deploy
       uses: 10up/action-wordpress-plugin-deploy@stable
       env:

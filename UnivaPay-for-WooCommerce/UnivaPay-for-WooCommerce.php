@@ -5,7 +5,7 @@
  * Description: UnivaPayを使用して店舗でクレジットカード決済が可能です。
  * Author: UnivaPay
  * Author URI: https://univapay.com/service/
- * Version: 0.3.6
+ * Version: 0.3.7
  */
 if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
     require __DIR__ . '/vendor/autoload.php';
@@ -136,6 +136,41 @@ function univapay_init_gateway_class() {
     }
     add_action( 'wp', 'maybe_process_redirect_order' );
 	class WC_Univapay_Gateway extends WC_Payment_Gateway {
+        /**
+         * @var string
+         */
+        protected $widget;
+
+        /**
+         * @var string
+         */
+        protected $api;
+
+        /**
+         * @var string
+         */
+        protected $token;
+
+        /**
+         * @var string
+         */
+        protected $secret;
+
+        /**
+         * @var string (yes|no)
+         */
+        protected $capture;
+
+        /**
+         * @var string
+         */
+        protected $status;
+
+        /**
+         * @var string
+         */
+        protected $formurl;
+
  		/**
  		 * Class constructor
  		 */
