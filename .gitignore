@@ -2,3 +2,4 @@
 node_modules/
 vendor/
 /docker-compose.yml
+dist/

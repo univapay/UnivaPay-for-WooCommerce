@@ -3,7 +3,7 @@ function selected() {
 }
 function doCheckout() {
     // clear before token
-    document.querySelectorAll('[name="univapayTokenId"]').forEach(function(v) {
+    document.querySelectorAll('[name="univapay_token_id"]').forEach(function(v) {
         v.parentNode.removeChild(v);
     });
     var iFrame = document.querySelector("#upfw_checkout iframe");
@@ -19,7 +19,7 @@ function doCheckout() {
 function optional() {
     jQuery('<input>').attr({
         'type': 'hidden',
-        'name': 'univapayOptional',
+        'name': 'univapay_optional',
         'value': 'true'
     }).appendTo('form.woocommerce-checkout');
     jQuery('#place_order').click();
