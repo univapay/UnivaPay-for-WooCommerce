@@ -227,7 +227,8 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
                     '&pendingRedirectUrl='.urlencode($this->get_return_url( $order ))
             );
         }
-        if(!isset($_POST['univapay_token_id']) && !isset($_POST["univapayChargeId"])) {
+
+        if(!isset($_POST['univapayTokenId']) && !isset($_POST['univapay_token_id']) && !isset($_POST["univapayChargeId"])) {
             wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
             return;
         }
@@ -240,9 +241,12 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
         if(isset($_POST["univapayChargeId"])) {
             $charge = $client->getCharge($token->storeId, $_POST["univapayChargeId"]);
         } else {
-            $charge = $client->createCharge($_POST['univapay_token_id'], $money, $capture)->awaitResult();
+            $univapayTokenId = isset($_POST['univapayTokenId']) ? $_POST['univapayTokenId'] : $_POST['univapay_token_id'];
+            $charge = $client->createCharge($univapayTokenId, $money, $capture)->awaitResult();
         }
         // Sometimes status is not updated
+        // TODO: check on why we do this? Maybe decide limit for waiting
+        // if status keep on pending, finish the order with payment waiting for confirmation
         $charge = $charge->awaitResult();
         if($charge->error) {
             wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw').$charge->error["details"], 'error');
@@ -259,7 +263,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
             $order->add_order_note( __('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true );
         }
         // save charge id
-        update_post_meta($order_id, 'univapay_charge_id', $charge->id);
+        update_post_meta($order_id, 'univapayChargeId', $charge->id);
         // Empty cart
         $woocommerce->cart->empty_cart();
         // Redirect to the thank you page

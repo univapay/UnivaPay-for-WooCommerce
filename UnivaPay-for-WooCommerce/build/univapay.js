@@ -3,7 +3,7 @@ function selected() {
 }
 function doCheckout() {
     // clear before token
-    document.querySelectorAll('[name="univapay_token_id"]').forEach(function(v) {
+    document.querySelectorAll('[name="univapayTokenId"]').forEach(function(v) {
         v.parentNode.removeChild(v);
     });
     var iFrame = document.querySelector("#upfw_checkout iframe");

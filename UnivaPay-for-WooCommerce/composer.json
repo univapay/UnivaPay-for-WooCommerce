@@ -7,7 +7,7 @@
             "wp core install --url=http://localhost:3080 --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",
             "wp plugin install woocommerce --activate --path=/var/www/html",
             "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html",
-            "npm ci && npm run build"
+            "composer install && npm ci && npm run build"
         ],
         "test": [
             "rm -rf /tmp/wordpress",
@@ -23,7 +23,7 @@
     },
     "require": {
         "php": ">=7.2",
-        "univapay/php-sdk": "6.2.2"
+        "univapay/php-sdk": "6.6.1"
     },
     "require-dev": {
         "wp-cli/wp-cli-bundle": "^2.10",
