@@ -9,6 +9,8 @@
             "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html",
             "composer install && npm ci && npm run build"
         ],
+        "fix-lint": "phpcbf --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
+        "lint": "phpcs --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
         "test": [
             "rm -rf /tmp/wordpress",
             "bin/install-wp-tests.sh wordpress_test root wordpress wp-db latest",
@@ -28,6 +30,8 @@
     "require-dev": {
         "wp-cli/wp-cli-bundle": "^2.10",
         "phpunit/phpunit": "^8.5",
-        "yoast/phpunit-polyfills": "^2.0"
+        "squizlabs/php_codesniffer": "^3.10",
+        "yoast/phpunit-polyfills": "^2.0",
+        "mockery/mockery": "^1.6"
     }
 }

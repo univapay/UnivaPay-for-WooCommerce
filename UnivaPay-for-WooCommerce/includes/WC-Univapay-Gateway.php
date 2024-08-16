@@ -1,5 +1,6 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) {
+
+if (! defined('ABSPATH')) {
     exit;
 }
 
@@ -9,7 +10,8 @@ use Univapay\Resources\Authentication\AppJWT;
 use Univapay\UnivapayClient;
 use Univapay\UnivapayClientOptions;
 
-class WC_Univapay_Gateway extends WC_Payment_Gateway {
+class WC_Univapay_Gateway extends WC_Payment_Gateway
+{
     /**
     * @var string
     */
@@ -45,14 +47,31 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
     */
     protected $formurl;
 
-    public function __get($name) {
+    /**
+     * @var AppJWT
+     */
+    protected $appJWT;
+
+    /**
+     * @var UnivapayClient
+     */
+    protected $univapayClient;
+
+    /**
+     * @var UnivapayClientOptions
+     */
+    protected $univapayClientOptions;
+
+    public function __get($name)
+    {
         if (property_exists($this, $name)) {
             return $this->$name;
         }
         throw new Exception("Property $name does not exist");
     }
 
-    public function __set($name, $value) {
+    public function __set($name, $value)
+    {
         if (property_exists($this, $name)) {
             $this->$name = $value;
             return;
@@ -63,7 +82,8 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
     /**
     * Class constructor
     */
-    public function __construct() {
+    public function __construct()
+    {
         $this->id = 'upfw'; // payment gateway plugin ID
         $this->icon = ''; // URL of the icon that will be displayed on checkout page near your gateway name
         $this->has_fields = true; // in case you need a custom credit card form
@@ -73,20 +93,24 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
         $this->init_form_fields();
         // Load the settings.
         $this->init_settings();
-        $this->title = $this->get_option( 'title' );
-        $this->description = $this->get_option( 'description' );
-        $this->enabled = $this->get_option( 'enabled' );
-        $this->widget = $this->get_option( 'widget' );
-        $this->api = $this->get_option( 'api' );
-        $this->token = $this->get_option( 'token' );
-        $this->secret = $this->get_option( 'secret' );
-        $this->capture = $this->get_option( 'capture' );
-        $this->status = $this->get_option( 'status' );
-        $this->formurl = $this->get_option( 'formurl' );
+        $this->title = $this->get_option('title');
+        $this->description = $this->get_option('description');
+        $this->enabled = $this->get_option('enabled');
+        $this->widget = $this->get_option('widget');
+        $this->api = $this->get_option('api');
+        $this->token = $this->get_option('token');
+        $this->secret = $this->get_option('secret');
+        $this->capture = $this->get_option('capture');
+        $this->status = $this->get_option('status');
+        $this->formurl = $this->get_option('formurl');
+        $this->appJWT = null;
+        $this->univapayClient = null;
+        $this->univapayClientOptions = new UnivapayClientOptions($this->api);
+
         // This action hook saves the settings
-        add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ));
         // enqueue script and style sheet
-        add_action( 'wp_enqueue_scripts', array( $this, 'payment_scripts' ) );
+        add_action('wp_enqueue_scripts', array( $this, 'payment_scripts' ));
         // You can also register a webhook here
         // add_action( 'woocommerce_api_{webhook name}', array( $this, 'webhook' ) );
     }
@@ -94,7 +118,8 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
     /**
     * Plugin options, we deal with it in Step 3 too
     */
-    public function init_form_fields() {
+    public function init_form_fields()
+    {
         $this->form_fields = array(
             'enabled' => array(
                 'title'       => __('有効/無効', 'upfw'),
@@ -160,24 +185,28 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
                 'description' => '?appIdより前のURLを入力してください。',
                 'default'     => ''
             ),
-        );        
+        );
     }
 
     // enqueue script and style sheet
-    public function payment_scripts() {
-        $univapay_asset_file = include( plugin_dir_path( __DIR__ ) . 'dist/univapay.bundle.asset.php' );
+    public function payment_scripts()
+    {
+        $univapay_asset_file = include(plugin_dir_path(__DIR__) . 'dist/univapay.bundle.asset.php');
 
         // need JavaScript to process a token only on cart/checkout pages
-        if ( ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) )
+        if (! is_cart() && ! is_checkout() && ! isset($_GET['pay_for_order'])) {
             return;
+        }
         // if our payment gateway is disabled, we do not have to enqueue JS too
-        if ( 'no' === $this->enabled )
+        if ('no' === $this->enabled) {
             return;
+        }
         // no reason to enqueue JavaScript if Shop id are not set
-        if ( empty( $this->token ) )
+        if (empty($this->token)) {
             return;
+        }
         // payment processor JavaScript that allows to obtain a token
-        wp_enqueue_script( 'univapay_checkout', $this->widget.'/client/checkout.js', array(), null, true );
+        wp_enqueue_script('univapay_checkout', $this->widget . '/client/checkout.js', array(), null, true);
         // and this is our custom JS in your plugin directory that works with token.js
         wp_enqueue_script(
             'univapay_woocommerce',
@@ -188,79 +217,82 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
         );
         // have to use Shop id to obtain a token
         // TODO: confirm if we are using this order in specific case, as this will always be null
-        $order = wc_get_order( get_query_var( 'order-pay' ) );
-        if($order) $order = $order->get_data();
-        wp_localize_script( 'univapay_woocommerce', 'univapay_params', array(
+        $order = wc_get_order(get_query_var('order-pay'));
+        if ($order) {
+            $order = $order->get_data();
+        }
+        wp_localize_script('univapay_woocommerce', 'univapay_params', array(
             'token' => $this->token,
             'formurl' => $this->formurl,
             'total' => $order ? $order["total"] : null,
             'currency' => $order ? $order["currency"] : null,
             'email' => $order ? $order["billing"]["email"] : null,
             'capture' => $this->capture
-        ) );
+        ));
     }
 
     /*
     * Fields validation
     */
-    public function validate_fields() {
+    public function validate_fields()
+    {
     }
 
     /*
     * We're processing the payments here, everything about
     */
-    public function process_payment( $order_id ) {
-        $order = wc_get_order( $order_id );
+    public function process_payment($order_id)
+    {
+        $order = wc_get_order($order_id);
         $money = new Money($order->get_data()["total"], new Currency($order->get_data()["currency"]));
-        if(isset($_POST['univapay_optional']) && $_POST['univapay_optional'] === 'true') {
+        if (isset($_POST['univapay_optional']) && $_POST['univapay_optional'] === 'true') {
             return array(
                 'result' => 'success',
-                'redirect' => $this->formurl.
-                    '?appId='.$this->token.
-                    '&emailAddress='.$order->get_data()["billing"]["email"].
-                    '&name='.$order->get_data()["billing"]["first_name"].' '.$order->get_data()["billing"]["last_name"].
-                    '&phoneNumber='.$order->get_data()["billing"]["phone"].
-                    '&amount='.$money->getAmount().
-                    '&currency='.$money->getCurrency().
-                    '&successRedirectUrl='.urlencode($this->get_return_url( $order )).
-                    '&failureRedirectUrl='.urlencode($this->get_return_url( $order )).
-                    '&pendingRedirectUrl='.urlencode($this->get_return_url( $order ))
+                'redirect' => $this->formurl .
+                    '?appId=' . $this->token .
+                    '&emailAddress=' . $order->get_data()["billing"]["email"] .
+                    '&name=' . $order->get_data()["billing"]["first_name"] . ' ' . $order->get_data()["billing"]["last_name"] .
+                    '&phoneNumber=' . $order->get_data()["billing"]["phone"] .
+                    '&amount=' . $money->getAmount() .
+                    '&currency=' . $money->getCurrency() .
+                    '&successRedirectUrl=' . urlencode($this->get_return_url($order)) .
+                    '&failureRedirectUrl=' . urlencode($this->get_return_url($order)) .
+                    '&pendingRedirectUrl=' . urlencode($this->get_return_url($order))
             );
         }
 
-        if(!isset($_POST['univapayTokenId']) && !isset($_POST['univapay_token_id']) && !isset($_POST["univapayChargeId"])) {
+        if (!isset($_POST['univapayTokenId']) && !isset($_POST['univapay_token_id']) && !isset($_POST["univapayChargeId"])) {
             wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
             return;
         }
         // charge from charge token
-        $clientOptions = new UnivapayClientOptions($this->api);
-        $token = AppJWT::createToken($this->token, $this->secret);
-        $client = new UnivapayClient($token, $clientOptions);
+        $token = $this->appJWT ? $this->appJWT::createToken($this->token, $this->secret) : AppJWT::createToken($this->token, $this->secret);
+        if ($this->univapayClient === null) {
+            $this->univapayClient = new UnivapayClient($token, $this->univapayClientOptions);
+        }
         $capture = $this->capture === 'yes';
         // pay for order
-        if(isset($_POST["univapayChargeId"])) {
-            $charge = $client->getCharge($token->storeId, $_POST["univapayChargeId"]);
+        if (isset($_POST["univapayChargeId"])) {
+            $charge = $this->univapayClient->getCharge($token->storeId, $_POST["univapayChargeId"]);
         } else {
             $univapayTokenId = isset($_POST['univapayTokenId']) ? $_POST['univapayTokenId'] : $_POST['univapay_token_id'];
-            $charge = $client->createCharge($univapayTokenId, $money, $capture)->awaitResult();
+            $charge = $this->univapayClient->createCharge($univapayTokenId, $money, $capture)->awaitResult();
         }
         // Sometimes status is not updated
-        // TODO: check on why we do this? Maybe decide limit for waiting
-        // if status keep on pending, finish the order with payment waiting for confirmation
         $charge = $charge->awaitResult();
-        if($charge->error) {
-            wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw').$charge->error["details"], 'error');
+        if ($charge->error) {
+            wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw') . $charge->error["details"], 'error');
             return;
         }
         global $woocommerce;
-        if($capture) {
+        if ($capture) {
             $order->payment_complete();
             // add comment for order can see admin panel
-            $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+            $order->add_order_note(__('UnivaPayでの支払が完了いたしました。', 'upfw'), true);
         } else {
             $order->update_status($this->status, __('キャプチャ待ちです', 'upfw'));
             // add comment for order can see admin panel
-            $order->add_order_note( __('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true );
+            $order->add_order_note(__('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true);
         }
         // save charge id
         update_post_meta($order_id, 'univapayChargeId', $charge->id);
@@ -269,13 +301,14 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
         // Redirect to the thank you page
         return array(
             'result' => 'success',
-            'redirect' => $this->get_return_url( $order )
+            'redirect' => $this->get_return_url($order)
         );
     }
 
     /*
     * In case you need a webhook, like PayPal IPN etc
     */
-    public function webhook() {
+    public function webhook()
+    {
     }
 }

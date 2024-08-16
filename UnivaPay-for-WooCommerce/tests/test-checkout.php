@@ -1,8 +1,15 @@
 <?php
 
-class TestCheckout extends BasePluginTest {
+namespace Univapay\WooCommerce\Tests;
 
-    function setUp(): void {
+use WC_Customer;
+use WC_Product_Simple;
+use WC_Session_Handler;
+
+class TestCheckout extends BasePluginTest
+{
+    public function setUp(): void
+    {
         parent::setUp();
         $payment_gateways = WC()->payment_gateways()->payment_gateways();
         if (isset($payment_gateways['upfw'])) {
@@ -26,25 +33,35 @@ class TestCheckout extends BasePluginTest {
         WC()->customer = new WC_Customer(get_current_user_id(), true);
     }
 
-    function test_custom_payment_gateway_displayed_on_classic_checkout() {
+    public function test_custom_payment_gateway_displayed_on_classic_checkout()
+    {
         ob_start();
         wc_get_template('checkout/payment.php', array(
             'checkout' => WC()->checkout(),
             'available_gateways' => WC()->payment_gateways()->get_available_payment_gateways(),
-            'order_button_text' => __( 'Place order', 'woocommerce' ),
+            'order_button_text' => __('Place order', 'woocommerce'),
         ));
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('id="payment_method_upfw"', $output, 'Custom payment gateway "upfw" is not displayed on the checkout page.');
+        $this->assertStringContainsString(
+            'id="payment_method_upfw"',
+            $output,
+            'Custom payment gateway "upfw" is not displayed on the checkout page.'
+        );
     }
 
-    function test_custom_payment_gateway_displayed_on_block_checkout() {
+    public function test_custom_payment_gateway_displayed_on_block_checkout()
+    {
         update_option('woocommerce_blocks_checkout_enabled', 'yes');
 
         ob_start();
         do_action('woocommerce_blocks_checkout_page');
         $output = ob_get_clean();
 
-        $this->assertStringNotContainsString('id="payment_method_upfw"', $output, 'Custom payment gateway "upfw" is not displayed on the checkout page.');
+        $this->assertStringNotContainsString(
+            'id="payment_method_upfw"',
+            $output,
+            'Custom payment gateway "upfw" is not displayed on the checkout page.'
+        );
     }
 }

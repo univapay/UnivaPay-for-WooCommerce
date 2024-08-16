@@ -1,4 +1,9 @@
 <?php
+
+namespace Univapay\WooCommerce\Tests;
+
+use WP_UnitTestCase;
+
 /**
  * Class BasePluginTest
  *
@@ -8,7 +13,8 @@
 /**
  * Base test case for plugin tests.
  */
-class BasePluginTest extends WP_UnitTestCase {
+class BasePluginTest extends WP_UnitTestCase
+{
     /**
      * Plugin path.
      *
@@ -26,7 +32,8 @@ class BasePluginTest extends WP_UnitTestCase {
     /**
      * Set up the test environment.
      */
-    public function setUp(): void {
+    public function setUp(): void
+    {
         parent::setUp();
         error_reporting(E_ALL);
     }

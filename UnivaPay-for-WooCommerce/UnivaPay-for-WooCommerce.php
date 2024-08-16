@@ -7,7 +7,8 @@
  * Author URI: https://univapay.com/service/
  * Version: 0.3.7
  */
-if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
+
+if (is_readable(__DIR__ . '/vendor/autoload.php')) {
     require __DIR__ . '/vendor/autoload.php';
 }
 
@@ -18,54 +19,61 @@ use Univapay\UnivapayClientOptions;
 /*
  * The class itself, please note that it is inside plugins_loaded action hook
  */
-add_action( 'plugins_loaded', 'univapay_init_gateway_class' );
-function univapay_init_gateway_class() {
-    if ( !class_exists( 'WC_Payment_Gateway' ) ) return;
+add_action('plugins_loaded', 'univapay_init_gateway_class');
+function univapay_init_gateway_class()
+{
+    if (!class_exists('WC_Payment_Gateway')) {
+        return;
+    }
 
-    require_once plugin_dir_path( __FILE__ ) . 'includes/WC-Univapay-Gateway.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/WC-Univapay-Gateway.php';
 
-    add_filter( 'woocommerce_payment_gateways', 'univapay_add_gateway_class' );
-    add_action( 'woocommerce_blocks_loaded', 'univapay_register_order_approval_payment_method_type' );
-    add_action( 'add_meta_boxes', 'add_custom_boxes' );
+    add_filter('woocommerce_payment_gateways', 'univapay_add_gateway_class');
+    add_action('woocommerce_blocks_loaded', 'univapay_register_order_approval_payment_method_type');
+    add_action('add_meta_boxes', 'add_custom_boxes');
 
     /*
     * This action hook registers our PHP class as a WooCommerce payment gateway
     */
-    function univapay_add_gateway_class( $gateways ) {
+    function univapay_add_gateway_class($gateways)
+    {
         $gateways[] = 'WC_Univapay_Gateway';
         return $gateways;
     }
 
     // order詳細画面にunivapayのステータスを表示する
-    function add_custom_boxes() {
+    function add_custom_boxes()
+    {
         global $post;
         $paymentMethod = get_post_meta($post->ID, '_payment_method');
-        if(empty($paymentMethod) || $paymentMethod[0] !== 'upfw')
+        if (empty($paymentMethod) || $paymentMethod[0] !== 'upfw') {
             return;
-        add_meta_box( 'univapay_status_box', __( 'UnivaPayステータス' ), 'custom_metabox_content', 'shop_order', 'side', 'default');
+        }
+        add_meta_box('univapay_status_box', __('UnivaPayステータス'), 'custom_metabox_content', 'shop_order', 'side', 'default');
     }
 
-    function custom_metabox_content($post) {
+    function custom_metabox_content($post)
+    {
         $settings = WC()->payment_gateways->payment_gateways()['upfw'];
         $clientOptions = new UnivapayClientOptions($settings->get_option('api'));
         $token = AppJWT::createToken($settings->get_option('token'), $settings->get_option('secret'));
         $client = new UnivapayClient($token, $clientOptions);
         $chargeId = get_post_meta($post->ID, 'univapay_charge_id');
-        if(!$chargeId) {
+        if (!$chargeId) {
             echo 'UnivaPayで決済を試みましたが、決済が完了していません。';
             return;
         }
         $charge = $client->getCharge($token->storeId, $chargeId[0]);
         // get ajax
         $data = json_decode(file_get_contents('php://input'), true);
-        if(isset($data['univapay_update'])) {
-            $order = wc_get_order( $post );
+        if (isset($data['univapay_update'])) {
+            $order = wc_get_order($post);
             switch ($data['univapay_update']) {
                 case 'capture':
                     $charge->capture();
                     $order->payment_complete();
                     // add comment for order can see admin panel
-                    $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+                    $order->add_order_note(__('UnivaPayでの支払が完了いたしました。', 'upfw'), true);
                     break;
                 default:
                     break;
@@ -73,7 +81,7 @@ function univapay_init_gateway_class() {
             $order->save();
         }
 
-        echo '<h4>ステータス: '.$charge->status->getValue().'</h4>';
+        echo '<h4>ステータス: ' . $charge->status->getValue() . '</h4>';
         switch ($charge->status->getValue()) {
             case 'authorized':
                 echo '<button type="button" class="button button-primary" onclick="update(event)" value="capture">キャプチャ</button>';
@@ -103,35 +111,36 @@ function univapay_init_gateway_class() {
 
     // for EC form redirect
     // TODO: should check if univapayChargeId is valid
-    function maybe_process_redirect_order() {
-        if ( ! is_order_received_page() || empty( $_GET['univapayChargeId'] ) ) {
+    function maybe_process_redirect_order()
+    {
+        if (! is_order_received_page() || empty($_GET['univapayChargeId'])) {
             return;
         }
-        try{
+        try {
             global $wp;
             $order_id = absint($wp->query_vars['order-received']);
-            $order = wc_get_order( $order_id );
+            $order = wc_get_order($order_id);
             $settings = WC()->payment_gateways->payment_gateways()['upfw'];
             $clientOptions = new UnivapayClientOptions($settings->get_option('api'));
             $token = AppJWT::createToken($settings->get_option('token'), $settings->get_option('secret'));
             $client = new UnivapayClient($token, $clientOptions);
             $charge = $client->getCharge($token->storeId, $_GET['univapayChargeId']);
-            if($charge->error) {
-                wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw').$charge->error["details"], 'error');
-                wp_safe_redirect( wc_get_checkout_url() );
+            if ($charge->error) {
+                wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw') . $charge->error["details"], 'error');
+                wp_safe_redirect(wc_get_checkout_url());
                 exit;
             }
             $capture = $settings->get_option('capture') === 'yes';
             $paymentType = $client->getTransactionToken($charge->transactionTokenId)->paymentType->getValue();
             global $woocommerce;
-            if($capture || !in_array($paymentType, ['card', 'paidy'])) {
+            if ($capture || !in_array($paymentType, ['card', 'paidy'])) {
                 $order->payment_complete();
                 // add comment for order can see admin panel
-                $order->add_order_note( __('UnivaPayでの支払が完了いたしました。', 'upfw'), true );
+                $order->add_order_note(__('UnivaPayでの支払が完了いたしました。', 'upfw'), true);
             } else {
                 $order->update_status('on-hold', __('キャプチャ待ちです', 'upfw'));
                 // add comment for order can see admin panel
-                $order->add_order_note( __('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true );
+                $order->add_order_note(__('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true);
             }
             // save charge id
             update_post_meta($order_id, 'univapay_charge_id', $charge->id);
@@ -139,25 +148,26 @@ function univapay_init_gateway_class() {
             $woocommerce->cart->empty_cart();
         } catch (\Exception $e) {
             wc_add_notice(__('決済エラーサイト管理者にお問合せください', 'upfw'), 'error');
-            wp_safe_redirect( wc_get_checkout_url() );
+            wp_safe_redirect(wc_get_checkout_url());
             exit;
         }
     }
-    add_action( 'wp', 'maybe_process_redirect_order' );
+    add_action('wp', 'maybe_process_redirect_order');
 
     /**
      * Register univapay gateway block support
      */
-    function univapay_register_order_approval_payment_method_type() {
-        if ( ! class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+    function univapay_register_order_approval_payment_method_type()
+    {
+        if (! class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
             return;
         }
 
-        require_once plugin_dir_path( __FILE__ ) . 'includes/WC-Univapay-Gateway-Blocks-Support.php';
+        require_once plugin_dir_path(__FILE__) . 'includes/WC-Univapay-Gateway-Blocks-Support.php';
         add_action(
             'woocommerce_blocks_payment_method_type_registration',
-            function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
-                $payment_method_registry->register( new WC_Univapay_Gateway_Blocks_Support() );
+            function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+                $payment_method_registry->register(new WC_Univapay_Gateway_Blocks_Support());
             }
         );
     }
