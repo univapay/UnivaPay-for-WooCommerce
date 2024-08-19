@@ -29,7 +29,6 @@ WooCommerce用のUnivaPay導入プラグイン
 
 3. ローカル環境を初期化するために、以下のコマンドを一度実行します（WordPress、WooCommerce、およびUnivapayプラグインのインストール）:
     ```sh
-    docker compose run --rm wp-cli composer install
     docker compose run --rm wp-cli composer init-local
     ```
 
