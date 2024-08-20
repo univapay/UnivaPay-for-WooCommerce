@@ -2,7 +2,7 @@ const path = require('path');
 const glob = require('glob');
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const WooCommerceDependencyExtractionWebpackPlugin = require('@woocommerce/dependency-extraction-webpack-plugin');
-// const webpack = require('webpack');
+const webpack = require('webpack');
 
 const wcDepMap = {
     '@woocommerce/blocks-registry': ['wc', 'wcBlocksRegistry'],
@@ -40,20 +40,16 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].bundle.js',
     },
-    // devServer: {
-    // 	static: {
-    // 		directory: buildDir,
-    // 	},
-    // 	hot: true,
-    // 	port: 9000,
-    // 	proxy: [
-    // 		{
-    // 			context: ['/'],
-    // 			target: 'http://localhost:3080',
-    // 			changeOrigin: true
-    // 		}
-    // 	]
-    // },
+    devServer: {
+        static: {
+            directory: buildDir,
+        },
+        hot: true,
+        port: 3081,
+        devMiddleware: {
+            writeToDisk: true,
+        },
+    },
     plugins: [
         ...defaultConfig.plugins.filter(
             (plugin) =>
@@ -63,6 +59,6 @@ module.exports = {
             requestToExternal,
             requestToHandle
         }),
-        // new webpack.HotModuleReplacementPlugin(),
+        new webpack.HotModuleReplacementPlugin(),
     ]
 };

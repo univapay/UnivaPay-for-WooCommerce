@@ -13,7 +13,7 @@ services:
     build: .
     ports:
       - "3080:80"
-      - "3081:9000"
+      - "3081:3081"
     volumes:
       - wp-wordpress:/var/www/html
       - ./UnivaPay-for-WooCommerce:/var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce
@@ -27,7 +27,6 @@ services:
       WORDPRESS_DEBUG: 1
       WORDPRESS_DEBUG_LOG: 1
       WORDPRESS_DEBUG_DISPLAY: 1
-      WP_UNIVAPAY_MODE: development
 
 volumes:
   wp-mariadb:

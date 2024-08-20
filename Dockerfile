@@ -21,4 +21,6 @@ RUN apt-get update && \
     # Clean up
     rm -rf /var/lib/apt/lists/*
 
-EXPOSE 80 9000
+RUN chmod -R 755 /var/www/html
+
+EXPOSE 80 3081

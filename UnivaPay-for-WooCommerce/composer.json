@@ -7,7 +7,7 @@
             "wp core install --url=http://localhost:3080 --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html --allow-root",
             "wp plugin install woocommerce --activate --path=/var/www/html --allow-root",
             "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html --allow-root",
-            "composer install && npm ci && npm run build"
+            "composer install && npm ci"
         ],
         "fix-lint": "phpcbf --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
         "lint": "phpcs --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
