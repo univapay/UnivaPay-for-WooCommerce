@@ -4,9 +4,9 @@
     "version": "0.3.7",
     "scripts": {
         "init-local": [
-            "wp core install --url=http://localhost:3080 --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",
-            "wp plugin install woocommerce --activate --path=/var/www/html",
-            "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html",
+            "wp core install --url=http://localhost:3080 --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html --allow-root",
+            "wp plugin install woocommerce --activate --path=/var/www/html --allow-root",
+            "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html --allow-root",
             "composer install && npm ci && npm run build"
         ],
         "fix-lint": "phpcbf --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
@@ -15,9 +15,9 @@
             "rm -rf /tmp/wordpress",
             "bin/install-wp-tests.sh wordpress_test root wordpress wp-db latest",
             "cp wp-tests-config.php /tmp/wordpress-tests-lib/wp-tests-config.php",
-            "wp config create --dbname=wordpress_test --dbuser=root --dbpass=wordpress --dbhost=wp-db --path=/tmp/wordpress",
-            "wp core install --url=http://localhost --title=TestWP --admin_user=admin --admin_password=admin --admin_email=test@example.com --path=/tmp/wordpress",
-            "wp plugin install woocommerce --activate --path=/tmp/wordpress",
+            "wp config create --dbname=wordpress_test --dbuser=root --dbpass=wordpress --dbhost=wp-db --path=/tmp/wordpress --allow-root",
+            "wp core install --url=http://localhost --title=TestWP --admin_user=admin --admin_password=admin --admin_email=test@example.com --path=/tmp/wordpress --allow-root",
+            "wp plugin install woocommerce --activate --path=/tmp/wordpress --allow-root",
             "cp -r . /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce",
             "rm -rf /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce/vendor",
             "phpunit"
