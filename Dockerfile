@@ -21,6 +21,9 @@ RUN apt-get update && \
     # Clean up
     rm -rf /var/lib/apt/lists/*
 
+# change user to www-data, as apache runs as www-data
+RUN chown -R www-data /var/www
 RUN chmod -R 755 /var/www/html
+USER www-data
 
 EXPOSE 80 3081
