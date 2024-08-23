@@ -34,10 +34,12 @@ function render() {
     }));
     jQuery('<span></span>').attr({
         'data-app-id': univapay_params.token,
-        'data-checkout': "token",
-        'data-token-type': "one_time",
-        'data-inline': true,
+        'data-checkout': "payment",
         'data-email': getEmail(),
+        'data-amount': univapay_params.total,
+        'data-capture': univapay_params.capture,
+        'data-currency': univapay_params.currency,
+        'data-inline': true,
         'data-inline-item-style': 'padding: 0 2px',
     }).appendTo("#upfw_checkout");
     jQuery("#place_order").after(
@@ -81,9 +83,10 @@ function payfororder(e) {
     var checkout = UnivapayCheckout.create({
         appId: univapay_params.token,
         checkout: 'payment',
-        amount: univapay_params.total,
-        currency: univapay_params.currency,
         email: univapay_params.email,
+        amount: univapay_params.total,
+        capture: univapay_params.capture,
+        currency: univapay_params.currency,
         onSuccess: (result) => {
             jQuery('<input>').attr({
                 'type': 'hidden',

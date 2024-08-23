@@ -47,12 +47,16 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
 
     public function get_payment_method_data()
     {
+        // NOTE: Avoid using the cart's order price for the widget
+        // as it may change during the checkout process (e.g., due to coupons)
         return [
             'title' => $this->gateway->get_title(),
             'description' => $this->gateway->get_description(),
             'support' => array_filter($this->gateway->supports, [ $this->gateway, 'supports' ]),
             'token' => $this->gateway->token,
-            'formUrl' => $this->gateway->formurl
+            'capture' => $this->gateway->capture === 'yes',
+            'currency' => strtolower(get_woocommerce_currency()),
+            'formUrl' => $this->gateway->formurl,
         ];
     }
 }

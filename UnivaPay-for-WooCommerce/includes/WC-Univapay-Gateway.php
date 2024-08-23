@@ -221,13 +221,14 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         if ($order) {
             $order = $order->get_data();
         }
+
         wp_localize_script('univapay_woocommerce', 'univapay_params', array(
             'token' => $this->token,
             'formurl' => $this->formurl,
             'total' => $order ? $order["total"] : null,
-            'currency' => $order ? $order["currency"] : null,
-            'email' => $order ? $order["billing"]["email"] : null,
-            'capture' => $this->capture
+            'capture' => $this->capture === 'yes' ? true : false,
+            'currency' => strtolower(get_woocommerce_currency()),
+            'email' => $order ? $order["billing"]["email"] : null
         ));
     }
 
@@ -244,6 +245,8 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);
+        $capture = $this->capture === 'yes';
+
         $money = new Money($order->get_data()["total"], new Currency($order->get_data()["currency"]));
         if (isset($_POST['univapay_optional']) && $_POST['univapay_optional'] === 'true') {
             return array(
@@ -253,6 +256,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                     '&emailAddress=' . $order->get_data()["billing"]["email"] .
                     '&name=' . $order->get_data()["billing"]["first_name"] . ' ' . $order->get_data()["billing"]["last_name"] .
                     '&phoneNumber=' . $order->get_data()["billing"]["phone"] .
+                    '&auth=' . $capture ? 'false' : 'true' . # auth: true = authorize, false = capture
                     '&amount=' . $money->getAmount() .
                     '&currency=' . $money->getCurrency() .
                     '&successRedirectUrl=' . urlencode($this->get_return_url($order)) .
@@ -261,29 +265,12 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             );
         }
 
-        if (!isset($_POST['univapayTokenId']) && !isset($_POST['univapay_token_id']) && !isset($_POST["univapayChargeId"])) {
+        if (!isset($_POST["univapayChargeId"]) && !isset($_POST["univapay_charge_id"])) {
             wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
             return;
         }
-        // charge from charge token
-        $token = $this->appJWT ? $this->appJWT::createToken($this->token, $this->secret) : AppJWT::createToken($this->token, $this->secret);
-        if ($this->univapayClient === null) {
-            $this->univapayClient = new UnivapayClient($token, $this->univapayClientOptions);
-        }
-        $capture = $this->capture === 'yes';
-        // pay for order
-        if (isset($_POST["univapayChargeId"])) {
-            $charge = $this->univapayClient->getCharge($token->storeId, $_POST["univapayChargeId"]);
-        } else {
-            $univapayTokenId = isset($_POST['univapayTokenId']) ? $_POST['univapayTokenId'] : $_POST['univapay_token_id'];
-            $charge = $this->univapayClient->createCharge($univapayTokenId, $money, $capture)->awaitResult();
-        }
-        // Sometimes status is not updated
-        $charge = $charge->awaitResult();
-        if ($charge->error) {
-            wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw') . $charge->error["details"], 'error');
-            return;
-        }
+        $chargeId = isset($_POST["univapayChargeId"]) ? $_POST["univapayChargeId"] : $_POST["univapay_charge_id"];
+
         global $woocommerce;
         if ($capture) {
             $order->payment_complete();
@@ -295,7 +282,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             $order->add_order_note(__('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true);
         }
         // save charge id
-        update_post_meta($order_id, 'univapayChargeId', $charge->id);
+        update_post_meta($order_id, 'univapayChargeId', $chargeId);
         // Empty cart
         $woocommerce->cart->empty_cart();
         // Redirect to the thank you page

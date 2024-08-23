@@ -1,8 +1,9 @@
 import { __ } from '@wordpress/i18n';
-import { registerPaymentMethod, registerCheckoutBlock } from '@woocommerce/blocks-registry';
+import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 import { decodeEntities } from '@wordpress/html-entities';
 import { getSetting } from '@woocommerce/settings';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { useSelect } from '@wordpress/data';
 
 const settings = getSetting( 'upfw_data', {} );
 
@@ -27,16 +28,12 @@ const Content = (props) => {
     const { eventRegistration, emitResponse } = props;
     const { onPaymentSetup } = eventRegistration;
     const univapayOptionalRef = useRef('false');
-    const univapayTokenIdRef = useRef('');
+    const univapayChargeIdRef = useRef('');
 
     const redirectToUnivapay = () => {
         univapayOptionalRef.current = 'true';
         jQuery('button.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.contained').click();
     }
-
-    const isUnivapayGatewaySelected = () => {
-        return jQuery('input[name="radio-control-wc-payment-method-options"]:checked').val() === 'upfw';
-    };
 
     const removeUnivapay = () => {
         jQuery('#upfw_checkout').remove();
@@ -52,7 +49,12 @@ const Content = (props) => {
         return jQuery('button.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.contained');
     }
 
-    const initializeUnivapay = (params) => {
+    const totalOrder = useSelect((select) => {
+        const store = select('wc/store/cart');
+        return store.getCartTotals() ? store.getCartTotals().total_price : 0;
+    });
+
+    const initializeUnivapay = (params) => {        
         removeUnivapay();
         getPalaceOrderButton().hide();
     
@@ -64,10 +66,12 @@ const Content = (props) => {
     
         jQuery('<span></span>').attr({
             'data-app-id': params.appId,
-            'data-checkout': "token",
-            'data-token-type': "one_time",
-            'data-inline': true,
+            'data-checkout': "payment",
             'data-email': getEmail(),
+            'data-amount': totalOrder, 
+            'data-capture': params.capture,
+            'data-currency': params.currency,
+            'data-inline': true,
             'data-inline-item-style': 'padding: 0 2px',
         }).appendTo("#upfw_checkout");
         
@@ -97,7 +101,7 @@ const Content = (props) => {
         UnivapayCheckout.submit(iFrame)
             .then((res) => {
                 univapayOptionalRef.current = 'false';
-                univapayTokenIdRef.current = res.token;
+                univapayChargeIdRef.current = res.charge;
                 getPalaceOrderButton().click();
             })
             .catch((errors) => {
@@ -110,22 +114,29 @@ const Content = (props) => {
         const params = {
 			appId: settings.token,
             checkout: 'payment',
+            capture: settings.capture,
+            currency: settings.currency,
             formUrl: settings.formUrl,
         };
-        jQuery(document).ready(function ($) {    
+
+        const isUnivapayGatewaySelected = () => {
+            return jQuery('input[name="radio-control-wc-payment-method-options"]:checked').val() === 'upfw';
+        };
+
+        const updateUnivapay = () => {
             if (isUnivapayGatewaySelected()) {
                 initializeUnivapay(params);
+            } else {
+                removeUnivapay();
+                getPalaceOrderButton().show();
             }
+        }
 
-            jQuery('#payment-method').on('change', function () {
-                if (isUnivapayGatewaySelected()) {                   
-                    initializeUnivapay(params);
-                } else {
-                    removeUnivapay();
-                    getPalaceOrderButton().show();
-                }
-            });
+        jQuery(document).ready(function ($) {    
+            updateUnivapay();
+            jQuery('#payment-method').on('change', updateUnivapay);
         });
+        
         // this is a workaround to pass the univapay state to the server side
         // ref: https://github.com/woocommerce/woocommerce-blocks/blob/62243e1731a0773f51b81fb8406ebc2e8b180b40/docs/internal-developers/block-client-apis/checkout/checkout-api.md#passing-a-value-from-the-client-through-to-server-side-payment-processing
         onPaymentSetup( async() => {
@@ -134,12 +145,12 @@ const Content = (props) => {
                 meta: {
                     paymentMethodData: {
                         'univapay_optional' : univapayOptionalRef.current,
-                        'univapay_token_id': univapayTokenIdRef.current,
+                        'univapay_charge_id': univapayChargeIdRef.current,
                     }
                 },
             }
         });
-    }, []);
+    }, [totalOrder]);
 
     return decodeEntities(settings.description || '');
 };
