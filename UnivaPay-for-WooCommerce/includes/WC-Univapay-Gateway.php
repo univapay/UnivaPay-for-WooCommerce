@@ -256,7 +256,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                     '&emailAddress=' . $order->get_data()["billing"]["email"] .
                     '&name=' . $order->get_data()["billing"]["first_name"] . ' ' . $order->get_data()["billing"]["last_name"] .
                     '&phoneNumber=' . $order->get_data()["billing"]["phone"] .
-                    '&auth=' . $capture ? 'false' : 'true' . # auth: true = authorize, false = capture
+                    '&auth=' . ($capture ? 'false' : 'true') . # auth: true = authorize, false = capture
                     '&amount=' . $money->getAmount() .
                     '&currency=' . $money->getCurrency() .
                     '&successRedirectUrl=' . urlencode($this->get_return_url($order)) .

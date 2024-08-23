@@ -2,136 +2,79 @@
 
 namespace Univapay\WooCommerce\Tests;
 
-use Univapay\UnivapayClient;
-use Univapay\Resources\Charge;
-use WC_Univapay_Gateway;
-use WC_Product_Simple;
-use Mockery;
+use Money\Money;
+use Money\Currency;
 
 class TestPaymentProcessing extends BasePluginTest
 {
-    /**
-     * @var WC_Product_Simple
-     */
-    private $product;
-
-    /**
-     * @var WC_Order
-     */
-    private $order;
-
-    /**
-     * @var WC_Univapay_Gateway
-     */
-    private $payment_gateways;
-
-    public function setUp(): void
+    public function test_redirect_url_is_generated_correctly()
     {
-        parent::setUp();
-        $this->product = $this->initiate_mock_product();
-        $this->order = $this->initiate_mock_order($this->product);
-        $this->payment_gateways = $this->initiate_mock_gateways();
+        $order = $this->initiate_mock_order($this->initiate_mock_product());
+        $_POST['univapay_optional'] = 'true';
+        $result = $this->payment_gateways['upfw']->process_payment($order->get_id());
+        $money = new Money($order->get_data()["total"], new Currency($order->get_data()["currency"]));
+
+        $expectedRedirectUrl = $this->payment_gateways['upfw']->formurl .
+            '?appId=' . $this->payment_gateways['upfw']->token .
+            '&emailAddress=' . $order->get_billing_email() .
+            '&name=' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() .
+            '&phoneNumber=' . $order->get_billing_phone() .
+            '&auth=' . ($this->payment_gateways['upfw']->capture === 'yes' ? 'false' : 'true') .
+            '&amount=' . $money->getAmount() .
+            '&currency=' . $money->getCurrency() .
+            '&successRedirectUrl=' . urlencode($this->payment_gateways['upfw']->get_return_url($order)) .
+            '&failureRedirectUrl=' . urlencode($this->payment_gateways['upfw']->get_return_url($order)) .
+            '&pendingRedirectUrl=' . urlencode($this->payment_gateways['upfw']->get_return_url($order));
+
+        $this->assertEquals("success", $result['result'], 'Result does not match.');
+        $this->assertEquals($expectedRedirectUrl, $result['redirect'], 'Redirect URL does not match.');
     }
 
-    /**
-     * Initiates a mock product.
-     *
-     * @return WC_Product_Simple The initiated mock product.
-     */
-    private function initiate_mock_product()
+    public function test_process_payment()
     {
-        $product = new WC_Product_Simple();
-        $product->set_name('Test Product');
-        $product->set_price(1000);
-        $product->set_regular_price(1000);
-        $product->set_sku('test-product');
-        $product->save();
-        return $product;
-    }
+        // Scenario 1: no univapay charge token
+        $this->payment_gateways['upfw']->capture = 'no';
+        $_POST['univapay_optional'] = "false";
 
-    /**
-     * Initiates a mock order.
-     *
-     * @param WC_Product_Simple $product The product to be added to the order.
-     * @return WC_Order The initiated mock order.
-     */
-    private function initiate_mock_order($product)
-    {
-        $order = wc_create_order();
-        $order->add_product(wc_get_product($product->get_id()), 1);
-        $order->set_payment_method('upfw');
-        $order->calculate_totals();
-        return $order;
-    }
+        $order1 = $this->initiate_mock_order($this->initiate_mock_product());
+        $result1 = $this->payment_gateways['upfw']->process_payment($order1->get_id());
 
-    /**
-     * Initializes the payment gateways with mock data.
-     *
-     * @return array The initialized payment gateways.
-     */
-    private function initiate_mock_gateways()
-    {
-        $chargeMock = Mockery::mock(Charge::class);
-        $chargeMock->shouldReceive('awaitResult')
-            ->andReturn((object) [
-                'error' => false,
-                'id' => 'test_charge_id'
-            ]);
-
-        $appJWTMock = Mockery::mock('alias:AppJWT');
-        $appJWTMock->shouldReceive('createToken')
-            ->andReturn((object) [
-                'storeId' => 'mock_store_id',
-                'token' => 'mock_token'
-            ]);
-
-        $univapayClientMock = Mockery::mock(UnivapayClient::class);
-        $univapayClientMock->shouldReceive('createCharge')
-            ->andReturn($chargeMock);
-        $univapayClientMock->shouldReceive('getCharge')
-            ->andReturn($chargeMock);
-
-        $payment_gateways = WC()->payment_gateways()->payment_gateways();
-        $payment_gateways['upfw'] = new WC_Univapay_Gateway();
-        $payment_gateways['upfw']->appJWT = $appJWTMock;
-        $payment_gateways['upfw']->univapayClient = $univapayClientMock;
-        $payment_gateways['upfw']->capture = 'yes';
-        $payment_gateways['upfw']->enabled = 'yes';
-        $payment_gateways['upfw']->status = 'processing';
-
-        return $payment_gateways;
-    }
-
-    public function test_missing_token()
-    {
-        $result = $this->payment_gateways['upfw']->process_payment($this->order->get_id());
-        $this->assertNull($result);
+        $this->assertNull($result1);
         $error_messages = array_column(wc_get_notices('error'), 'notice');
         $this->assertContains('決済エラーサイト管理者にお問い合わせください。', $error_messages);
-    }
 
-    public function test_payment_processing()
-    {
-        $_POST['univapayTokenId'] = 'mock_token_id';
-        $_POST['univapayChargeId'] = 'mock_charge_id';
-        $result = $this->payment_gateways['upfw']->process_payment($this->order->get_id());
-        $this->assertEquals('success', $result['result'], 'Payment processing did not return success.');
-        $this->assertStringContainsString(
-            'order-received=' . $this->order->get_id(),
-            $result['redirect'],
-            'Order received ID does not match.'
-        );
-        $this->assertStringContainsString(
-            'key=' . $this->order->get_order_key(),
-            $result['redirect'],
-            'Order key does not match.'
-        );
+        // Scenario 2: capture is 'no'
+        $this->payment_gateways['upfw']->capture = 'no';
+        $_POST['univapay_optional'] = "false";
+        $_POST['univapay_charge_id'] = $this->faker->word;
 
-        $orderResult = wc_get_order($this->order->get_id());
-        $this->assertEquals(
-            $this->payment_gateways['upfw']->status,
-            $orderResult->get_status(),
-            'Order status is not "' . $this->payment_gateways['upfw']->status . '" after payment.'
-        );
+        $order2 = $this->initiate_mock_order($this->initiate_mock_product());
+        $result2 = $this->payment_gateways['upfw']->process_payment($order2->get_id());
+
+        $result_order2 = wc_get_order($order2->get_id());
+        $result_order2_notes = wc_get_order_notes(['order_id' => $order2->get_id()]);
+
+        $this->assertEquals('success', $result2['result'], 'Payment processing did not return success.');
+        $this->assertStringContainsString('order-received=' . $order2->get_id(), $result2['redirect'], 'Redirect URL does not contain order-received.');
+        $this->assertStringContainsString('key=' . $order2->get_order_key(), $result2['redirect'], 'Redirect URL does not contain key.');
+        $this->assertEquals($this->payment_gateways['upfw']->status, $result_order2->get_status(), 'Order status does not match the expected status.');
+        $this->assertContains('UnivaPayでのオーソリが完了いたしました。', array_column($result_order2_notes, 'content'), 'Order note does not contain expected authorization message.');
+
+        // Scenario 3: capture is 'yes'
+        $this->payment_gateways['upfw']->capture = 'yes';
+        $_POST['univapay_optional'] = "false";
+        $_POST['univapay_charge_id'] = $this->faker->word;
+
+        $order3 = $this->initiate_mock_order($this->initiate_mock_product());
+        $result3 = $this->payment_gateways['upfw']->process_payment($order3->get_id());
+
+        $result_order3 = wc_get_order($order3->get_id());
+        $result_order3_notes = wc_get_order_notes(['order_id' => $order3->get_id()]);
+
+        $this->assertEquals('success', $result3['result'], 'Payment processing did not return success.');
+        $this->assertStringContainsString('order-received=' . $order3->get_id(), $result3['redirect'], 'Redirect URL does not contain order-received.');
+        $this->assertStringContainsString('key=' . $order3->get_order_key(), $result3['redirect'], 'Redirect URL does not contain key.');
+        $this->assertEquals($this->payment_gateways['upfw']->status, $result_order3->get_status(), 'Order status does not match the expected status.');
+        $this->assertContains('UnivaPayでの支払が完了いたしました。', array_column($result_order3_notes, 'content'), 'Order note does not contain expected payment completion message.');
     }
 }
