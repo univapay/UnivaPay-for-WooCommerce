@@ -13,6 +13,7 @@ if (is_readable(__DIR__ . '/vendor/autoload.php')) {
 }
 
 use Univapay\Resources\Authentication\AppJWT;
+use Univapay\Resources\Charge;
 use Univapay\UnivapayClient;
 use Univapay\UnivapayClientOptions;
 
@@ -110,9 +111,28 @@ function univapay_init_gateway_class()
     }
 
     // for EC form redirect
-    // TODO: should check if univapayChargeId is valid
     function maybe_process_redirect_order()
     {
+        /**
+         * Check if charge token is valid
+         * @param Charge $charge
+         * @param WC_Order $order
+         * @return bool
+         */
+        function _is_charge_valid($charge, $order)
+        {
+            if ($charge->error)
+                return false;
+            if (!isset($charge->metadata['metadata']))
+                return false;
+            $metadata = json_decode($charge->metadata['metadata'], true);
+            if (!isset($metadata['order_id']))
+                return false;
+            if ($metadata['order_id'] !== $order->get_id())
+                return false;
+            return true;
+        }
+
         if (! is_order_received_page() || empty($_GET['univapayChargeId'])) {
             return;
         }
@@ -125,11 +145,13 @@ function univapay_init_gateway_class()
             $token = AppJWT::createToken($settings->get_option('token'), $settings->get_option('secret'));
             $client = new UnivapayClient($token, $clientOptions);
             $charge = $client->getCharge($token->storeId, $_GET['univapayChargeId']);
-            if ($charge->error) {
+
+            if (!_is_charge_valid($charge, $order)) {
                 wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw') . $charge->error["details"], 'error');
                 wp_safe_redirect(wc_get_checkout_url());
                 exit;
             }
+
             $capture = $settings->get_option('capture') === 'yes';
             $paymentType = $client->getTransactionToken($charge->transactionTokenId)->paymentType->getValue();
             global $woocommerce;

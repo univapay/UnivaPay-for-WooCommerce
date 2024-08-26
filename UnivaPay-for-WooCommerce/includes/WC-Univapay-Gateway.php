@@ -249,6 +249,10 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
 
         $money = new Money($order->get_data()["total"], new Currency($order->get_data()["currency"]));
         if (isset($_POST['univapay_optional']) && $_POST['univapay_optional'] === 'true') {
+            $metadata = array(
+                'order_id' => $order_id
+            );
+
             return array(
                 'result' => 'success',
                 'redirect' => $this->formurl .
@@ -259,6 +263,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                     '&auth=' . ($capture ? 'false' : 'true') . # auth: true = authorize, false = capture
                     '&amount=' . $money->getAmount() .
                     '&currency=' . $money->getCurrency() .
+                    '&metadata=' . json_encode($metadata) .
                     '&successRedirectUrl=' . urlencode($this->get_return_url($order)) .
                     '&failureRedirectUrl=' . urlencode($this->get_return_url($order)) .
                     '&pendingRedirectUrl=' . urlencode($this->get_return_url($order))
