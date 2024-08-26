@@ -74,7 +74,8 @@ class TestPaymentProcessing extends BasePluginTest
         $this->assertEquals('success', $result3['result'], 'Payment processing did not return success.');
         $this->assertStringContainsString('order-received=' . $order3->get_id(), $result3['redirect'], 'Redirect URL does not contain order-received.');
         $this->assertStringContainsString('key=' . $order3->get_order_key(), $result3['redirect'], 'Redirect URL does not contain key.');
-        $this->assertEquals($this->payment_gateways['upfw']->status, $result_order3->get_status(), 'Order status does not match the expected status.');
+        // when capture is 'yes', the order status should be 'processing'
+        $this->assertEquals('processing', $result_order3->get_status(), 'Order status does not match the expected status.');
         $this->assertContains('UnivaPayでの支払が完了いたしました。', array_column($result_order3_notes, 'content'), 'Order note does not contain expected payment completion message.');
     }
 }

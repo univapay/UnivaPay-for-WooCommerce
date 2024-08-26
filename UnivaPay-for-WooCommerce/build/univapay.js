@@ -37,7 +37,7 @@ function render() {
         'data-checkout': "payment",
         'data-email': getEmail(),
         'data-amount': univapay_params.total,
-        'data-capture': univapay_params.capture,
+        'data-capture': univapay_params.capture ? 'true' : 'false',
         'data-currency': univapay_params.currency,
         'data-inline': true,
         'data-inline-item-style': 'padding: 0 2px',
