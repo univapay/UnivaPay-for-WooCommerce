@@ -6,9 +6,6 @@ if (! defined('ABSPATH')) {
 
 use Money\Money;
 use Money\Currency;
-use Univapay\Resources\Authentication\AppJWT;
-use Univapay\UnivapayClient;
-use Univapay\UnivapayClientOptions;
 
 class WC_Univapay_Gateway extends WC_Payment_Gateway
 {
@@ -46,21 +43,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     * @var string
     */
     protected $formurl;
-
-    /**
-     * @var AppJWT
-     */
-    protected $appJWT;
-
-    /**
-     * @var UnivapayClient
-     */
-    protected $univapayClient;
-
-    /**
-     * @var UnivapayClientOptions
-     */
-    protected $univapayClientOptions;
 
     public function __get($name)
     {
@@ -103,9 +85,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         $this->capture = $this->get_option('capture');
         $this->status = $this->get_option('status');
         $this->formurl = $this->get_option('formurl');
-        $this->appJWT = null;
-        $this->univapayClient = null;
-        $this->univapayClientOptions = new UnivapayClientOptions($this->api);
 
         // This action hook saves the settings
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ));

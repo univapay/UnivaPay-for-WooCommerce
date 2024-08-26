@@ -3,9 +3,6 @@
 namespace Univapay\WooCommerce\Tests;
 
 use Faker\Factory;
-use Mockery;
-use Univapay\UnivapayClient;
-use Univapay\Resources\Charge;
 use WC_Product_Simple;
 use WC_Univapay_Gateway;
 use WP_UnitTestCase;
@@ -52,30 +49,8 @@ class BasePluginTest extends WP_UnitTestCase
      */
     public function initiate_mock_gateways()
     {
-        $mock_charge = Mockery::mock(Charge::class);
-        $mock_charge->shouldReceive('awaitResult')
-            ->andReturn((object) [
-                'error' => false,
-                'id' => 'test_charge_id'
-            ]);
-
-        $mock_app_jwt = Mockery::mock('alias:AppJWT');
-        $mock_app_jwt->shouldReceive('createToken')
-            ->andReturn((object) [
-                'storeId' => 'mock_store_id',
-                'token' => 'mock_token'
-            ]);
-
-        $mock_univapay_client = Mockery::mock(UnivapayClient::class);
-        $mock_univapay_client->shouldReceive('createCharge')
-            ->andReturn($mock_charge);
-        $mock_univapay_client->shouldReceive('getCharge')
-            ->andReturn($mock_charge);
-
         $payment_gateways = WC()->payment_gateways()->payment_gateways();
         $payment_gateways['upfw'] = new WC_Univapay_Gateway();
-        $payment_gateways['upfw']->appJWT = $mock_app_jwt;
-        $payment_gateways['upfw']->univapayClient = $mock_univapay_client;
         $payment_gateways['upfw']->token = "mock_app_token";
         $payment_gateways['upfw']->capture = 'yes';
         $payment_gateways['upfw']->formurl = 'http://test.localhost';
