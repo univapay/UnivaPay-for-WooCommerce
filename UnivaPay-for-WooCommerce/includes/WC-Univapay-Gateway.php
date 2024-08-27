@@ -6,6 +6,10 @@ if (! defined('ABSPATH')) {
 
 use Money\Money;
 use Money\Currency;
+use Univapay\Resources\Authentication\AppJWT;
+use Univapay\Resources\Charge;
+use Univapay\UnivapayClient;
+use Univapay\UnivapayClientOptions;
 
 class WC_Univapay_Gateway extends WC_Payment_Gateway
 {
@@ -43,6 +47,21 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     * @var string
     */
     protected $formurl;
+
+    /**
+     * @var AppJWT
+     */
+    protected $app_jwt;
+
+    /**
+     * @var UnivapayClient
+     */
+    protected $univapay_client;
+
+    /**
+     * @var UnivapayClientOptions
+     */
+    protected $univapay_client_options;
 
     public function __get($name)
     {
@@ -85,13 +104,17 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         $this->capture = $this->get_option('capture');
         $this->status = $this->get_option('status');
         $this->formurl = $this->get_option('formurl');
+        $this->app_jwt = null;
+        $this->univapay_client = null;
+        $this->univapay_client_options = new UnivapayClientOptions($this->api);
 
         // This action hook saves the settings
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ));
         // enqueue script and style sheet
         add_action('wp_enqueue_scripts', array( $this, 'payment_scripts' ));
-        // You can also register a webhook here
-        // add_action( 'woocommerce_api_{webhook name}', array( $this, 'webhook' ) );
+        // Process redirect order
+        add_action('woocommerce_thankyou', array($this, 'process_order_completion'));
+        // add_action('wp', array($this, 'process_order_completion'));
     }
 
     /**
@@ -267,13 +290,69 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         }
         // save charge id
         update_post_meta($order_id, 'univapayChargeId', $chargeId);
+
         // Empty cart
         $woocommerce->cart->empty_cart();
         // Redirect to the thank you page
         return array(
             'result' => 'success',
-            'redirect' => $this->get_return_url($order)
+            'redirect' => add_query_arg('univapayChargeId', $chargeId, $this->get_return_url($order))
         );
+    }
+
+    /**
+     * Process order completion
+     */
+    public function process_order_completion()
+    {
+        error_log('process_order_completion');
+        error_log(print_r($_GET['univapayChargeId'], true));
+        error_log(print_r(is_order_received_page(), true));
+        error_log('=========');
+
+        if (!is_order_received_page() || empty($_GET['univapayChargeId'])) {
+            wc_add_notice('決済エラーサイト管理者にお問い合わせください。', 'error');
+            wp_safe_redirect(wc_get_checkout_url());
+            exit;
+        }
+
+        try {
+            global $wp;
+            $order_id = absint($wp->query_vars['order-received']);
+            $order = wc_get_order($order_id);
+            $token = $this->app_jwt ? $this->app_jwt::createToken($this->token, $this->secret) : AppJWT::createToken($this->token, $this->secret);
+            if ($this->univapay_client === null)
+                $this->univapay_client = new UnivapayClient($token, $this->univapay_client_options);
+            $charge = $this->univapay_client->getCharge($token->storeId, $_GET['univapayChargeId']);
+
+            if (!_is_charge_valid($charge, $order)) {
+                wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw') . $charge->error["details"], 'error');
+                wp_safe_redirect(wc_get_checkout_url());
+                exit;
+            }
+            // TODO: add validation so order status does not get overwritten, when page is refreshed
+
+            $capture = $this->capture === 'yes';
+            $paymentType = $this->univapay_client->getTransactionToken($charge->transactionTokenId)->paymentType->getValue();
+            global $woocommerce;
+            if ($capture || !in_array($paymentType, ['card', 'paidy'])) {
+                $order->payment_complete();
+                // add comment for order can see admin panel
+                $order->add_order_note(__('UnivaPayでの支払が完了いたしました。', 'upfw'), true);
+            } else {
+                $order->update_status('on-hold', __('キャプチャ待ちです', 'upfw'));
+                // add comment for order can see admin panel
+                $order->add_order_note(__('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true);
+            }
+            // save charge id
+            update_post_meta($order_id, 'univapay_charge_id', $charge->id);
+            // Empty cart
+            $woocommerce->cart->empty_cart();
+        } catch (\Exception $e) {
+            wc_add_notice(__('決済エラーサイト管理者にお問合せください', 'upfw'), 'error');
+            wp_safe_redirect(wc_get_checkout_url());
+            exit;
+        }
     }
 
     /*
@@ -282,4 +361,24 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     public function webhook()
     {
     }
+}
+
+/**
+ * Check if charge token is valid
+ * @param Charge $charge
+ * @param WC_Order $order
+ * @return bool
+ */
+function _is_charge_valid($charge, $order)
+{
+    if ($charge->error)
+        return false;
+    if (!isset($charge->metadata['metadata']))
+        return false;
+    $metadata = json_decode($charge->metadata['metadata'], true);
+    if (!isset($metadata['order_id']))
+        return false;
+    if ($metadata['order_id'] !== $order->get_id())
+        return false;
+    return true;
 }

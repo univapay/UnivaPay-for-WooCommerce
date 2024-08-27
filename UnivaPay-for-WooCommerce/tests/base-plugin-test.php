@@ -93,6 +93,7 @@ class BasePluginTest extends WP_UnitTestCase
         $order->set_billing_address_1($this->faker->streetAddress);
         $order->set_billing_city($this->faker->city);
         $order->set_billing_postcode($this->faker->postcode);
+        $order->set_billing_phone($this->faker->phoneNumber);
         $order->set_billing_country('JP');
         $order->set_currency('JPY');
         $order->save();

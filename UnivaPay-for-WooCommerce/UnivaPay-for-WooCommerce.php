@@ -13,7 +13,6 @@ if (is_readable(__DIR__ . '/vendor/autoload.php')) {
 }
 
 use Univapay\Resources\Authentication\AppJWT;
-use Univapay\Resources\Charge;
 use Univapay\UnivapayClient;
 use Univapay\UnivapayClientOptions;
 
@@ -109,72 +108,6 @@ function univapay_init_gateway_class()
             </script>
         <?php
     }
-
-    // for EC form redirect
-    function maybe_process_redirect_order()
-    {
-        /**
-         * Check if charge token is valid
-         * @param Charge $charge
-         * @param WC_Order $order
-         * @return bool
-         */
-        function _is_charge_valid($charge, $order)
-        {
-            if ($charge->error)
-                return false;
-            if (!isset($charge->metadata['metadata']))
-                return false;
-            $metadata = json_decode($charge->metadata['metadata'], true);
-            if (!isset($metadata['order_id']))
-                return false;
-            if ($metadata['order_id'] !== $order->get_id())
-                return false;
-            return true;
-        }
-
-        if (! is_order_received_page() || empty($_GET['univapayChargeId'])) {
-            return;
-        }
-        try {
-            global $wp;
-            $order_id = absint($wp->query_vars['order-received']);
-            $order = wc_get_order($order_id);
-            $settings = WC()->payment_gateways->payment_gateways()['upfw'];
-            $clientOptions = new UnivapayClientOptions($settings->get_option('api'));
-            $token = AppJWT::createToken($settings->get_option('token'), $settings->get_option('secret'));
-            $client = new UnivapayClient($token, $clientOptions);
-            $charge = $client->getCharge($token->storeId, $_GET['univapayChargeId']);
-
-            if (!_is_charge_valid($charge, $order)) {
-                wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw') . $charge->error["details"], 'error');
-                wp_safe_redirect(wc_get_checkout_url());
-                exit;
-            }
-
-            $capture = $settings->get_option('capture') === 'yes';
-            $paymentType = $client->getTransactionToken($charge->transactionTokenId)->paymentType->getValue();
-            global $woocommerce;
-            if ($capture || !in_array($paymentType, ['card', 'paidy'])) {
-                $order->payment_complete();
-                // add comment for order can see admin panel
-                $order->add_order_note(__('UnivaPayでの支払が完了いたしました。', 'upfw'), true);
-            } else {
-                $order->update_status('on-hold', __('キャプチャ待ちです', 'upfw'));
-                // add comment for order can see admin panel
-                $order->add_order_note(__('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true);
-            }
-            // save charge id
-            update_post_meta($order_id, 'univapay_charge_id', $charge->id);
-            // Empty cart
-            $woocommerce->cart->empty_cart();
-        } catch (\Exception $e) {
-            wc_add_notice(__('決済エラーサイト管理者にお問合せください', 'upfw'), 'error');
-            wp_safe_redirect(wc_get_checkout_url());
-            exit;
-        }
-    }
-    add_action('wp', 'maybe_process_redirect_order');
 
     /**
      * Register univapay gateway block support
