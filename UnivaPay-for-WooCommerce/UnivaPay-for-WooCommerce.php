@@ -45,6 +45,9 @@ function univapay_init_gateway_class()
     function add_custom_boxes()
     {
         global $post;
+        if (empty($post)) {
+            return;
+        }
         $paymentMethod = get_post_meta($post->ID, '_payment_method');
         if (empty($paymentMethod) || $paymentMethod[0] !== 'upfw') {
             return;
