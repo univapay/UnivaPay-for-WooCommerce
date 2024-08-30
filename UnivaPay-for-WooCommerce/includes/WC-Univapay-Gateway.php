@@ -120,6 +120,18 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         // TODO: only enqueue scripts on neccessary pages (e.g: checkout, myaccount-oders)
         add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
         add_action('woocommerce_thankyou', array($this, 'process_order_completion'));
+
+        // Display charge id in order details
+        // TODO: fix meta box later and see what we can do with this
+        add_action('woocommerce_admin_order_data_after_order_details', function ($order) {
+            $order_id = method_exists($order, 'get_id') ? $order->get_id() : $order->id;
+            $univapay_charge_id = get_post_meta($order_id, 'univapayChargeId', true);
+            if ($univapay_charge_id) {
+                echo '<div class="form-field form-field-wide">';
+                echo '<p><strong>' . __('課金ID') . ':</strong> ' . $univapay_charge_id . '</p>';
+                echo '</div>';
+            }
+        });
     }
 
     /**
