@@ -281,7 +281,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             'token' => $this->token,
             'formurl' => $this->formurl,
             'total' => $order ? $order->get_total() : WC()->cart->total,
-            'capture' => ($this->capture === 'yes') ? true : false, // boolean on frontend
+            'capture' => ($this->capture === 'yes') ? "true" : "false",
             'currency' => strtolower(get_woocommerce_currency()),
             'email' => $order ? $order->get_billing_email() : null,
             'order_id' => $order ? $order->get_id() : null,
