@@ -47,10 +47,15 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
 
     public function get_payment_method_data()
     {
-		$current_session_order_id = isset( WC()->session->order_awaiting_payment ) ?
-            absint( WC()->session->order_awaiting_payment ) : absint( WC()->session->get( 'store_api_draft_order', 0 ) );
+        $current_session_order_id = 0;
 
-        // NOTE: Avoid using the cart's order price for the widget
+        // no session available, when opening site editor on admin page
+        if (WC()->session) {
+            $current_session_order_id = isset(WC()->session->order_awaiting_payment) ?
+                absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
+        }
+
+        // Avoid using the cart's order price into payment information
         // as it may change during the checkout process (e.g., due to coupons)
         return [
             'title' => $this->gateway->get_title(),

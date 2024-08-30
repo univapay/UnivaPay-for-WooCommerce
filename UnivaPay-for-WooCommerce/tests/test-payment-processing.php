@@ -13,9 +13,6 @@ class TestPaymentProcessing extends BasePluginTest
         $_POST['univapay_optional'] = 'true';
         $result = $this->payment_gateways['upfw']->process_payment($order->get_id());
         $money = new Money($order->get_data()["total"], new Currency($order->get_data()["currency"]));
-        $metatag = array(
-            'order_id' => $order->get_id(),
-        );
 
         $expectedRedirectUrl = $this->payment_gateways['upfw']->formurl .
             '?appId=' . $this->payment_gateways['upfw']->token .
@@ -25,7 +22,7 @@ class TestPaymentProcessing extends BasePluginTest
             '&auth=' . ($this->payment_gateways['upfw']->capture === 'yes' ? 'false' : 'true') .
             '&amount=' . $money->getAmount() .
             '&currency=' . $money->getCurrency() .
-            '&metadata=' . json_encode($metatag) .
+            '&order_id=' . $order->get_id() .
             '&successRedirectUrl=' . urlencode($this->payment_gateways['upfw']->get_return_url($order)) .
             '&failureRedirectUrl=' . urlencode($this->payment_gateways['upfw']->get_return_url($order)) .
             '&pendingRedirectUrl=' . urlencode($this->payment_gateways['upfw']->get_return_url($order));

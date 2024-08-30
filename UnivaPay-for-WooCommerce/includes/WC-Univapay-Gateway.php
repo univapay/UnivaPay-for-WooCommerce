@@ -244,7 +244,8 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
      * Use draft order if exists
      * @param WC_Order $order
      */
-    function use_draft_order_if_exists($order) {
+    function use_draft_order_if_exists($order)
+    {
         $draft_order_id = WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
         if ($draft_order_id) {
             $existing_order = wc_get_order($draft_order_id);
@@ -285,7 +286,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             $univapay_asset_file['version'],
             true
         );
-        $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) ? 
+        $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) ?
             WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) : WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
         $order = wc_get_order($order_id);
 
@@ -293,7 +294,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             'token' => $this->token,
             'formurl' => $this->formurl,
             'total' => $order ? $order->get_total() : WC()->cart->total,
-            'capture' => ($this->capture === 'yes') ? "true" : "false",
+            'capture' => ($this->capture === 'yes') ? 'true' : 'false',
             'currency' => strtolower(get_woocommerce_currency()),
             'email' => $order ? $order->get_billing_email() : null,
             'order_id' => $order ? $order->get_id() : null,
@@ -383,7 +384,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                 $this->univapay_client = new UnivapayClient($token, $this->univapay_client_options);
             }
             $charge = $this->univapay_client->getCharge($token->storeId, $_GET['univapayChargeId']);
-            
+
             if (!_is_charge_valid($charge, $order)) {
                 wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw') . $charge->error["details"], 'error');
                 wp_safe_redirect(wc_get_checkout_url());
@@ -433,11 +434,11 @@ function _is_charge_valid($charge, $order)
     if ($charge->error) {
         return false;
     }
-    // if (!isset($charge->metadata['order_id'])) {
-    //     return false;
-    // }
-    // if ($charge->metadata['order_id'] !== $order->get_id()) {
-    //     return false;
-    // }
+    if (!isset($charge->metadata['order_id'])) {
+        return false;
+    }
+    if ((int) $charge->metadata['order_id'] !== $order->get_id()) {
+        return false;
+    }
     return true;
 }

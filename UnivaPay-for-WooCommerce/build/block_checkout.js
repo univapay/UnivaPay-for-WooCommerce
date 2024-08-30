@@ -4,12 +4,13 @@ import { decodeEntities } from '@wordpress/html-entities';
 import { getSetting } from '@woocommerce/settings';
 import { useEffect, useRef } from 'react';
 import { useSelect } from '@wordpress/data';
+import './univapay.css';
 
 const settings = getSetting( 'upfw_data', {} );
 
 const defaultLabel = __(
-	'UnivaPay',
-	'woo-gutenberg-products-block'
+    'UnivaPay',
+    'woo-gutenberg-products-block'
 );
 
 const label = decodeEntities( settings.title ) || defaultLabel;
@@ -20,8 +21,8 @@ const label = decodeEntities( settings.title ) || defaultLabel;
  * @param {*} props Props from payment API.
  */
 const Label = ( props ) => {
-	const { PaymentMethodLabel } = props.components;
-	return <PaymentMethodLabel text={ label } />;
+    const { PaymentMethodLabel } = props.components;
+    return <PaymentMethodLabel text={ label } />;
 };
 
 const Content = (props) => {
@@ -117,7 +118,7 @@ const Content = (props) => {
     
     useEffect(() => {
         const params = {
-			appId: settings.token,
+            appId: settings.token,
             checkout: 'payment',
             capture: settings.capture,
             currency: settings.currency,
@@ -168,50 +169,19 @@ document.body.insertAdjacentHTML('beforeend', `
     </div>
 `);
 
-// Add the CSS for the loading spinner
-const style = document.createElement('style');
-style.innerHTML = `
-    #loading-spinner {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.8);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-    }
-
-    .spinner {
-        border: 4px solid rgba(0, 0, 0, 0.1);
-        border-left-color: #000;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-`;
-document.head.appendChild(style);
-
 /**
  * Univapay payment method config object.
  */
 const UnivaPay = {
-	name: "upfw",
-	label: <Label />,
-	content: <Content />,
-	edit: <Content />,
-	canMakePayment: () => true,
-	ariaLabel: label,
-	supports: {
-		features: settings.supports,
-	}
+    name: "upfw",
+    label: <Label />,
+    content: <Content />,
+    edit: <Content />,
+    canMakePayment: () => true,
+    ariaLabel: label,
+    supports: {
+        features: settings.supports,
+    }
 };
 
 registerPaymentMethod( UnivaPay );
