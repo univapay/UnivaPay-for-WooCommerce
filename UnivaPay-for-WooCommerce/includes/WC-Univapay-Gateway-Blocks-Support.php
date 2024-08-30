@@ -47,6 +47,9 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
 
     public function get_payment_method_data()
     {
+		$current_session_order_id = isset( WC()->session->order_awaiting_payment ) ?
+            absint( WC()->session->order_awaiting_payment ) : absint( WC()->session->get( 'store_api_draft_order', 0 ) );
+
         // NOTE: Avoid using the cart's order price for the widget
         // as it may change during the checkout process (e.g., due to coupons)
         return [
@@ -57,6 +60,7 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
             'capture' => $this->gateway->capture === 'yes',
             'currency' => strtolower(get_woocommerce_currency()),
             'formUrl' => $this->gateway->formurl,
+            'order_id' => $current_session_order_id,
         ];
     }
 }

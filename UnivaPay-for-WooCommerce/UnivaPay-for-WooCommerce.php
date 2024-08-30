@@ -26,6 +26,7 @@ function univapay_init_gateway_class()
         return;
     }
 
+    require_once plugin_dir_path(__FILE__) . 'includes/WC-Univapay-Constants.php';
     require_once plugin_dir_path(__FILE__) . 'includes/WC-Univapay-Gateway.php';
 
     add_filter('woocommerce_payment_gateways', 'univapay_add_gateway_class');

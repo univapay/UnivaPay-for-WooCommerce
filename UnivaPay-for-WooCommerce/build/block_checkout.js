@@ -73,6 +73,7 @@ const Content = (props) => {
             'data-currency': params.currency,
             'data-inline': true,
             'data-inline-item-style': 'padding: 0 2px',
+            'data-metadata': 'order_id:' + params.order_id,
         }).appendTo("#upfw_checkout");
         
         if(params.formUrl !== '') {
@@ -117,6 +118,7 @@ const Content = (props) => {
             capture: settings.capture,
             currency: settings.currency,
             formUrl: settings.formUrl,
+            order_id: settings.order_id,
         };
 
         const isUnivapayGatewaySelected = () => {

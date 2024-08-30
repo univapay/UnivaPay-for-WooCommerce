@@ -37,9 +37,10 @@ function render() {
         'data-checkout': "payment",
         'data-email': getEmail(),
         'data-amount': univapay_params.total,
-        'data-capture': univapay_params.capture ? 'true' : 'false',
+        'data-capture': univapay_params.capture,
         'data-currency': univapay_params.currency,
         'data-inline': true,
+        'data-metadata': 'order_id:' + univapay_params.order_id,
         'data-inline-item-style': 'padding: 0 2px',
     }).appendTo("#upfw_checkout");
     jQuery("#place_order").after(
@@ -87,6 +88,8 @@ function payfororder(e) {
         amount: univapay_params.total,
         capture: univapay_params.capture,
         currency: univapay_params.currency,
+        inline: true,
+        metadata: 'order_id:' + univapay_params.order_id,
         onSuccess: (result) => {
             jQuery('<input>').attr({
                 'type': 'hidden',
