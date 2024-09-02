@@ -125,7 +125,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         // TODO: fix meta box later and see what we can do with this
         add_action('woocommerce_admin_order_data_after_order_details', function ($order) {
             $order_id = method_exists($order, 'get_id') ? $order->get_id() : $order->id;
-            $univapay_charge_id = get_post_meta($order_id, 'univapayChargeId', true);
+            $univapay_charge_id = get_post_meta($order_id, 'univapay_charge_id', true);
             if ($univapay_charge_id) {
                 echo '<div class="form-field form-field-wide">';
                 echo '<p><strong>' . __('課金ID') . ':</strong> ' . $univapay_charge_id . '</p>';
@@ -341,26 +341,31 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         }
         $chargeId = isset($_POST["univapayChargeId"]) ? $_POST["univapayChargeId"] : $_POST["univapay_charge_id"];
 
-        global $woocommerce;
-        if ($capture) {
-            $order->payment_complete();
-            // add comment for order can see admin panel
-            $order->add_order_note(__('UnivaPayでの支払が完了いたしました。', 'upfw'), true);
-        } else {
-            $order->update_status($this->status, __('キャプチャ待ちです', 'upfw'));
-            // add comment for order can see admin panel
-            $order->add_order_note(__('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true);
-        }
-        // save charge id
-        update_post_meta($order_id, 'univapayChargeId', $chargeId);
-
-        // Empty cart
-        $woocommerce->cart->empty_cart();
         // Redirect to the thank you page
         return array(
             'result' => 'success',
             'redirect' => add_query_arg('univapayChargeId', $chargeId, $this->get_return_url($order))
         );
+    }
+
+    /**
+     * Check if charge token is valid
+     * @param Charge $charge
+     * @param WC_Order $order
+     * @return bool
+     */
+    public function is_charge_valid($charge, $order)
+    {
+        if ($charge->error) {
+            return false;
+        }
+        if (!isset($charge->metadata['order_id'])) {
+            return false;
+        }
+        if ((int) $charge->metadata['order_id'] !== $order->get_id()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -385,8 +390,8 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             }
             $charge = $this->univapay_client->getCharge($token->storeId, $_GET['univapayChargeId']);
 
-            if (!_is_charge_valid($charge, $order)) {
-                wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw') . $charge->error["details"], 'error');
+            if (!$this->is_charge_valid($charge, $order)) {
+                wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw'), 'error');
                 wp_safe_redirect(wc_get_checkout_url());
                 exit;
             }
@@ -421,24 +426,4 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     public function webhook()
     {
     }
-}
-
-/**
- * Check if charge token is valid
- * @param Charge $charge
- * @param WC_Order $order
- * @return bool
- */
-function _is_charge_valid($charge, $order)
-{
-    if ($charge->error) {
-        return false;
-    }
-    if (!isset($charge->metadata['order_id'])) {
-        return false;
-    }
-    if ((int) $charge->metadata['order_id'] !== $order->get_id()) {
-        return false;
-    }
-    return true;
 }

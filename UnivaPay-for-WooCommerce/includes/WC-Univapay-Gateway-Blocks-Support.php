@@ -19,10 +19,9 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
         $gateways = WC()->payment_gateways->payment_gateways();
         $this->gateway = $gateways[ $this->name ];
 
-        // NOTE: we can add hooks to modify the payment gateway data
-        // e.g. add_action('woocommerce_store_api_checkout_update_order_from_request', function($order) {
-        // ...
-        // }, 10, 2);
+        // add action to get payment gateway settings for quest users & logged in users
+        add_action('wp_ajax_get_univapay_settings', array($this, 'get_univapay_settings'));
+        add_action('wp_ajax_nopriv_get_univapay_settings', array($this, 'get_univapay_settings'));
     }
 
     public function is_active()
@@ -45,19 +44,16 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
         return array( 'upfw-blocks-integration-checkout');
     }
 
-    public function get_payment_method_data()
-    {
-        $current_session_order_id = 0;
-
-        // no session available, when opening site editor on admin page
-        if (WC()->session) {
-            $current_session_order_id = isset(WC()->session->order_awaiting_payment) ?
-                absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
+    public function get_univapay_settings() {
+        if (!WC()->session) {
+            wp_send_json_error('No session available');
+            return;
         }
+    
+        $current_session_order_id = isset(WC()->session->order_awaiting_payment) ?
+            absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
 
-        // Avoid using the cart's order price into payment information
-        // as it may change during the checkout process (e.g., due to coupons)
-        return [
+        $settings = [
             'title' => $this->gateway->get_title(),
             'description' => $this->gateway->get_description(),
             'support' => array_filter($this->gateway->supports, [ $this->gateway, 'supports' ]),
@@ -67,5 +63,7 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
             'formUrl' => $this->gateway->formurl,
             'order_id' => $current_session_order_id,
         ];
+
+        wp_send_json_success($settings);
     }
 }
