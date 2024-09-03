@@ -1,18 +1,14 @@
 import { __ } from '@wordpress/i18n';
 import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 import { decodeEntities } from '@wordpress/html-entities';
-import { getSetting } from '@woocommerce/settings';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelect } from '@wordpress/data';
-
-const settings = getSetting( 'upfw_data', {} );
+import './univapay.css';
 
 const defaultLabel = __(
-	'UnivaPay',
-	'woo-gutenberg-products-block'
+    'UnivaPay',
+    'woo-gutenberg-products-block'
 );
-
-const label = decodeEntities( settings.title ) || defaultLabel;
 
 /**
  * Label component
@@ -20,8 +16,8 @@ const label = decodeEntities( settings.title ) || defaultLabel;
  * @param {*} props Props from payment API.
  */
 const Label = ( props ) => {
-	const { PaymentMethodLabel } = props.components;
-	return <PaymentMethodLabel text={ label } />;
+    const { PaymentMethodLabel } = props.components;
+    return <PaymentMethodLabel text={props.settings.title || defaultLabel} />;
 };
 
 const Content = (props) => {
@@ -29,6 +25,21 @@ const Content = (props) => {
     const { onPaymentSetup } = eventRegistration;
     const univapayOptionalRef = useRef('false');
     const univapayChargeIdRef = useRef('');
+    const [settings, setSettings] = useState({});
+
+    const fetchSettings = async () => {
+        try {
+            const response = await fetch('/index.php?rest_route=/univapay/v1/settings');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setSettings(data);
+        } catch (error) {
+            console.error('設定の取得中にエラーが発生しました:', error);
+            alert('予期しないエラーが発生しました。後ほど再試行してください。');
+        }
+    };
 
     const redirectToUnivapay = () => {
         univapayOptionalRef.current = 'true';
@@ -54,7 +65,7 @@ const Content = (props) => {
         return store.getCartTotals() ? store.getCartTotals().total_price : 0;
     });
 
-    const initializeUnivapay = (params) => {        
+    const initializeUnivapay = () => {
         removeUnivapay();
         getPalaceOrderButton().hide();
     
@@ -65,17 +76,18 @@ const Content = (props) => {
         );
     
         jQuery('<span></span>').attr({
-            'data-app-id': params.appId,
+            'data-app-id': settings.app_id,
             'data-checkout': "payment",
             'data-email': getEmail(),
             'data-amount': totalOrder, 
-            'data-capture': params.capture,
-            'data-currency': params.currency,
+            'data-capture': settings.capture,
+            'data-currency': settings.currency,
             'data-inline': true,
             'data-inline-item-style': 'padding: 0 2px',
+            'data-metadata': 'order_id:' + settings.order_id,
         }).appendTo("#upfw_checkout");
         
-        if(params.formUrl !== '') {
+        if(settings.formUrl !== '') {
             jQuery(".wc-block-checkout__actions_row").append(
                 jQuery('<a>その他決済</a>').attr({
                     type: 'button',
@@ -98,42 +110,38 @@ const Content = (props) => {
             v.parentNode.removeChild(v);
         });
         var iFrame = document.querySelector("#upfw_checkout iframe");
+        
+        showLoadingSpinner();
         UnivapayCheckout.submit(iFrame)
             .then((res) => {
+                hideLoadingSpinner();
                 univapayOptionalRef.current = 'false';
                 univapayChargeIdRef.current = res.charge;
                 getPalaceOrderButton().click();
             })
             .catch((errors) => {
+                hideLoadingSpinner();
                 alert("入力内容をご確認ください");
-                console.error(errors);
+                console.error('failed to submit checkout', errors);
             });
     }
     
     useEffect(() => {
-        const params = {
-			appId: settings.token,
-            checkout: 'payment',
-            capture: settings.capture,
-            currency: settings.currency,
-            formUrl: settings.formUrl,
-        };
-
         const isUnivapayGatewaySelected = () => {
             return jQuery('input[name="radio-control-wc-payment-method-options"]:checked').val() === 'upfw';
         };
 
-        const updateUnivapay = () => {
+        const updateUnivapay = async () => {
             if (isUnivapayGatewaySelected()) {
-                initializeUnivapay(params);
+                await fetchSettings();
             } else {
                 removeUnivapay();
                 getPalaceOrderButton().show();
             }
         }
 
-        jQuery(document).ready(function ($) {    
-            updateUnivapay();
+        jQuery(document).ready(async function ($) {    
+            await fetchSettings();
             jQuery('#payment-method').on('change', updateUnivapay);
         });
         
@@ -152,22 +160,43 @@ const Content = (props) => {
         });
     }, [totalOrder]);
 
+    useEffect(() => {
+        if (Object.keys(settings).length > 0) {
+            initializeUnivapay();
+        }
+    }, [settings]);
+
     return decodeEntities(settings.description || '');
 };
+
+// Add the loading spinner HTML to the body
+document.body.insertAdjacentHTML('beforeend', `
+    <div id="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+`);
 
 /**
  * Univapay payment method config object.
  */
 const UnivaPay = {
-	name: "upfw",
-	label: <Label />,
-	content: <Content />,
-	edit: <Content />,
-	canMakePayment: () => true,
-	ariaLabel: label,
-	supports: {
-		features: settings.supports,
-	}
+    name: "upfw",
+    label: <Label settings={settings} />,
+    content: <Content />,
+    edit: <Content />,
+    canMakePayment: () => true,
+    ariaLabel: label,
+    supports: {
+        features: settings.supports,
+    }
 };
 
 registerPaymentMethod( UnivaPay );
+
+function showLoadingSpinner() {
+    document.getElementById('loading-spinner').style.display = 'flex';
+}
+
+function hideLoadingSpinner() {
+    document.getElementById('loading-spinner').style.display = 'none';
+}

@@ -51,11 +51,12 @@ class BasePluginTest extends WP_UnitTestCase
     {
         $payment_gateways = WC()->payment_gateways()->payment_gateways();
         $payment_gateways['upfw'] = new WC_Univapay_Gateway();
-        $payment_gateways['upfw']->token = "mock_app_token";
+        $payment_gateways['upfw']->token = $this->faker->uuid;
+        $payment_gateways['upfw']->secret = $this->faker->uuid;
         $payment_gateways['upfw']->capture = 'yes';
         $payment_gateways['upfw']->formurl = 'http://test.localhost';
         $payment_gateways['upfw']->enabled = 'yes';
-        $payment_gateways['upfw']->status = 'processing';
+        $payment_gateways['upfw']->status = 'pending-payment';
 
         return $payment_gateways;
     }
@@ -93,6 +94,7 @@ class BasePluginTest extends WP_UnitTestCase
         $order->set_billing_address_1($this->faker->streetAddress);
         $order->set_billing_city($this->faker->city);
         $order->set_billing_postcode($this->faker->postcode);
+        $order->set_billing_phone($this->faker->phoneNumber);
         $order->set_billing_country('JP');
         $order->set_currency('JPY');
         $order->save();
