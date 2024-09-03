@@ -9,31 +9,20 @@ jobs:
   deploy:
     name: Deploy to WordPress.org
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+
     steps:
-    - uses: actions/checkout@master
-    - uses: "shivammathur/setup-php@v2"
+    - uses: actions/checkout@v4
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
       with:
-        php-version: "latest"
-    - uses: "ramsey/composer-install@v2"
-      with:
-        working-directory: "UnivaPay-for-WooCommerce"
-        args: "--no-dev"
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '16'
-    - name: Install npm dependencies
-      run: npm ci
-      with:
-        working-directory: "UnivaPay-for-WooCommerce"
-    - name: Run npm build
-      run: npm run build
-      with:
-        working-directory: "UnivaPay-for-WooCommerce"
+        name: build-artifacts
+        path: ./artifact
+    - name: Extract build artifacts
+      run: tar -xzf ./artifact/build-artifacts.tar.gz -C /artifact/release
     - name: WordPress Plugin Deploy
       uses: 10up/action-wordpress-plugin-deploy@stable
       env:
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
         SLUG: univapay-for-wc
-        BUILD_DIR: UnivaPay-for-WooCommerce
+        BUILD_DIR: ./artifact/release

@@ -1,9 +1,8 @@
-/.git
-/.github
-/node_modules
-/tests
-/bin
-/build
-/webpack.config.js
-/phpcs.xml
-/phpunit.xml
+./node_modules
+./tests
+./bin
+./build
+./webpack.config.js
+./wp-tests-config.php
+./phpcs.xml
+./phpunit.xml
