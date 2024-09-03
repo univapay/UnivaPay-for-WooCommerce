@@ -374,7 +374,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     public function process_order_completion()
     {
         // TODO: add handling process for failure or pending?
-        if (!is_order_received_page() || empty($_GET['univapayChargeId'])) {
+        if (empty($_GET['univapayChargeId'])) {
             wc_add_notice('決済エラーサイト管理者にお問い合わせください。', 'error');
             wp_safe_redirect(wc_get_checkout_url());
             exit;
@@ -405,7 +405,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                 // add comment for order can see admin panel
                 $order->add_order_note(__('UnivaPayでの支払が完了いたしました。', 'upfw'), true);
             } else {
-                $order->update_status('on-hold', __('キャプチャ待ちです', 'upfw'));
+                $order->update_status($this->status, __('キャプチャ待ちです', 'upfw'));
                 // add comment for order can see admin panel
                 $order->add_order_note(__('UnivaPayでのオーソリが完了いたしました。', 'upfw'), true);
             }

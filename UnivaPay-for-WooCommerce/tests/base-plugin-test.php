@@ -51,11 +51,12 @@ class BasePluginTest extends WP_UnitTestCase
     {
         $payment_gateways = WC()->payment_gateways()->payment_gateways();
         $payment_gateways['upfw'] = new WC_Univapay_Gateway();
-        $payment_gateways['upfw']->token = "mock_app_token";
+        $payment_gateways['upfw']->token = $this->faker->uuid;
+        $payment_gateways['upfw']->secret = $this->faker->uuid;
         $payment_gateways['upfw']->capture = 'yes';
         $payment_gateways['upfw']->formurl = 'http://test.localhost';
         $payment_gateways['upfw']->enabled = 'yes';
-        $payment_gateways['upfw']->status = 'processing';
+        $payment_gateways['upfw']->status = 'pending-payment';
 
         return $payment_gateways;
     }
