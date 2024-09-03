@@ -19,9 +19,8 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
         $gateways = WC()->payment_gateways->payment_gateways();
         $this->gateway = $gateways[ $this->name ];
 
-        // add action to get payment gateway settings for quest users & logged in users
-        add_action('wp_ajax_get_univapay_settings', array($this, 'get_univapay_settings'));
-        add_action('wp_ajax_nopriv_get_univapay_settings', array($this, 'get_univapay_settings'));
+        // Register custom api endpoint
+        add_action('rest_api_init', array($this, 'register_univapay_settings_endpoint'));
     }
 
     public function is_active()
@@ -44,10 +43,17 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
         return array( 'upfw-blocks-integration-checkout');
     }
 
+    public function register_univapay_settings_endpoint() {
+        register_rest_route('univapay/v1', '/settings', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'get_univapay_settings'),
+            'permission_callback' => '__return_true',
+        ));
+    }
+
     public function get_univapay_settings() {
         if (!WC()->session) {
-            wp_send_json_error('No session available');
-            return;
+            return new WP_REST_Response(['error' => 'No session available'], 400);
         }
     
         $current_session_order_id = isset(WC()->session->order_awaiting_payment) ?
@@ -57,13 +63,13 @@ final class WC_Univapay_Gateway_Blocks_Support extends AbstractPaymentMethodType
             'title' => $this->gateway->get_title(),
             'description' => $this->gateway->get_description(),
             'support' => array_filter($this->gateway->supports, [ $this->gateway, 'supports' ]),
-            'token' => $this->gateway->token,
+            'app_id' => $this->gateway->token,
             'capture' => $this->gateway->capture === 'yes',
             'currency' => strtolower(get_woocommerce_currency()),
             'formUrl' => $this->gateway->formurl,
             'order_id' => $current_session_order_id,
         ];
 
-        wp_send_json_success($settings);
+        return new WP_REST_Response($settings, 200);
     }
 }

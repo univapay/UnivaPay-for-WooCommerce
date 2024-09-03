@@ -291,7 +291,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
 
         wp_localize_script('univapay_woocommerce', 'univapay_params', array(
-            'token' => $this->token,
+            'app_id' => $this->token,
             'formurl' => $this->formurl,
             'total' => $order ? $order->get_total() : WC()->cart->total,
             'capture' => ($this->capture === 'yes') ? 'true' : 'false',

@@ -14,10 +14,11 @@ function hideLoadingSpinner() {
 
 function doCheckout() {
     // clear before token
-    document.querySelectorAll('[name="univapayTokenId"]').forEach(function(v) {
+    document.querySelectorAll('[name="univapayChargeId"]').forEach(function(v) {
         v.parentNode.removeChild(v);
     });
     var iFrame = document.querySelector("#upfw_checkout iframe");
+
     showLoadingSpinner();
     UnivapayCheckout.submit(iFrame)
         .then(() => {
@@ -48,7 +49,7 @@ function render() {
             'id': 'upfw_checkout'
     }));
     jQuery('<span></span>').attr({
-        'data-app-id': univapay_params.token,
+        'data-app-id': univapay_params.app_id,
         'data-checkout': "payment",
         'data-email': getEmail(),
         'data-amount': univapay_params.total,
@@ -106,7 +107,7 @@ function payfororder(e) {
         return;
     e.preventDefault();
     var checkout = UnivapayCheckout.create({
-        appId: univapay_params.token,
+        appId: univapay_params.app_id,
         checkout: 'payment',
         email: univapay_params.email,
         amount: univapay_params.total,

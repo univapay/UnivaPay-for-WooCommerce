@@ -29,23 +29,15 @@ const Content = (props) => {
 
     const fetchSettings = async () => {
         try {
-            const response = await jQuery.ajax({
-                url: '/wp-admin/admin-ajax.php',
-                method: 'POST',
-                data: {
-                    action: 'get_univapay_settings',
-                }
-            })
-            if (response.success) {
-                setSettings(response.data);
-            } else {
-                alert('UnivaPayの設定の取得に失敗しました。後ほど再度お試しください。');
-                console.error('Error fetching settings:', response);
+            const response = await fetch('/index.php?rest_route=/univapay/v1/settings');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-
+            const data = await response.json();
+            setSettings(data);
         } catch (error) {
-            alert('予期しないエラーが発生しました。後ほど再度お試しください。');
-            console.error('Error fetching settings:', error);
+            console.error('設定の取得中にエラーが発生しました:', error);
+            alert('予期しないエラーが発生しました。後ほど再試行してください。');
         }
     };
 
@@ -84,7 +76,7 @@ const Content = (props) => {
         );
     
         jQuery('<span></span>').attr({
-            'data-app-id': settings.token,
+            'data-app-id': settings.app_id,
             'data-checkout': "payment",
             'data-email': getEmail(),
             'data-amount': totalOrder, 
