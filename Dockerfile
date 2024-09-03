@@ -1,6 +1,8 @@
 # 6.6.1
 FROM wordpress:latest 
 
+ENV TZ=Asia/Tokyo
+
 RUN apt-get update && \
     apt-get install -y curl && \
     # SVN, necessary to run install-wp-tests.sh

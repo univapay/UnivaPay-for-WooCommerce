@@ -9,34 +9,28 @@ WooCommerce用のUnivaPay導入プラグイン
 
 このプロジェクトは開発環境としてDockerを利用しています。
 
-### サービス
+### 開発環境のセットアップ
 
-- `wp`: 開発用のWordPress
-- `db`: 開発用のデータベース
-- `wp-cli`: WP-CLI、Composer、およびテストを実行するためのツール
-
-### セットアップ
-
-1. サンプルのDocker Compose設定をコピーします:
-    ```sh
-    cp docker-compose.sample.yml docker-compose.yml
-    ```
-
-2. Dockerコンテナを起動します:
+1. Dockerコンテナを起動します:
     ```sh
     docker compose up -d
     ```
 
-3. ローカル環境を初期化するために、以下のコマンドを一度実行します（WordPress、WooCommerce、およびUnivapayプラグインのインストール）:
+2. コンテナに入ります:
     ```sh
-    docker compose run --rm wp-cli composer init-local
+    docker compose exec wp bash
     ```
 
-## テスト
+3. 初期設定を行います:
+    ```sh
+    cd /var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce
+    composer init-local
+    npm run start
+    ```
 
-`wp-cli`サービスはテストに使用されます。これは一時的な環境をセットアップし、必要なWordPressファイルとプラグインをコピーし、WP-CLIで全てをマウントします。
+### テスト
 
-### テストの実行
-テストを実行します:
+テストを実行する方法:
 ```sh
-docker compose run --rm wp-cli composer test
+composer test
+```
