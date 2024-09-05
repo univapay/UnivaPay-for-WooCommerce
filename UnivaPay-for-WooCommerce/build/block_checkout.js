@@ -1,23 +1,24 @@
 import { __ } from '@wordpress/i18n';
-import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 import { decodeEntities } from '@wordpress/html-entities';
-import { useEffect, useRef, useState } from 'react';
 import { useSelect } from '@wordpress/data';
+
+import { getSetting } from '@woocommerce/settings';
+import { registerPaymentMethod } from '@woocommerce/blocks-registry';
+
+import { useEffect, useRef, useState } from 'react';
+
 import './univapay.css';
+
+const settings = getSetting('upfw_data', {});
 
 const defaultLabel = __(
     'UnivaPay',
     'woo-gutenberg-products-block'
 );
 
-/**
- * Label component
- *
- * @param {*} props Props from payment API.
- */
 const Label = ( props ) => {
     const { PaymentMethodLabel } = props.components;
-    return <PaymentMethodLabel text={props.settings.title || defaultLabel} />;
+    return <PaymentMethodLabel text={ defaultLabel } />;
 };
 
 const Content = (props) => {
@@ -25,18 +26,18 @@ const Content = (props) => {
     const { onPaymentSetup } = eventRegistration;
     const univapayOptionalRef = useRef('false');
     const univapayChargeIdRef = useRef('');
-    const [settings, setSettings] = useState({});
+    const [orderSession, setOrderSession] = useState({});
 
-    const fetchSettings = async () => {
+    const fetchOrderSession = async () => {
         try {
-            const response = await fetch('/index.php?rest_route=/univapay/v1/settings');
+            const response = await fetch('/index.php?rest_route=/univapay/v1/order-session');
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('システムエラーが発生しました。');
             }
             const data = await response.json();
-            setSettings(data);
+            setOrderSession(data);
         } catch (error) {
-            console.error('設定の取得中にエラーが発生しました:', error);
+            console.error('failed fetching order session: ', error);
             alert('予期しないエラーが発生しました。後ほど再試行してください。');
         }
     };
@@ -65,7 +66,7 @@ const Content = (props) => {
         return store.getCartTotals() ? store.getCartTotals().total_price : 0;
     });
 
-    const initializeUnivapay = () => {
+    const initializeUnivapay = async () => {
         removeUnivapay();
         getPalaceOrderButton().hide();
     
@@ -84,7 +85,7 @@ const Content = (props) => {
             'data-currency': settings.currency,
             'data-inline': true,
             'data-inline-item-style': 'padding: 0 2px',
-            'data-metadata': 'order_id:' + settings.order_id,
+            'data-metadata': 'order_id:' + orderSession.order_id,
         }).appendTo("#upfw_checkout");
         
         if(settings.formUrl !== '') {
@@ -133,7 +134,7 @@ const Content = (props) => {
 
         const updateUnivapay = async () => {
             if (isUnivapayGatewaySelected()) {
-                await fetchSettings();
+                await fetchOrderSession();
             } else {
                 removeUnivapay();
                 getPalaceOrderButton().show();
@@ -141,7 +142,7 @@ const Content = (props) => {
         }
 
         jQuery(document).ready(async function ($) {    
-            await fetchSettings();
+            await fetchOrderSession();
             jQuery('#payment-method').on('change', updateUnivapay);
         });
         
@@ -161,10 +162,14 @@ const Content = (props) => {
     }, [totalOrder]);
 
     useEffect(() => {
-        if (Object.keys(settings).length > 0) {
+        initializeUnivapay();
+    }, [totalOrder]);
+
+    useEffect(() => {
+        if (Object.keys(orderSession).length > 0) {
             initializeUnivapay();
         }
-    }, [settings]);
+    }, [orderSession]);
 
     return decodeEntities(settings.description || '');
 };
@@ -181,11 +186,11 @@ document.body.insertAdjacentHTML('beforeend', `
  */
 const UnivaPay = {
     name: "upfw",
-    label: <Label settings={settings} />,
+    label: <Label />,
     content: <Content />,
     edit: <Content />,
     canMakePayment: () => true,
-    ariaLabel: label,
+    ariaLabel: defaultLabel,
     supports: {
         features: settings.supports,
     }
