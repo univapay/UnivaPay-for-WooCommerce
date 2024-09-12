@@ -23,7 +23,7 @@
         ]
     },
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.4",
         "univapay/php-sdk": "6.6.1"
     },
     "require-dev": {
