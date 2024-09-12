@@ -1,5 +1,7 @@
 import './univapay.css'
 
+let isRendering = false;
+
 function selected() {
     return jQuery('#payment_method_upfw').prop('checked');
 }
@@ -40,10 +42,36 @@ function optional() {
     }).appendTo('form.woocommerce-checkout');
     jQuery('#place_order').click();
 }
+
 function getEmail() {
     return jQuery("#billing_email").val();
 }
-function render() {
+
+async function fetchOrderSession() {
+    try {
+        const response = await fetch('/index.php?rest_route=/univapay/v1/order-session');
+        if (!response.ok) {
+            throw new Error('システムエラーが発生しました。');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('failed fetching order session: ', error);
+        alert('予期しないエラーが発生しました。後ほど再試行してください。');
+        return null;
+    }
+}
+
+async function render() {
+    if (isRendering) {
+        return;
+    }
+    isRendering = true;
+
+    const orderSession = await fetchOrderSession();
+    if (!orderSession) {
+        return;
+    }
+
     jQuery("#place_order").before(
         jQuery('<div></div>').attr({
             'id': 'upfw_checkout'
@@ -56,7 +84,7 @@ function render() {
         'data-capture': univapay_params.capture,
         'data-currency': univapay_params.currency,
         'data-inline': true,
-        'data-metadata': 'order_id:' + univapay_params.order_id,
+        'data-metadata': 'order_id:' + orderSession.order_id,
         'data-inline-item-style': 'padding: 0 2px',
     }).appendTo("#upfw_checkout");
     jQuery("#place_order").after(
@@ -81,6 +109,7 @@ function render() {
                 'line-height': '1.2'
             }).on("click", optional));
     }
+    isRendering = false;
 }
 
 // Add the loading spinner HTML to the body
@@ -106,6 +135,7 @@ function payfororder(e) {
     if(!selected())
         return;
     e.preventDefault();
+
     var checkout = UnivapayCheckout.create({
         appId: univapay_params.app_id,
         checkout: 'payment',

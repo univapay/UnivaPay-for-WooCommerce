@@ -119,6 +119,10 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
 
         // TODO: only enqueue scripts on neccessary pages (e.g: checkout, myaccount-oders)
         add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
+        // To keep cart session alive for failed payment split into 2 actions
+        // 1. process_redirect_payment: validate is charge valid and process to thank you page
+        // 2. process_order_completion: only process the order completion
+        add_action('template_redirect', array($this, 'process_redirect_payment'));
         add_action('woocommerce_thankyou', array($this, 'process_order_completion'));
 
         add_action('rest_api_init', array($this, 'register_get_order_session'));
@@ -238,19 +242,45 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     }
 
     /**
+     * Get an order from session, update it with cart items
+     * @param int $order_id
+     * @param WC_Cart $cart
+     * @return WC_Order|null
+     */
+    private function get_and_update_order_from_session($order_id, $cart)
+    {
+        $order = wc_get_order($order_id);
+        if (!$order) {
+            return null;
+        }
+        foreach ($order->get_items() as $item_id => $item) {
+            $order->remove_item($item_id);
+        }
+        foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
+            $order->add_product($cart_item['data'], $cart_item['quantity']);
+        }
+        $order->calculate_totals();
+        $order->save();
+        return $order;
+    }
+
+    /**
      * Create draft order on checkout
      */
     public function create_draft_order_on_checkout()
     {
-        // Confirm if order has already been created
-        $order_id = WC()->session->get('order_awaiting_payment');
+        $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT);
+        $cart = WC()->cart;
         if ($order_id) {
-            return;
+            $existing_order = $this->get_and_update_order_from_session($order_id, WC()->cart);
+            if ($existing_order) {
+                return;
+            }
         }
 
         $existing_draft_order_id = WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
         if ($existing_draft_order_id) {
-            $existing_order = wc_get_order($existing_draft_order_id);
+            $existing_order = $this->get_and_update_order_from_session($existing_draft_order_id, WC()->cart);
             if ($existing_order && $existing_order->has_status(WC_Univapay_Constants::CHECKOUT_DRAFT_STATUS)) {
                 return;
             }
@@ -258,7 +288,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
 
         // Create a new draft order
         $order = wc_create_order();
-        $cart = WC()->cart;
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
             $order->add_product($cart_item['data'], $cart_item['quantity']);
         }
@@ -404,15 +433,13 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Process order completion
+     * Process redirect payment
+     * Validate charge and process order
      */
-    public function process_order_completion()
+    public function process_redirect_payment()
     {
-        // TODO: add handling process for failure or pending?
-        if (empty($_GET['univapayChargeId'])) {
-            wc_add_notice('決済エラーサイト管理者にお問い合わせください。', 'error');
-            wp_safe_redirect(wc_get_checkout_url());
-            exit;
+        if (! is_order_received_page() || empty($_GET['univapayChargeId'])) {
+            return;
         }
 
         try {
@@ -427,8 +454,9 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             $charge = $this->univapay_client->getCharge($token->storeId, $_GET['univapayChargeId']);
 
             if (!$this->is_charge_valid($charge, $order)) {
+                // NOTE: notice does not show up on block checkout page
                 wc_add_notice(__('決済エラー入力内容を確認してください', 'upfw'), 'error');
-                wp_safe_redirect(wc_get_checkout_url());
+                wp_safe_redirect(wc_get_cart_url());
                 exit;
             }
             // TODO: add validation so order status does not get overwritten, when page is refreshed
@@ -447,19 +475,24 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             }
             // save charge id
             update_post_meta($order_id, 'univapay_charge_id', $charge->id);
-            // Empty cart
-            $woocommerce->cart->empty_cart();
-            
-            // clear session
-            // legacy checkout, our custom session clean up
-            WC()->session->set(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID, null);
-            // block checkout, WooCommerce seems to keep this session even after payment_complete
-            WC()->session->set('store_api_draft_order', null); 
         } catch (\Exception $e) {
             wc_add_notice(__('決済エラーサイト管理者にお問合せください', 'upfw'), 'error');
-            wp_safe_redirect(wc_get_checkout_url());
+            wp_safe_redirect(wc_get_cart_url());
             exit;
         }
+    }
+
+    /**
+     * Process order completion
+     * WooCommerce thank you page, cart session already been cleared
+     */
+    public function process_order_completion()
+    {
+        // clear session
+        // legacy checkout, our custom session clean up
+        WC()->session->set(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID, null);
+        // block checkout, WooCommerce seems to keep this session even after payment_complete
+        WC()->session->set('store_api_draft_order', null);
     }
 
     /*

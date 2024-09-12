@@ -40,7 +40,7 @@ class TestPaymentProcessing extends BasePluginTest
      * @param WC_Order $order The order to be used in the mock charge.
      * @return object The initiated mock charge.
      */
-    private function initiate_mock_charge($order) : object
+    private function initiate_mock_charge($order): object
     {
         return (object) [
             'id' => $this->faker->uuid,
@@ -54,7 +54,7 @@ class TestPaymentProcessing extends BasePluginTest
      * Initiates a mock AppJWT.
      * @return MockInterface The initiated mock AppJWT.
      */
-    private function initiate_mock_app_jwt() : MockInterface
+    private function initiate_mock_app_jwt(): MockInterface
     {
         return Mockery::mock('alias:' . AppJWT::class)
             ->shouldReceive('createToken')
@@ -69,7 +69,7 @@ class TestPaymentProcessing extends BasePluginTest
      * @param object $mock_charge The mock charge to be returned by the client.
      * @return MockInterface The initiated mock client.
      */
-    private function initiate_mock_client($mock_charge) : MockInterface
+    private function initiate_mock_client($mock_charge): MockInterface
     {
         $mock_payment_type = Mockery::mock();
         $mock_payment_type->shouldReceive('getValue')->andReturn('card');
@@ -80,7 +80,7 @@ class TestPaymentProcessing extends BasePluginTest
         $mock_client = Mockery::mock(UnivapayClient::class);
         $mock_client->shouldReceive('getCharge')->andReturn($mock_charge);
         $mock_client->shouldReceive('getTransactionToken')->andReturn($mock_transaction_token);
-        
+
         return $mock_client;
     }
 
