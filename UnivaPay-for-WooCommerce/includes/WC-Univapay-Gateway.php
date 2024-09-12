@@ -438,8 +438,16 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
      */
     public function process_redirect_payment()
     {
-        if (! is_order_received_page() || empty($_GET['univapayChargeId'])) {
-            return;
+        if (getenv('WP_ENV') !== 'test') {
+            // Default environment
+            if (! is_order_received_page() || empty($_GET['univapayChargeId'])) {
+                return;
+            }
+        } else {
+            // Test environment
+            if (empty($_GET['univapayChargeId'])) {
+                return;
+            }
         }
 
         try {

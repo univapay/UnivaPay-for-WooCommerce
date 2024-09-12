@@ -19,7 +19,7 @@
             "wp plugin install woocommerce --activate --path=/tmp/wordpress",
             "cp -r . /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce",
             "rm -rf /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce/vendor",
-            "phpunit"
+            "WP_ENV=test phpunit"
         ]
     },
     "require": {

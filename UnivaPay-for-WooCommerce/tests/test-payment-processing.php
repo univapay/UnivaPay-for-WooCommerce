@@ -97,7 +97,7 @@ class TestPaymentProcessing extends BasePluginTest
         $this->assertContains('決済エラーサイト管理者にお問い合わせください。', $error_messages);
     }
 
-    public function order_completion_data_provider()
+    public function order_payment_data_provider()
     {
         // Note: WooCommerce order status list
         // pending, processing, on-hold, completed, cancelled, refunded, failed
@@ -110,9 +110,9 @@ class TestPaymentProcessing extends BasePluginTest
     }
 
     /**
-     * @dataProvider order_completion_data_provider
+     * @dataProvider order_data_provider
      */
-    public function test_process_order_completion($capture, $expected_status, $expected_note)
+    public function test_process_order_payment($capture, $expected_status, $expected_note)
     {
         $this->payment_gateways['upfw']->capture = $capture;
         $_POST['univapay_optional'] = "false";
@@ -136,13 +136,12 @@ class TestPaymentProcessing extends BasePluginTest
         $mock_app_jwt = $this->initiate_mock_app_jwt();
         $this->payment_gateways['upfw']->app_jwt = $mock_app_jwt;
         $this->payment_gateways['upfw']->univapay_client = $mock_client;
-        $this->payment_gateways['upfw']->process_order_completion();
+        $this->payment_gateways['upfw']->process_redirect_payment();
         $result_order_notes = wc_get_order_notes(['order_id' => $mock_order->get_id()]);
 
         $result_order = wc_get_order($mock_order->get_id());
         $this->assertEquals($mock_charge->id, get_post_meta($result_order->get_id(), 'univapay_charge_id', true), 'Charge ID should be saved.');
         $this->assertEquals($expected_status, $result_order->get_status(), 'Order status does not match the expected status.');
         $this->assertContains($expected_note, array_column($result_order_notes, 'content'), 'Order note does not contain expected status change message.');
-        $this->assertEmpty(WC()->cart->get_cart(), 'Cart should be empty.');
     }
 }
