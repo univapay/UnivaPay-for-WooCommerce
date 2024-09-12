@@ -33,5 +33,10 @@
         "yoast/phpunit-polyfills": "^2.0",
         "mockery/mockery": "^1.6",
         "fakerphp/faker": "^1.23"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4"
+        }
     }
 }
