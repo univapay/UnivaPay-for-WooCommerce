@@ -27,7 +27,7 @@ function doCheckout() {
         })
         .catch((errors) => {
             hideLoadingSpinner();
-            alert("入力内容をご確認ください");
+            alert(`決済処理に失敗しました。再度お試しください。\nエラー: ${errors.message}`);
             console.error(errors);
         });
 }
