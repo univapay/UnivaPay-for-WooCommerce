@@ -1,43 +1,90 @@
+import './univapay.css'
+
+let isRendering = false;
+
 function selected() {
     return jQuery('#payment_method_upfw').prop('checked');
 }
+
+function showLoadingSpinner() {
+    document.getElementById('loading-spinner').style.display = 'flex';
+}
+
+function hideLoadingSpinner() {
+    document.getElementById('loading-spinner').style.display = 'none';
+}
+
 function doCheckout() {
     // clear before token
-    document.querySelectorAll('[name="univapayTokenId"]').forEach(function(v) {
+    document.querySelectorAll('[name="univapayChargeId"]').forEach(function(v) {
         v.parentNode.removeChild(v);
     });
     var iFrame = document.querySelector("#upfw_checkout iframe");
+
+    showLoadingSpinner();
     UnivapayCheckout.submit(iFrame)
         .then(() => {
+            hideLoadingSpinner();
             document.querySelector('#place_order').click();
         })
         .catch((errors) => {
-            alert("入力内容をご確認ください");
+            hideLoadingSpinner();
+            alert(`決済処理に失敗しました。再度お試しください。\nエラー: ${errors.message}`);
             console.error(errors);
         });
 }
+
 function optional() {
     jQuery('<input>').attr({
         'type': 'hidden',
-        'name': 'univapayOptional',
+        'name': 'univapay_optional',
         'value': 'true'
     }).appendTo('form.woocommerce-checkout');
     jQuery('#place_order').click();
 }
+
 function getEmail() {
     return jQuery("#billing_email").val();
 }
-function render() {
+
+async function fetchOrderSession() {
+    try {
+        const response = await fetch('/index.php?rest_route=/univapay/v1/order-session');
+        if (!response.ok) {
+            throw new Error('システムエラーが発生しました。');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('failed fetching order session: ', error);
+        alert('予期しないエラーが発生しました。後ほど再試行してください。');
+        return null;
+    }
+}
+
+async function render() {
+    if (isRendering) {
+        return;
+    }
+    isRendering = true;
+
+    const orderSession = await fetchOrderSession();
+    if (!orderSession) {
+        return;
+    }
+
     jQuery("#place_order").before(
         jQuery('<div></div>').attr({
             'id': 'upfw_checkout'
     }));
     jQuery('<span></span>').attr({
-        'data-app-id': univapay_params.token,
-        'data-checkout': "token",
-        'data-token-type': "one_time",
-        'data-inline': true,
+        'data-app-id': univapay_params.app_id,
+        'data-checkout': "payment",
         'data-email': getEmail(),
+        'data-amount': univapay_params.total,
+        'data-capture': univapay_params.capture,
+        'data-currency': univapay_params.currency,
+        'data-inline': true,
+        'data-metadata': 'order_id:' + orderSession.order_id,
         'data-inline-item-style': 'padding: 0 2px',
     }).appendTo("#upfw_checkout");
     jQuery("#place_order").after(
@@ -62,7 +109,16 @@ function render() {
                 'line-height': '1.2'
             }).on("click", optional));
     }
+    isRendering = false;
 }
+
+// Add the loading spinner HTML to the body
+document.body.insertAdjacentHTML('beforeend', `
+    <div id="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+`);
+
 function checkSelect() {
     jQuery("#place_order").hide();
     jQuery("#upfw_checkout").remove();
@@ -74,16 +130,21 @@ function checkSelect() {
         jQuery("#place_order").show();
     }
 }
+
 function payfororder(e) {
     if(!selected())
         return;
     e.preventDefault();
+
     var checkout = UnivapayCheckout.create({
-        appId: univapay_params.token,
+        appId: univapay_params.app_id,
         checkout: 'payment',
-        amount: univapay_params.total,
-        currency: univapay_params.currency,
         email: univapay_params.email,
+        amount: univapay_params.total,
+        capture: univapay_params.capture,
+        currency: univapay_params.currency,
+        inline: true,
+        metadata: 'order_id:' + univapay_params.order_id,
         onSuccess: (result) => {
             jQuery('<input>').attr({
                 'type': 'hidden',
@@ -105,6 +166,7 @@ function payfororder(e) {
     });
     checkout.open();
 }
+
 jQuery(document).ready(function($) {
     $(document.body).on("updated_checkout payment_method_selected", checkSelect);
     $('#order_review').on("submit", payfororder);

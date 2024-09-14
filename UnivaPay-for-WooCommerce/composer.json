@@ -1,13 +1,15 @@
 {
     "name": "univapay/checkout",
     "type": "wordpress-plugin",
-    "version": "0.3.7",
     "scripts": {
         "init-local": [
             "wp core install --url=http://localhost:3080 --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",
             "wp plugin install woocommerce --activate --path=/var/www/html",
-            "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html"
+            "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html",
+            "composer install && npm ci"
         ],
+        "fix-lint": "phpcbf --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
+        "lint": "phpcs --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
         "test": [
             "rm -rf /tmp/wordpress",
             "bin/install-wp-tests.sh wordpress_test root wordpress wp-db latest",
@@ -17,16 +19,24 @@
             "wp plugin install woocommerce --activate --path=/tmp/wordpress",
             "cp -r . /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce",
             "rm -rf /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce/vendor",
-            "phpunit"
+            "WP_ENV=test phpunit"
         ]
     },
     "require": {
-        "php": ">=7.2",
-        "univapay/php-sdk": "6.2.2"
+        "php": ">=7.4",
+        "univapay/php-sdk": "6.6.1"
     },
     "require-dev": {
         "wp-cli/wp-cli-bundle": "^2.10",
         "phpunit/phpunit": "^8.5",
-        "yoast/phpunit-polyfills": "^2.0"
+        "squizlabs/php_codesniffer": "^3.10",
+        "yoast/phpunit-polyfills": "^2.0",
+        "mockery/mockery": "^1.6",
+        "fakerphp/faker": "^1.23"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4"
+        }
     }
 }
