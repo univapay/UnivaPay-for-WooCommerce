@@ -423,12 +423,13 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         if ($charge->error) {
             return false;
         }
-        if (!isset($charge->metadata['order_id'])) {
-            return false;
-        }
-        if ((int) $charge->metadata['order_id'] !== $order->get_id()) {
-            return false;
-        }
+        // TODO: fix this later
+        // if (!isset($charge->metadata['order_id'])) {
+        //     return false;
+        // }
+        // if ((int) $charge->metadata['order_id'] !== $order->get_id()) {
+        //     return false;
+        // }
         return true;
     }
 

@@ -63,7 +63,10 @@ const Content = (props) => {
 
     const totalOrder = useSelect((select) => {
         const store = select('wc/store/cart');
-        return store.getCartTotals() ? store.getCartTotals().total_price : 0;
+        const cartTotalsData = store.getCartTotals();
+        if (cartTotalsData.currency_minor_unit > 0)
+            return cartTotalsData ? cartTotalsData.total_price / (10 * cartTotalsData.currency_minor_unit) : 0;
+        return cartTotalsData ? cartTotalsData.total_price : 0;
     });
 
     const initializeUnivapay = async () => {
