@@ -58,3 +58,6 @@ https://www.univapay.com/yakkan/
 * PHP 8対応の更新
 * WooCommerceのブロックチェックアウト対応
 * バグ修正
+
+= 0.4.1 - 2024-09-20 =
+* 小数点バグ修正
