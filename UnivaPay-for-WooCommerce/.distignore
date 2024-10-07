@@ -16,3 +16,4 @@ webpack.config.js
 wp-tests-config.php
 phpcs.xml
 phpunit.xml
+.phpunit.result.cache
