@@ -7,8 +7,6 @@ import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 
 import { useEffect, useRef, useState } from 'react';
 
-import './univapay.css';
-
 const settings = getSetting('upfw_data', {});
 
 const defaultLabel = __(
@@ -141,21 +139,11 @@ const Content = (props) => {
         // this is a workaround to pass the univapay state to the server side
         // ref: https://github.com/woocommerce/woocommerce-blocks/blob/62243e1731a0773f51b81fb8406ebc2e8b180b40/docs/internal-developers/block-client-apis/checkout/checkout-api.md#passing-a-value-from-the-client-through-to-server-side-payment-processing
         onPaymentSetup( async() => {
-            // TODO: move all redirect logic to frontend
-            if (univapayOptionalRef.current === 'true') {
-                return {
-                    type: emitResponse.responseTypes.SUCCESS,
-                    meta: {
-                        paymentMethodData: {
-                            'univapay_optional' : univapayOptionalRef.current,
-                            'univapay_charge_id': univapayChargeIdRef.current,
-                        }
-                    },
-                }
-            }
-
             try {
-                await univapaySubmit();
+                // TODO: move redirect logic to frontend
+                if (univapayOptionalRef.current !== 'true') {
+                    await univapaySubmit();
+                }
                 return {
                     type: emitResponse.responseTypes.SUCCESS,
                     meta: {
@@ -186,13 +174,6 @@ const Content = (props) => {
 
     return decodeEntities(settings.description || '');
 };
-
-// Add the loading spinner HTML to the body
-document.body.insertAdjacentHTML('beforeend', `
-    <div id="loading-spinner" style="display: none;">
-        <div class="spinner"></div>
-    </div>
-`);
 
 /**
  * Univapay payment method config object.

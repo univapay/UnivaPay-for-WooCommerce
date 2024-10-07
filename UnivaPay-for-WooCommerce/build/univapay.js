@@ -1,6 +1,4 @@
-import './univapay.css'
-
-let isRendering = false;
+var isRendering = false;
 
 function selected() {
     return jQuery('#payment_method_upfw').prop('checked');
@@ -21,14 +19,11 @@ function doCheckout() {
     });
     var iFrame = document.querySelector("#upfw_checkout iframe");
 
-    showLoadingSpinner();
     UnivapayCheckout.submit(iFrame)
         .then(() => {
-            hideLoadingSpinner();
             document.querySelector('#place_order').click();
         })
         .catch((errors) => {
-            hideLoadingSpinner();
             alert(`決済処理に失敗しました。再度お試しください。\nエラー: ${errors.message}`);
             console.error(errors);
         });
@@ -62,9 +57,7 @@ async function fetchOrderSession() {
 }
 
 async function render() {
-    if (isRendering) {
-        return;
-    }
+    if (isRendering) return;
     isRendering = true;
 
     const orderSession = await fetchOrderSession();
@@ -111,13 +104,6 @@ async function render() {
     }
     isRendering = false;
 }
-
-// Add the loading spinner HTML to the body
-document.body.insertAdjacentHTML('beforeend', `
-    <div id="loading-spinner" style="display: none;">
-        <div class="spinner"></div>
-    </div>
-`);
 
 function checkSelect() {
     jQuery("#place_order").hide();
@@ -169,5 +155,4 @@ function payfororder(e) {
 
 jQuery(document).ready(function($) {
     $(document.body).on("updated_checkout payment_method_selected", checkSelect);
-    $('#order_review').on("submit", payfororder);
 });

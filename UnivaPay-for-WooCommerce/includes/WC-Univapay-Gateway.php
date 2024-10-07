@@ -345,23 +345,36 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             true
         );
 
-        // legacy checkout
-        $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) ?
-            WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) : WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
+        // TODO: Split the logic between myaccount order pay page and checkout page
+        // if myaccount order pay page
+        if (is_wc_endpoint_url('order-pay')) {
+            $order = wc_get_order( get_query_var( 'order-pay' ) );
+            if($order)
+                $order = $order->get_data();
+        } else {
+            // legacy checkout
+            $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) ?
+                WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) : WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
 
-        // block checkout
-        if (is_null($order_id) && isset(WC()->session)) {
-            $order_id = isset(WC()->session->order_awaiting_payment) ?
-                absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
+            // block checkout
+            if (is_null($order_id) && isset(WC()->session)) {
+                $order_id = isset(WC()->session->order_awaiting_payment) ?
+                    absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
+            }
+
+            $order = wc_get_order( $order_id );
+            if($order){
+                $order = $order->get_data();
+            }
         }
 
         wp_localize_script('univapay_woocommerce', 'univapay_params', array(
             'app_id' => $this->token,
             'formurl' => $this->formurl,
-            'total' =>  WC()->cart->total,
+            'total' =>  $order ? $order["total"] : 0,
             'capture' => ($this->capture === 'yes') ? 'true' : 'false',
             'currency' => strtolower(get_woocommerce_currency()),
-            'order_id' => $order_id,
+            'order_id' => $order ? $order["id"] : null,
         ));
     }
 
