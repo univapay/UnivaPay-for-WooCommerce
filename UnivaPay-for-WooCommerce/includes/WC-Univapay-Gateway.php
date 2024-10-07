@@ -381,6 +381,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         $capture = $this->capture === 'yes';
 
         $money = new Money($order->get_data()["total"], new Currency($order->get_data()["currency"]));
+        // TODO: move redirect logic to frontend
         if (isset($_POST['univapay_optional']) && $_POST['univapay_optional'] === 'true') {
             return array(
                 'result' => 'success',
