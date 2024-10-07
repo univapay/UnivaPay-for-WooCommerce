@@ -57,10 +57,6 @@ const Content = (props) => {
         return jQuery('#email').val();
     }
     
-    const getPalaceOrderButton = () => {
-        return jQuery('button.wc-block-components-button.wp-element-button.wc-block-components-checkout-place-order-button.contained');
-    }
-
     const totalOrder = useSelect((select) => {
         const store = select('wc/store/cart');
         const cartTotalsData = store.getCartTotals();
@@ -75,7 +71,6 @@ const Content = (props) => {
 
     const initializeUnivapay = async () => {
         removeUnivapay();
-        getPalaceOrderButton().hide();
     
         jQuery(".wc-block-checkout__actions.wp-block-woocommerce-checkout-actions-block").before(
             jQuery('<div></div>').attr({
@@ -103,37 +98,8 @@ const Content = (props) => {
                     class: 'wc-block-components-button wp-element-button wc-block-components-checkout-place-order-button contained',
                 }).on("click", redirectToUnivapay));
         }
-
-        jQuery(".wc-block-checkout__actions_row").append(
-            jQuery('<a>注文する</a>').attr({
-                type: 'button',
-                id: 'upfw_order',
-                class: 'wc-block-components-button wp-element-button wc-block-components-checkout-place-order-button contained',
-            }).on("click", doCheckout));
     };
 
-    const doCheckout = () => {
-        // clear before token
-        document.querySelectorAll('[name="univapayTokenId"]').forEach(function(v) {
-            v.parentNode.removeChild(v);
-        });
-        var iFrame = document.querySelector("#upfw_checkout iframe");
-        
-        showLoadingSpinner();
-        UnivapayCheckout.submit(iFrame)
-            .then((res) => {
-                hideLoadingSpinner();
-                univapayOptionalRef.current = 'false';
-                univapayChargeIdRef.current = res.charge;
-                getPalaceOrderButton().click();
-            })
-            .catch((errors) => {
-                hideLoadingSpinner();
-                alert(`決済処理に失敗しました。再度お試しください。\nエラー: ${errors.message}`);
-                console.error('failed to submit checkout', errors);
-            });
-    }
-    
     useEffect(() => {
         const isUnivapayGatewaySelected = () => {
             return jQuery('input[name="radio-control-wc-payment-method-options"]:checked').val() === 'upfw';
@@ -144,26 +110,53 @@ const Content = (props) => {
                 await fetchOrderSession();
             } else {
                 removeUnivapay();
-                getPalaceOrderButton().show();
             }
+        }
+
+        const univapaySubmit = () => {
+            return new Promise((resolve, reject) => {
+                // clear before token
+                document.querySelectorAll('[name="univapayTokenId"]').forEach(function(v) {
+                    v.parentNode.removeChild(v);
+                });
+                var iFrame = document.querySelector("#upfw_checkout iframe");
+                
+                UnivapayCheckout.submit(iFrame)
+                    .then((res) => {
+                        univapayOptionalRef.current = 'false';
+                        univapayChargeIdRef.current = res.charge;
+                        resolve(null);
+                    })
+                    .catch((errors) => {
+                        reject(errors);
+                    });
+            });
         }
 
         jQuery(document).ready(async function ($) {    
             await fetchOrderSession();
             jQuery('#payment-method').on('change', updateUnivapay);
         });
-        
+
         // this is a workaround to pass the univapay state to the server side
         // ref: https://github.com/woocommerce/woocommerce-blocks/blob/62243e1731a0773f51b81fb8406ebc2e8b180b40/docs/internal-developers/block-client-apis/checkout/checkout-api.md#passing-a-value-from-the-client-through-to-server-side-payment-processing
         onPaymentSetup( async() => {
-            return {
-                type: emitResponse.responseTypes.SUCCESS,
-                meta: {
-                    paymentMethodData: {
-                        'univapay_optional' : univapayOptionalRef.current,
-                        'univapay_charge_id': univapayChargeIdRef.current,
-                    }
-                },
+            try {
+                await univapaySubmit();
+                return {
+                    type: emitResponse.responseTypes.SUCCESS,
+                    meta: {
+                        paymentMethodData: {
+                            'univapay_optional' : univapayOptionalRef.current,
+                            'univapay_charge_id': univapayChargeIdRef.current,
+                        }
+                    },
+                }
+            } catch (error) {
+                return {
+                    type: emitResponse.responseTypes.ERROR,
+                    message: `決済処理に失敗しました。再度お試しください。\nエラー: ${error.message}`
+                }
             }
         });
     }, [totalOrder]);
@@ -204,11 +197,3 @@ const UnivaPay = {
 };
 
 registerPaymentMethod( UnivaPay );
-
-function showLoadingSpinner() {
-    document.getElementById('loading-spinner').style.display = 'flex';
-}
-
-function hideLoadingSpinner() {
-    document.getElementById('loading-spinner').style.display = 'none';
-}
