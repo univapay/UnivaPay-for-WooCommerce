@@ -352,7 +352,15 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         // if myaccount order pay page
         if (is_wc_endpoint_url('order-pay')) {
             $order = wc_get_order( get_query_var( 'order-pay' ) );
-            $order_id = $order->get_id();
+
+            wp_localize_script('univapay_woocommerce', 'univapay_params', array(
+                'app_id' => $this->token,
+                'formurl' => $this->formurl,
+                'total' =>  $order->get_total(),
+                'capture' => ($this->capture === 'yes') ? 'true' : 'false',
+                'currency' => strtolower(get_woocommerce_currency()),
+                'order_id' => $order->get_id(),
+            ));
         } else {
             // legacy checkout
             $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) ?
@@ -363,16 +371,16 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                 $order_id = isset(WC()->session->order_awaiting_payment) ?
                     absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
             }
-        }
 
-        wp_localize_script('univapay_woocommerce', 'univapay_params', array(
-            'app_id' => $this->token,
-            'formurl' => $this->formurl,
-            'total' =>  WC()->cart->total,
-            'capture' => ($this->capture === 'yes') ? 'true' : 'false',
-            'currency' => strtolower(get_woocommerce_currency()),
-            'order_id' => $order_id,
-        ));
+            wp_localize_script('univapay_woocommerce', 'univapay_params', array(
+                'app_id' => $this->token,
+                'formurl' => $this->formurl,
+                'total' =>  WC()->cart->total,
+                'capture' => ($this->capture === 'yes') ? 'true' : 'false',
+                'currency' => strtolower(get_woocommerce_currency()),
+                'order_id' => $order_id,
+            ));
+        }
     }
 
     /*
