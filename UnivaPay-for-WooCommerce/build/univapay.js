@@ -4,12 +4,27 @@ function selected() {
     return jQuery('#payment_method_upfw').prop('checked');
 }
 
-function showLoadingSpinner() {
-    document.getElementById('loading-spinner').style.display = 'flex';
-}
-
-function hideLoadingSpinner() {
-    document.getElementById('loading-spinner').style.display = 'none';
+function validateCheckout() {
+    return new Promise((resolve, reject) => {
+        jQuery.ajax({
+            type: 'POST',
+            url: wc_checkout_params.checkout_url,
+            data: jQuery('form.woocommerce-checkout').serialize() + '&validation_only=true',
+            dataType: 'json',
+            success: function(response) {
+                if (response.result === "success") {
+                    // validation passed
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error:', status, error);
+                reject(error);
+            }
+        });
+    });
 }
 
 function doCheckout() {
@@ -19,14 +34,23 @@ function doCheckout() {
     });
     var iFrame = document.querySelector("#upfw_checkout iframe");
 
-    UnivapayCheckout.submit(iFrame)
-        .then(() => {
+    validateCheckout().then((res) => {
+        if (res) {
+            UnivapayCheckout.submit(iFrame)
+                .then(() => {
+                    // continue process order
+                    document.querySelector('#place_order').click();
+                })
+                .catch((errors) => {
+                    alert(`決済処理に失敗しました。再度お試しください。\nエラー: ${errors.message}`);
+                });
+        } else {
+            // show error messages by calling the place order button, will call the same wc-ajax=checkout again
             document.querySelector('#place_order').click();
-        })
-        .catch((errors) => {
-            alert(`決済処理に失敗しました。再度お試しください。\nエラー: ${errors.message}`);
-            console.error(errors);
-        });
+        }
+    }).catch((error) => {
+        console.error('システムエラー・エラ：', error.messages);
+    });
 }
 
 function optional() {
@@ -44,7 +68,7 @@ function getEmail() {
 
 async function fetchOrderSession() {
     try {
-        const response = await fetch('/index.php?rest_route=/univapay/v1/order-session');
+        const response = await fetch('/index.php?rest_route=/univapay/v1/order/session');
         if (!response.ok) {
             throw new Error('システムエラーが発生しました。');
         }
@@ -73,7 +97,7 @@ async function render() {
         'data-app-id': univapay_params.app_id,
         'data-checkout': "payment",
         'data-email': getEmail(),
-        'data-amount': univapay_params.total,
+        'data-amount': orderSession.total,
         'data-capture': univapay_params.capture,
         'data-currency': univapay_params.currency,
         'data-inline': true,

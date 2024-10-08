@@ -142,7 +142,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
 
     public function register_get_order_session()
     {
-        register_rest_route('univapay/v1', '/order-session', array(
+        register_rest_route('univapay/v1', '/order/session', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_order_session'),
             'permission_callback' => '__return_true',
@@ -165,7 +165,10 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                 absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
         }
 
-        return new WP_REST_Response(['order_id' => $order_id], 200);
+        return new WP_REST_Response([
+            'order_id' => $order_id,
+            'total' => WC()->cart->total,
+        ], 200);
     }
 
     /**
@@ -349,8 +352,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         // if myaccount order pay page
         if (is_wc_endpoint_url('order-pay')) {
             $order = wc_get_order( get_query_var( 'order-pay' ) );
-            if($order)
-                $order = $order->get_data();
+            $order_id = $order->get_id();
         } else {
             // legacy checkout
             $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) ?
@@ -361,20 +363,15 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                 $order_id = isset(WC()->session->order_awaiting_payment) ?
                     absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
             }
-
-            $order = wc_get_order( $order_id );
-            if($order){
-                $order = $order->get_data();
-            }
         }
 
         wp_localize_script('univapay_woocommerce', 'univapay_params', array(
             'app_id' => $this->token,
             'formurl' => $this->formurl,
-            'total' =>  $order ? $order["total"] : 0,
+            'total' =>  WC()->cart->total,
             'capture' => ($this->capture === 'yes') ? 'true' : 'false',
             'currency' => strtolower(get_woocommerce_currency()),
-            'order_id' => $order ? $order["id"] : null,
+            'order_id' => $order_id,
         ));
     }
 
@@ -390,6 +387,14 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
     */
     public function process_payment($order_id)
     {
+        // NOTE: this is a workaround for legacy checkout as it does not provide
+        // a way to validate the checkout form without processing the order
+        if (isset($_POST['validation_only'])) {
+            return array(
+                'result' => 'success',
+            );
+        }
+
         $order = wc_get_order($order_id);
         $capture = $this->capture === 'yes';
 
