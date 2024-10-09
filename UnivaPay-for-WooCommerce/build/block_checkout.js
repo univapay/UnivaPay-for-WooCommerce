@@ -24,21 +24,6 @@ const Content = (props) => {
     const { onPaymentSetup } = eventRegistration;
     const univapayOptionalRef = useRef('false');
     const univapayChargeIdRef = useRef('');
-    const [orderSession, setOrderSession] = useState({});
-
-    const fetchOrderSession = async () => {
-        try {
-            const response = await fetch('/index.php?rest_route=/univapay/v1/order-session');
-            if (!response.ok) {
-                throw new Error('システムエラーが発生しました。');
-            }
-            const data = await response.json();
-            setOrderSession(data);
-        } catch (error) {
-            console.error('failed fetching order session: ', error);
-            alert('予期しないエラーが発生しました。後ほど再試行してください。');
-        }
-    };
 
     const redirectToUnivapay = () => {
         univapayOptionalRef.current = 'true';
@@ -47,7 +32,6 @@ const Content = (props) => {
 
     const removeUnivapay = () => {
         jQuery('#upfw_checkout').remove();
-        jQuery('#upfw_order').remove();
         jQuery('#upfw_optional').remove();
     };
     
@@ -67,9 +51,12 @@ const Content = (props) => {
         return currency_minor_unit > 0 ? total_price / Math.pow(10, currency_minor_unit) : total_price; 
     });
 
-    const initializeUnivapay = async () => {
-        removeUnivapay();
-    
+    const orderId = useSelect((select) => {
+        const store = select('wc/store/checkout');
+        return store.getOrderId();
+    });
+
+    const initializeUnivapay = () => {
         jQuery(".wc-block-checkout__actions.wp-block-woocommerce-checkout-actions-block").before(
             jQuery('<div></div>').attr({
                 'id': 'upfw_checkout'
@@ -85,7 +72,7 @@ const Content = (props) => {
             'data-currency': settings.currency,
             'data-inline': true,
             'data-inline-item-style': 'padding: 0 2px',
-            'data-metadata': 'order_id:' + orderSession.order_id,
+            'data-metadata': 'order_id:' + orderId,
         }).appendTo("#upfw_checkout");
         
         if(settings.formUrl !== '') {
@@ -103,11 +90,10 @@ const Content = (props) => {
             return jQuery('input[name="radio-control-wc-payment-method-options"]:checked').val() === 'upfw';
         };
 
-        const updateUnivapay = async () => {
+        const rendering = () => {
+            removeUnivapay();
             if (isUnivapayGatewaySelected()) {
-                await fetchOrderSession();
-            } else {
-                removeUnivapay();
+                initializeUnivapay();
             }
         }
 
@@ -132,8 +118,8 @@ const Content = (props) => {
         }
 
         jQuery(document).ready(async function ($) {    
-            await fetchOrderSession();
-            jQuery('#payment-method').on('change', updateUnivapay);
+            jQuery('#payment-method').on('change', rendering);
+            rendering();
         });
 
         // this is a workaround to pass the univapay state to the server side
@@ -165,12 +151,6 @@ const Content = (props) => {
     useEffect(() => {
         initializeUnivapay();
     }, [totalOrder]);
-
-    useEffect(() => {
-        if (Object.keys(orderSession).length > 0) {
-            initializeUnivapay();
-        }
-    }, [orderSession]);
 
     return decodeEntities(settings.description || '');
 };
