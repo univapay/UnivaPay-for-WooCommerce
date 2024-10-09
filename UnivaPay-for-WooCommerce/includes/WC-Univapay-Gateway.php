@@ -111,21 +111,9 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         // This action hook saves the settings
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ));
 
-        // These action hook only runs on legacy checkout page
-        // These action will align the behavior with block checkout page
-        // Note: these actions will not run on block checkout page, ref: https://woocommerce.com/document/managing-orders/order-statuses/#draft-order-status
-        add_action('woocommerce_before_checkout_form', array($this, 'create_draft_order_on_checkout'));
-        add_action('woocommerce_checkout_create_order', array($this, 'use_draft_order_if_exists'));
-
         // TODO: only enqueue scripts on neccessary pages (e.g: checkout, myaccount-oders)
         add_action('wp_enqueue_scripts', array($this, 'payment_scripts'));
-        // To keep cart session alive for failed payment split into 2 actions
-        // 1. process_redirect_payment: validate is charge valid and process to thank you page
-        // 2. process_order_completion: only process the order completion
         add_action('template_redirect', array($this, 'process_redirect_payment'));
-        add_action('woocommerce_thankyou', array($this, 'process_order_completion'));
-
-        add_action('rest_api_init', array($this, 'register_get_order_session'));
 
         // Display charge id in order details
         // TODO: fix meta box later and see what we can do with this
@@ -138,37 +126,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                 echo '</div>';
             }
         });
-    }
-
-    public function register_get_order_session()
-    {
-        register_rest_route('univapay/v1', '/order/session', array(
-            'methods' => 'GET',
-            'callback' => array($this, 'get_order_session'),
-            'permission_callback' => '__return_true',
-        ));
-    }
-
-    public function get_order_session()
-    {
-        if (!WC()->session) {
-            return new WP_REST_Response(['error' => 'No session available'], 400);
-        }
-
-        // legacy checkout
-        $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) ?
-            WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) : WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
-
-        // block checkout
-        if (is_null($order_id) && isset(WC()->session)) {
-            $order_id = isset(WC()->session->order_awaiting_payment) ?
-                absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
-        }
-
-        return new WP_REST_Response([
-            'order_id' => $order_id,
-            'total' => WC()->cart->total,
-        ], 200);
     }
 
     /**
@@ -244,85 +201,10 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         );
     }
 
-    /**
-     * Get an order from session, update it with cart items
-     * @param int $order_id
-     * @param WC_Cart $cart
-     * @return WC_Order|null
-     */
-    private function get_and_update_order_from_session($order_id, $cart)
-    {
-        $order = wc_get_order($order_id);
-        if (!$order) {
-            return null;
-        }
-        foreach ($order->get_items() as $item_id => $item) {
-            $order->remove_item($item_id);
-        }
-        foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
-            $order->add_product($cart_item['data'], $cart_item['quantity']);
-        }
-        $order->calculate_totals();
-        $order->save();
-        return $order;
-    }
-
-    /**
-     * Create draft order on checkout
-     */
-    public function create_draft_order_on_checkout()
-    {
-        $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT);
-        $cart = WC()->cart;
-        if ($order_id) {
-            $existing_order = $this->get_and_update_order_from_session($order_id, WC()->cart);
-            if ($existing_order) {
-                return;
-            }
-        }
-
-        $existing_draft_order_id = WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
-        if ($existing_draft_order_id) {
-            $existing_order = $this->get_and_update_order_from_session($existing_draft_order_id, WC()->cart);
-            if ($existing_order && $existing_order->has_status(WC_Univapay_Constants::CHECKOUT_DRAFT_STATUS)) {
-                return;
-            }
-        }
-
-        // Create a new draft order
-        $order = wc_create_order();
-        foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
-            $order->add_product($cart_item['data'], $cart_item['quantity']);
-        }
-        $order->set_status(WC_Univapay_Constants::CHECKOUT_DRAFT_STATUS);
-        $order->save();
-
-        // Store the draft order ID in the session
-        WC()->session->set(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID, $order->get_id());
-    }
-
-    /**
-     * Use draft order if exists
-     * @param WC_Order $order
-     */
-    function use_draft_order_if_exists($order)
-    {
-        $draft_order_id = WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
-        if ($draft_order_id) {
-            $existing_order = wc_get_order($draft_order_id);
-            if ($existing_order && $existing_order->has_status(WC_Univapay_Constants::CHECKOUT_DRAFT_STATUS)) {
-                // For legacy checkout, default ID=0 which will create a new order
-                $order->set_id($draft_order_id);
-                $order->set_status('pending-payment');
-            }
-        }
-    }
-
-    // enqueue script and style sheet
-    // TODO: fix this stuff after rendering only for necessary pages
+    // TODO: split pay for order and checkout page logic
     public function payment_scripts()
     {
-        // need JavaScript to process a token only on cart/checkout pages
+        // pay_for_order = my account order pay page
         if (! is_cart() && ! is_checkout() && ! isset($_GET['pay_for_order'])) {
             return;
         }
@@ -330,16 +212,14 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         if ('no' === $this->enabled) {
             return;
         }
-        // no reason to enqueue JavaScript if Shop id are not set
+        // no reason to enqueue JavaScript if App token are not set
         if (empty($this->token)) {
             return;
         }
 
         $univapay_asset_file = include(plugin_dir_path(__DIR__) . 'dist/univapay.bundle.asset.php');
 
-        // payment processor JavaScript that allows to obtain a token
         wp_enqueue_script('univapay_checkout', $this->widget . '/client/checkout.js', array(), null, true);
-        // and this is our custom JS in your plugin directory that works with token.js
         wp_enqueue_script(
             'univapay_woocommerce',
             plugin_dir_url(__DIR__) . 'dist/univapay.bundle.js',
@@ -348,11 +228,8 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             true
         );
 
-        // TODO: Split the logic between myaccount order pay page and checkout page
-        // if myaccount order pay page
-        if (is_wc_endpoint_url('order-pay')) {
+        if (isset($_GET['order-pay'])) {
             $order = wc_get_order( get_query_var( 'order-pay' ) );
-
             wp_localize_script('univapay_woocommerce', 'univapay_params', array(
                 'app_id' => $this->token,
                 'formurl' => $this->formurl,
@@ -362,41 +239,20 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
                 'order_id' => $order->get_id(),
             ));
         } else {
-            // legacy checkout
-            $order_id = WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) ?
-                WC()->session->get(WC_Univapay_Constants::ORDER_AWAITING_PAYMENT) : WC()->session->get(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID);
-
-            // block checkout
-            if (is_null($order_id) && isset(WC()->session)) {
-                $order_id = isset(WC()->session->order_awaiting_payment) ?
-                    absint(WC()->session->order_awaiting_payment) : absint(WC()->session->get('store_api_draft_order', 0));
-            }
-
+            // cart & checkout page
             wp_localize_script('univapay_woocommerce', 'univapay_params', array(
                 'app_id' => $this->token,
                 'formurl' => $this->formurl,
-                'total' =>  WC()->cart->total,
                 'capture' => ($this->capture === 'yes') ? 'true' : 'false',
                 'currency' => strtolower(get_woocommerce_currency()),
-                'order_id' => $order_id,
             ));
         }
     }
 
-    /*
-    * Fields validation
-    */
-    public function validate_fields()
-    {
-    }
-
-    /*
-    * We're processing the payments here, everything about
-    */
     public function process_payment($order_id)
     {
-        // NOTE: this is a workaround for legacy checkout as it does not provide
-        // a way to validate the checkout form without processing the order
+        // In legacy checkout, there is no built-in mechanism to validate the checkout form without processing the order.
+        // Reaching this point indicates that the form has been validated successfully.
         if (isset($_POST['validation_only'])) {
             return array(
                 'result' => 'success',
@@ -407,7 +263,11 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         $capture = $this->capture === 'yes';
 
         $money = new Money($order->get_data()["total"], new Currency($order->get_data()["currency"]));
-        // TODO: move redirect logic to frontend
+
+        // Note: Legacy checkout does not create a draft order by default.
+        // Reference: https://woocommerce.com/document/managing-orders/order-statuses/#draft-order-status
+        // Therefore, the redirect payment process should be handled at this stage to ensure order information is available.
+        // Handling this on the front end would require extensive work to match cart information and user session data.
         if (isset($_POST['univapay_optional']) && $_POST['univapay_optional'] === 'true') {
             return array(
                 'result' => 'success',
@@ -450,13 +310,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         if ($charge->error) {
             return false;
         }
-        // TODO: fix this later
-        // if (!isset($charge->metadata['order_id'])) {
-        //     return false;
-        // }
-        // if ((int) $charge->metadata['order_id'] !== $order->get_id()) {
-        //     return false;
-        // }
         return true;
     }
 
@@ -512,23 +365,17 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             // save charge id
             update_post_meta($order_id, 'univapay_charge_id', $charge->id);
         } catch (\Exception $e) {
+            error_log(print_r($e, true));
             wc_add_notice(__('決済エラーサイト管理者にお問合せください', 'upfw'), 'error');
             wp_safe_redirect(wc_get_cart_url());
             exit;
         }
-    }
 
-    /**
-     * Process order completion
-     * WooCommerce thank you page, cart session already been cleared
-     */
-    public function process_order_completion()
-    {
-        // clear session
-        // legacy checkout, our custom session clean up
-        WC()->session->set(WC_Univapay_Constants::SESSION_ORDER_DRAFT_ID, null);
-        // block checkout, WooCommerce seems to keep this session even after payment_complete
-        WC()->session->set('store_api_draft_order', null);
+        // Attempt to patch the charge with the order_id.
+        // Note: On legacy checkout inline form does not have an order_id by default.
+        // This is a best-effort request; if it fails, we do not catch or handle the error,
+        // as the order processing should continue regardless of this request's outcome.
+        $charge->patch(['order_id' => $order->get_id()]);
     }
 
     /*
