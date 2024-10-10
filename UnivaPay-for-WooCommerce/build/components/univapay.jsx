@@ -9,20 +9,29 @@ const UnivapayComponent = forwardRef(({ isVisible, email, amount, orderId, optio
             return new Promise((resolve, reject) => {
                 const iFrame = document.querySelector("#upfw_checkout iframe");
                 if (iFrame) {
-                    resolve({ charge: 'charge_id_example' });
+                    UnivapayCheckout.submit(iFrame)
+                    .then((res) => resolve(res))
+                    .catch((errors) => reject(errors));
                 } else {
-                    reject(new Error('iFrame not found'));
+                    reject(new Error('UnivaPay checkout not found'));
                 }
             });
         }
     }));
 
-    if (!isVisible) {
-        return null;
-    }
+    const handleSubmit = () => {
+        const iFrame = document.querySelector("#upfw_checkout iframe");
+        if (iFrame) {
+            UnivapayCheckout.submit(iFrame)
+                .then((res) => submitCallback(null, res))
+                .catch((errors) => submitCallback(errors));
+        } else {
+            submitCallback(new Error('UnivaPay checkout not found'));
+        }
+    };
 
     return (
-        <>
+        <div key={`${email}-${amount}`} style={{ display: isVisible ? 'block' : 'none' }}>
             <div id="upfw_checkout">
                 <span
                     data-app-id={settings.app_id}
@@ -46,7 +55,8 @@ const UnivapayComponent = forwardRef(({ isVisible, email, amount, orderId, optio
                     その他決済
                 </a>
             )}
-        </>
+            <button onClick={handleSubmit} style={{ display: 'none' }} id="univapay-submit-button"></button>
+        </div>
     );
 });
 
