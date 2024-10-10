@@ -43,6 +43,12 @@ module.exports = (env, argv) => {
             path: path.resolve(__dirname, 'dist'),
             filename: '[name].bundle.js',
         },
+        resolve: {
+            extensions: ['.js', '.jsx'],
+            alias: {
+                '@components': path.resolve(__dirname, 'build/components/'),
+            },
+        },
         module: {
             rules: [
                 {
@@ -53,7 +59,7 @@ module.exports = (env, argv) => {
                     ],
                 },
                 {
-                    test: /\.js$/,
+                    test: /\.(js|jsx)$/,
                     exclude: /node_modules/,
                     use: {
                         loader: 'babel-loader',
