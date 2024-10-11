@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import UnivapayComponent from '@components/univapay';
 
 const settings = getSetting('upfw_data', {});
+const { CHECKOUT_STORE_KEY } = window.wc.wcBlocksData;
 
 const defaultLabel = __(
     'UnivaPay',
@@ -18,13 +19,13 @@ const Label = ( props ) => {
     const { PaymentMethodLabel } = props.components;
     return <PaymentMethodLabel text={ defaultLabel } />;
 };
+    
 
 const Content = (props) => {
     const { eventRegistration, emitResponse } = props;
     const { onPaymentSetup } = eventRegistration;
     const univapayOptionalRef = useRef('false');
     const univapayChargeIdRef = useRef('');
-    const UnivapayComponentRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
     const [email, setEmail] = useState(emailFromStore);
     const [totalPrice, setTotalPrice] = useState(totalPriceFromStore);
@@ -61,18 +62,23 @@ const Content = (props) => {
     });
 
     const orderId = useSelect((select) => {
-        const store = select('wc/store/checkout');
+        const store = select( CHECKOUT_STORE_KEY );
         return store.getOrderId();
     });
-
+    
     const univapaySubmit = () => {
         return new Promise((resolve, reject) => {
-            const submitButton = document.getElementById('univapay-submit-button');
-            if (submitButton) {
-                submitButton.click();
-                resolve(null);
+            const iFrame = document.getElementById('upfw_checkout').querySelector('iframe');
+            if (iFrame) {
+                UnivapayCheckout.submit(iFrame)
+                .then((res) => {
+                    univapayOptionalRef.current = 'false';
+                    univapayChargeIdRef.current = res.charge;
+                    resolve(null);
+                })
+                .catch((err) => reject(err));
             } else {
-                reject(new Error('Univapay submit button not found.'));
+                reject(new Error('Univapay iframe not found.'));
             }
         });
     };
@@ -88,21 +94,7 @@ const Content = (props) => {
         if (paymentMethodElement)
             paymentMethodElement.addEventListener('change', handlePaymentMethodChange);
 
-        return () => {
-            if (paymentMethodElement)
-                paymentMethodElement.removeEventListener('change', handlePaymentMethodChange);
-        };
-    }, []);
-
-    useEffect(() => {
-        setEmail(emailFromStore);
-        setTotalPrice(totalPriceFromStore);
-    }, [emailFromStore, totalPriceFromStore]);
-
-    useEffect(() => {
-        // this is a workaround to pass the univapay state to the server side
-        // ref: https://github.com/woocommerce/woocommerce-blocks/blob/62243e1731a0773f51b81fb8406ebc2e8b180b40/docs/internal-developers/block-client-apis/checkout/checkout-api.md#passing-a-value-from-the-client-through-to-server-side-payment-processing
-        onPaymentSetup( async() => {
+        const runUnivapay = onPaymentSetup( async() => {
             try {
                 if (univapayOptionalRef.current !== 'true') {
                     await univapaySubmit();
@@ -123,8 +115,20 @@ const Content = (props) => {
                 }
             }
         });
-    }, []); // Note: only need to run once, always empty array
-    
+
+        // remove when this component is unmounted
+        return () => {
+            if (paymentMethodElement)
+                paymentMethodElement.removeEventListener('change', handlePaymentMethodChange);
+            runUnivapay();
+        };
+    }, []);
+
+    useEffect(() => {
+        setEmail(emailFromStore);
+        setTotalPrice(totalPriceFromStore);
+    }, [emailFromStore, totalPriceFromStore]);
+
     return (
         <>
             {decodeEntities(settings.description || '')}

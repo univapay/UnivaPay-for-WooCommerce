@@ -1,37 +1,15 @@
-import React, { useImperativeHandle, forwardRef } from 'react';
+import React from 'react';
 import { getSetting } from '@woocommerce/settings';
 
 const settings = getSetting('upfw_data', {});
 
-const UnivapayComponent = forwardRef(({ isVisible, email, amount, orderId, optional }, ref) => {
-    useImperativeHandle(ref, () => ({
-        submit: () => {
-            return new Promise((resolve, reject) => {
-                const iFrame = document.querySelector("#upfw_checkout iframe");
-                if (iFrame) {
-                    UnivapayCheckout.submit(iFrame)
-                    .then((res) => resolve(res))
-                    .catch((errors) => reject(errors));
-                } else {
-                    reject(new Error('UnivaPay checkout not found'));
-                }
-            });
-        }
-    }));
-
-    const handleSubmit = () => {
-        const iFrame = document.querySelector("#upfw_checkout iframe");
-        if (iFrame) {
-            UnivapayCheckout.submit(iFrame)
-                .then((res) => submitCallback(null, res))
-                .catch((errors) => submitCallback(errors));
-        } else {
-            submitCallback(new Error('UnivaPay checkout not found'));
-        }
-    };
+const UnivapayComponent = ({ isVisible, email, amount, orderId, optional }) => {
+    if (!isVisible) {
+        return null;
+    }
 
     return (
-        <div key={`${email}-${amount}`} style={{ display: isVisible ? 'block' : 'none' }}>
+        <div key={`${email}-${amount}`}>
             <div id="upfw_checkout">
                 <span
                     data-app-id={settings.app_id}
@@ -55,9 +33,8 @@ const UnivapayComponent = forwardRef(({ isVisible, email, amount, orderId, optio
                     その他決済
                 </a>
             )}
-            <button onClick={handleSubmit} style={{ display: 'none' }} id="univapay-submit-button"></button>
         </div>
     );
-});
+};
 
 export default UnivapayComponent;
