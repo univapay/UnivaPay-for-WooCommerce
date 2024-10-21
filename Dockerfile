@@ -1,4 +1,3 @@
-# 6.6.1
 FROM wordpress:latest 
 
 ENV TZ=Asia/Tokyo
@@ -20,6 +19,8 @@ RUN apt-get update && \
     curl -sL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm@latest && \
+    # Install Firefox for e2e testing
+    apt-get install -y firefox-esr && \
     # Clean up
     rm -rf /var/lib/apt/lists/*
 
@@ -28,4 +29,4 @@ RUN chown -R www-data /var/www
 RUN chmod -R 755 /var/www/html
 USER www-data
 
-EXPOSE 80 3081
+EXPOSE 80

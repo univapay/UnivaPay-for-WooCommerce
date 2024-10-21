@@ -85,7 +85,7 @@ module.exports = (env, argv) => {
                 directory: buildDir,
             },
             hot: true,
-            port: 3081,
+            port: 3000,
             devMiddleware: {
                 writeToDisk: true,
             },

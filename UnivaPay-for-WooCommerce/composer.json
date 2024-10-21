@@ -2,14 +2,28 @@
     "name": "univapay/checkout",
     "type": "wordpress-plugin",
     "scripts": {
-        "init-local": [
-            "wp core install --url=http://localhost:3080 --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",
+        "reset:db": "wp db reset --yes",
+        "activate:plugin": [
             "wp plugin install woocommerce --activate --path=/var/www/html",
             "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html",
             "composer install && npm ci"
         ],
-        "fix-lint": "phpcbf --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
-        "lint": "phpcs --standard=phpcs.xml includes tests UnivaPay-for-WooCommerce.php",
+        "init:local": [
+            "@reset:db",
+            "wp core install --url=http://localhost:${WP_PORT} --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",
+            "@activate:plugin",
+            "wp univapay:gateway:setup && wp univapay:add:dummy"
+        ],
+        "init:e2e": [
+            "@reset:db",
+            "wp core install --url=http://localhost --title=E2EWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",
+            "@activate:plugin",
+            "bin/add-test-fixures.sh"
+        ],
+        "checkout:classic": "",
+        "checkout:block": "",
+        "fix:lint": "phpcbf --standard=phpcs.xml",
+        "lint": "phpcs --standard=phpcs.xml",
         "test": [
             "rm -rf /tmp/wordpress",
             "bin/install-wp-tests.sh wordpress_test root wordpress wp-db latest",
