@@ -1,11 +1,11 @@
 import { Selector } from 'testcafe';
 
-fixture `Legacy Checkout`
+// fixture `Legacy Checkout`
 
-test('', async t => {
-});
+// test('', async t => {
+// });
 
-fixture `New Checkout`
+// fixture `New Checkout`
 
-test('', async t => {
-});
+// test('', async t => {
+// });

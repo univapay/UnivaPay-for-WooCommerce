@@ -11,17 +11,15 @@
         "init:local": [
             "@reset:db",
             "wp core install --url=http://localhost:${WP_PORT} --title=LocalWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",
-            "@activate:plugin",
-            "wp univapay:gateway:setup && wp univapay:add:dummy"
+            "@activate:plugin"
         ],
         "init:e2e": [
             "@reset:db",
             "wp core install --url=http://localhost --title=E2EWP --admin_user=admin --admin_password=admin --admin_email=admin@example.com --path=/var/www/html",
             "@activate:plugin",
-            "bin/add-test-fixures.sh"
+            "php ./bin/set-univapay-gateway.php",
+            "bin/wc-add-test-fixtures.sh"
         ],
-        "checkout:classic": "",
-        "checkout:block": "",
         "fix:lint": "phpcbf --standard=phpcs.xml",
         "lint": "phpcs --standard=phpcs.xml",
         "test": [

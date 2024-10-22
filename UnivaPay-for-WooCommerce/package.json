@@ -2,7 +2,6 @@
   "scripts": {
     "build": "wp-scripts build --config webpack.config.js --mode production",
     "start": "wp-scripts start --config webpack.config.js --mode development",
-    "test:setup": "composer init:e2e",
     "test:e2e": "testcafe firefox:headless tests/e2e",
     "test:e2e:debug": "testcafe firefox tests/e2e --debug-mode",
     "packages-update": "wp-scripts packages-update"
