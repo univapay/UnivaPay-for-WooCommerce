@@ -12,8 +12,7 @@ services:
     container_name: wp
     build: .
     ports:
-      - "3080:80"
-      - "3081:3081"
+      - "${WP_PORT:-3080}:80"
     volumes:
       - wp-wordpress:/var/www/html
       - ./UnivaPay-for-WooCommerce:/var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce
@@ -25,9 +24,8 @@ services:
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DEBUG: 1
-      WORDPRESS_DEBUG_LOG: 1
-      WORDPRESS_DEBUG_DISPLAY: 1
-
+      WP_PORT: ${WP_PORT:-3080}
+  
 volumes:
   wp-mariadb:
   wp-wordpress:
