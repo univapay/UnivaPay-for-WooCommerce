@@ -1,37 +1,39 @@
 import { Selector } from "testcafe"
 import { MockBillingData } from "../../../helper/mock"
 
-class WCBlockCheckoutPage {
-    email: Selector
-    billingCountry: Selector
+class WCClassicCheckoutPage {
     billingLastName: Selector
     billingFirstName: Selector
+    billingCountry: Selector
     billingPostcode: Selector
     billingState: Selector
+    billingStateSearch: Selector
     billingCity: Selector
     billingAddress: Selector
     billingPhone: Selector
+    orderSummary: Selector
+    email: Selector
     couponLink: Selector
     couponText: Selector
     couponApplyButton: Selector
-    orderSummary: Selector
     placeOrderButton: Selector
 
     constructor() {
-        this.email = Selector('input#email')
-        this.billingCountry = Selector('select#billing-country')
-        this.billingLastName = Selector('input#billing-last_name')
-        this.billingFirstName = Selector('input#billing-first_name')
-        this.billingPostcode = Selector('input#billing-postcode')
-        this.billingState = Selector('select#billing-state')
-        this.billingCity = Selector('input#billing-city')
-        this.billingAddress = Selector('input#billing-address_1')
-        this.billingPhone = Selector('input#billing-phone')
-        this.couponLink = Selector('button.wc-block-components-panel__button').withText('Add a coupon')
-        this.couponText = Selector('input#wc-block-components-totals-coupon__input-0')
-        this.couponApplyButton = Selector('form#wc-block-components-totals-coupon__form').find('button[type="submit"]')
-        this.orderSummary = Selector('span.wc-block-components-order-summary__button-text')
-        this.placeOrderButton = Selector('button.wc-block-components-checkout-place-order-button').withText('Place Order');
+        this.billingLastName = Selector('input#billing_last_name')
+        this.billingFirstName = Selector('input#billing_first_name')
+        this.billingCountry = Selector('select#billing_country')
+        this.billingPostcode = Selector('input#billing_postcode')
+        this.billingState = Selector('main span').withText('Select an option…').nth(4)
+        this.billingStateSearch = Selector('input.select2-search__field')
+        this.billingCity = Selector('input#billing_city')
+        this.billingAddress = Selector('input#billing_address_1')
+        this.billingPhone = Selector('input#billing_phone')
+        this.email = Selector('input#billing_email')
+        this.orderSummary = Selector('main h3').withText('Your order')
+        this.couponLink = Selector('a.showcoupon')
+        this.couponText = Selector('input#coupon_code')
+        this.couponApplyButton = Selector('button[name="apply_coupon"]')
+        this.placeOrderButton = Selector('a#upfw_order').withText('注文する');
     }
 
     async navigateToCheckout(t: TestController) {
@@ -43,13 +45,13 @@ class WCBlockCheckoutPage {
     async fillCheckoutForm(t: TestController, mockBillingData: MockBillingData) {
         await t
             .typeText(this.email, mockBillingData.email)
-            .click(this.billingCountry).wait(500)
-            .click(this.billingCountry.find('option').withText(mockBillingData.billingCountry)).wait(500)
+            // .click(this.billingCountry).wait(500)
+            // .click(this.billingCountry.find('option').withText(mockBillingData.billingCountry))
             .typeText(this.billingLastName, mockBillingData.billingLastName)
             .typeText(this.billingFirstName, mockBillingData.billingFirstName)
             .typeText(this.billingPostcode, mockBillingData.billingPostcode)
             .click(this.billingState).wait(500)
-            .click(this.billingState.find('option').withText(mockBillingData.billingState)).wait(500)
+            .typeText(this.billingStateSearch, mockBillingData.billingState).pressKey('enter')
             .typeText(this.billingCity, mockBillingData.billingCity)
             .typeText(this.billingAddress, mockBillingData.billingAddress) 
             .typeText(this.billingPhone, mockBillingData.billingPhone)
@@ -59,7 +61,7 @@ class WCBlockCheckoutPage {
         await t
             .click(this.couponLink).wait(500)
             .typeText(this.couponText, 'testcoupon')
-            .click(this.couponApplyButton).wait(3000)
+            .click(this.couponApplyButton)
     }
 
     async finishCheckout(t: TestController) {
@@ -68,4 +70,4 @@ class WCBlockCheckoutPage {
     }
 }
 
-export default new WCBlockCheckoutPage()
+export default new WCClassicCheckoutPage()
