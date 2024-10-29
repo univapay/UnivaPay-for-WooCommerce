@@ -7,6 +7,12 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: wordpress
       MYSQL_DATABASE: wordpress
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 3s 
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   wp:
     container_name: wp
@@ -17,7 +23,8 @@ services:
       - wp-wordpress:/var/www/html
       - ./UnivaPay-for-WooCommerce:/var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce
     depends_on:
-      - wp-db
+      wp-db:
+        condition: service_healthy
     environment:
       WORDPRESS_DB_HOST: wp-db:3306
       WORDPRESS_DB_USER: root
@@ -25,6 +32,15 @@ services:
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DEBUG: 1
       WP_PORT: ${WP_PORT:-3080}
+      E2E_TOKEN: ${E2E_TOKEN}
+      E2E_SECRET: ${E2E_SECRET}
+      E2E_API_URL: ${E2E_API_URL}
+      E2E_WIDGET_URL: ${E2E_WIDGET_URL}
+      E2E_FORMURL: ${E2E_FORMURL}
+      E2E_CAPTURE: yes
+      E2E_UNIVAPAY_ADMIN_CONSOLE_URL: ${E2E_UNIVAPAY_ADMIN_CONSOLE_URL}
+      E2E_UNIVAPAY_ADMIN_EMAIL: ${E2E_UNIVAPAY_ADMIN_EMAIL}
+      E2E_UNIVAPAY_ADMIN_PASSWORD: ${E2E_UNIVAPAY_ADMIN_PASSWORD}
   
 volumes:
   wp-mariadb:
