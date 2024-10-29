@@ -15,34 +15,42 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - uses: "shivammathur/setup-php@v2"
       with:
         php-version: "latest"
+
     - uses: "ramsey/composer-install@v3"
       with:
         working-directory: "UnivaPay-for-WooCommerce"
         composer-options: "--no-dev"
+
     - uses: actions/setup-node@v4
       with:
         node-version: '16'
-    - name: Install npm dependencies
+
+    - name: Install NPM Dependencies
       run: npm ci
       working-directory: "UnivaPay-for-WooCommerce"
-    - name: Run npm build
+
+    - name: Run NPM Build
       run: npm run build
       working-directory: "UnivaPay-for-WooCommerce"
+
     - name: Create artifact directory
       run: mkdir -p ./artifact
       working-directory: "UnivaPay-for-WooCommerce"
+
     - name: Create .zip excluding .distignore files
       run: find . -type f | grep -v -f .distignore | zip -@ ./artifact/build-artifacts.zip
       working-directory: "UnivaPay-for-WooCommerce"
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-artifacts
         path: ./UnivaPay-for-WooCommerce/artifact/build-artifacts.zip
-        retention-days: 7
+        retention-days: 1
 
   deploy:
     name: Deploy to WordPress.org
@@ -52,14 +60,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Install SVN
         run: sudo apt-get update && sudo apt-get install -y subversion
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+
       - name: Extract build artifacts
         run: unzip build-artifacts.zip -d ./release
+
       - name: WordPress Plugin Deploy
         uses: 10up/action-wordpress-plugin-deploy@stable
         env:

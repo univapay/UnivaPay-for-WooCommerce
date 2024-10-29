@@ -24,13 +24,30 @@ jobs:
     defaults:
       run:
         working-directory: UnivaPay-for-WooCommerce
+    services:
+      wp-db:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: wordpress
+          MYSQL_DATABASE: wordpress_test
+        options: >-
+          --health-cmd "mysqladmin ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-    - name: Common Setup
-      uses: ./.github/workflows/common-steps.yml
+    - uses: actions/checkout@v4
+
+    - name: Install SVN
+      run: sudo apt-get update && sudo apt-get install -y subversion
+
+    - name: Setup Environment
+      uses: ./.github/workflows/common
       with:
         php-version: ${{ matrix.php-version }}
-        wordpress-version: ${{ matrix.wordpress-version }}
-        woocommerce-version: ${{ matrix.woocommerce-version }}
 
     - name: Prep WordPress & Plugins Test Environment
       run: |

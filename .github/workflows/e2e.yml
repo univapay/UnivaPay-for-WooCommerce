@@ -1,26 +1,23 @@
-name: Test
+name: E2E Test
 
 on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
 
 jobs:
   test:
     name: Run E2E Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: UnivaPay-for-WooCommerce
+
     steps:
-    - name: Call Common Steps
-      uses: ./.github/workflows/common-steps.yml
+    - uses: actions/checkout@v4
+
+    - name: Setup Environment
+      uses: ./.github/workflows/common
       with:
         php-version: '8.2'
-        wordpress-version: 'latest'
-        woocommerce-version: '9.3.3'
 
     - name: Run Docker Compose
       run: docker compose up -d
@@ -32,4 +29,3 @@ jobs:
     - name: Run E2E Tests Classic Checkout
       run: |
         docker compose exec wp /bin/bash -c "cd /var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce && composer init:e2e && ./bin/wc-checkout-change-layout.sh && npm run test:e2e:classic"
-
