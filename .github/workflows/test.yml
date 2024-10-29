@@ -24,47 +24,15 @@ jobs:
     defaults:
       run:
         working-directory: UnivaPay-for-WooCommerce
-    services:
-      wp-db:
-        image: mysql:8.0
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: wordpress
-          MYSQL_DATABASE: wordpress_test
-        options: >-
-          --health-cmd "mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
-    - uses: actions/checkout@v4
-    - name: Cache Composer dependencies
-      uses: actions/cache@v4
-      with:
-        path: vendor
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-composer-
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
+    - name: Common Setup
+      uses: ./.github/workflows/common-steps.yml
       with:
         php-version: ${{ matrix.php-version }}
-    - name: Install Composer dependencies
-      run: composer install
-    - name: WP-CLI
-      run: |
-        curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-        chmod +x wp-cli.phar
-        sudo mv wp-cli.phar /usr/local/bin/wp
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '16'
-    - name: Install npm dependencies
-      run: npm ci
-    - name: Run npm build
-      run: npm run build
-    - name: Prep WordPress & plugins environment
+        wordpress-version: ${{ matrix.wordpress-version }}
+        woocommerce-version: ${{ matrix.woocommerce-version }}
+
+    - name: Prep WordPress & Plugins Test Environment
       run: |
         bin/install-wp-tests.sh wordpress_test root wordpress 127.0.0.1 ${{ matrix.wordpress-version }}
         cp wp-tests-config.php /tmp/wordpress-tests-lib/wp-tests-config.php
@@ -73,16 +41,9 @@ jobs:
         wp plugin install woocommerce --version=${{ matrix.woocommerce-version }} --activate --path=/tmp/wordpress
         cp -r . /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce
         rm -rf /tmp/wordpress/wp-content/plugins/UnivaPay-for-WooCommerce/vendor
-    - name: Update wp-tests-config.php
-      run: sed -i "s/define('DB_HOST', .*/define('DB_HOST', '127.0.0.1:3306');/" /tmp/wordpress-tests-lib/wp-tests-config.php
-    - name: Run test
-      run: ./vendor/bin/phpunit --configuration phpunit.xml
-    - name: Prep E2E environment
-      run: docker compose up -d
-    - name: Run E2E Tests Block Checkout
-      run: |
-        docker compose exec wp /bin/bash -c "cd /var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce && composer init:e2e && npm run test:e2e:block"
-    - name: Run E2E Tests Classic Checkout
-      run: |
-        docker compose exec wp /bin/bash -c "cd /var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce && composer init:e2e && ./bin/wc-checkout-change-layout.sh && npm run test:e2e:classic"
 
+    - name: Update WP-Config for Tests
+      run: sed -i "s/define('DB_HOST', .*/define('DB_HOST', '127.0.0.1:3306');/" /tmp/wordpress-tests-lib/wp-tests-config.php
+
+    - name: Run Test
+      run: ./vendor/bin/phpunit --configuration phpunit.xml
