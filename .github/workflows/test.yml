@@ -78,9 +78,11 @@ jobs:
     - name: Run test
       run: ./vendor/bin/phpunit --configuration phpunit.xml
     - name: Prep E2E environment
-      run: composer init:e2e
-    - name: Run e2e test for block checkout
-      run: npm run test:e2e:block
-    - name: Run e2e test for classic checkout
-      run: npm run test:e2e:classic
+      run: docker compose up -d
+    - name: Run E2E Tests Block Checkout
+      run: |
+        docker compose exec wp /bin/bash -c "cd /var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce && composer init:e2e && npm run test:e2e:block"
+    - name: Run E2E Tests Classic Checkout
+      run: |
+        docker compose exec wp /bin/bash -c "cd /var/www/html/wp-content/plugins/UnivaPay-for-WooCommerce && composer init:e2e && ./bin/wc-checkout-change-layout.sh && npm run test:e2e:classic"
 
