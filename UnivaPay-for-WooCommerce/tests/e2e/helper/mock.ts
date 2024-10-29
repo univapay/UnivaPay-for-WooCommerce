@@ -36,3 +36,20 @@ export class MockCardData {
         this.cvv = "123"
     }
 }
+
+export const mockProduct1 = {
+    name: "Test Product 1",
+    sku: "test-product-1",
+    price: "¥1,000.00"
+}
+
+export const mockProduct2 = {
+    name: "Test Product 2",
+    sku: "test-product-2",
+    price: "¥2,000.00"
+}
+
+export const mockCoupon = {
+    name: "testcoupon",
+    discount: "10"
+}

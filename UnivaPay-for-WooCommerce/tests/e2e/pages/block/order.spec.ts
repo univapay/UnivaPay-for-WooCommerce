@@ -45,7 +45,6 @@ test('Univapay Console Should Receive The Same Order Request', async t => {
     }
 
     const searchQuery = `?email=${mockBillingData.email}&limit=10&mode=test`
-    console.log(`Search query: ${searchQuery}`)
 
     await t.useRole(univapayConsoleUser)
     await univapayConsoleTransactionsListPage.navigateToTransactionList(t, searchQuery)

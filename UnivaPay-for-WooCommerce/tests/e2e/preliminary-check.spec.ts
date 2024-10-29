@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe'
 import { config } from './config'
 import { wpAdmin, univapayConsoleUser } from './helper/role'
+import { mockProduct1, mockProduct2, mockCoupon } from './helper/mock'
 import wcCoupontListPage from './models/wp/admin/coupon-list'
 import wcProductListPage from './models/wp/admin/product-list'
 import wcUnivapaySettingPage from './models/wp/admin/univapay-setting'
@@ -13,19 +14,19 @@ test('Test Environment should be Ready', async t => {
         .useRole(wpAdmin)
         .navigateTo('/wp-admin/admin.php?page=wc-settings&tab=checkout&section=upfw')
         .expect(wcUnivapaySettingPage.enabled.checked).eql(true)
-        .expect(wcUnivapaySettingPage.widget.value).eql(process.env.E2E_WIDGET)
-        .expect(wcUnivapaySettingPage.api.value).eql(process.env.E2E_API)
-        .expect(wcUnivapaySettingPage.formUrl.value).contains(process.env.E2E_FORM_URL)
+        .expect(wcUnivapaySettingPage.widget.value).eql(process.env.E2E_WIDGET_URL)
+        .expect(wcUnivapaySettingPage.api.value).eql(process.env.E2E_API_URL)
+        .expect(wcUnivapaySettingPage.formUrl.value).contains(process.env.E2E_FORMURL)
         .navigateTo('/wp-admin/edit.php?post_type=product')
-        .expect(wcProductListPage.product1.withText('Test Product 1').exists).ok()
-        .expect(wcProductListPage.product1.withText('test-product-1').exists).ok()
-        .expect(wcProductListPage.product1.withText('¥1,000.00').exists).ok()
-        .expect(wcProductListPage.product2.withText('Test Product 2').exists).ok()
-        .expect(wcProductListPage.product2.withText('test-product-2').exists).ok()
-        .expect(wcProductListPage.product2.withText('¥2,000.00').exists).ok()
+        .expect(wcProductListPage.getRowByProductName(mockProduct1.name).exists).ok()
+        .expect(wcProductListPage.getRowByProductSku(mockProduct1.name, mockProduct1.sku).exists).ok()
+        .expect(wcProductListPage.getRowByProductPrice(mockProduct1.name, mockProduct1.price).exists).ok()
+        .expect(wcProductListPage.getRowByProductName(mockProduct2.name).exists).ok()
+        .expect(wcProductListPage.getRowByProductSku(mockProduct2.name, mockProduct2.sku).exists).ok()
+        .expect(wcProductListPage.getRowByProductPrice(mockProduct2.name, mockProduct2.price).exists).ok()
         .navigateTo('/wp-admin/edit.php?post_type=shop_coupon')
-        .expect(wcCoupontListPage.coupon.withText('testcoupon').exists).ok()
-        .expect(wcCoupontListPage.coupon.withText('10').exists).ok()
+        .expect(wcCoupontListPage.getRowByCouponName(mockCoupon.name).exists).ok()
+        .expect(wcCoupontListPage.getRowByCouponDiscount(mockCoupon.name, mockCoupon.discount).exists).ok()
 })
 
 fixture `Check Univapay Console`

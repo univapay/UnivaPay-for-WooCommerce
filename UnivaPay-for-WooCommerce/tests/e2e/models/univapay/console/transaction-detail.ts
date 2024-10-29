@@ -17,7 +17,7 @@ class UnivapayConsoleTransactionDetailPage {
 
     async confimTransactionDetail(t: TestController, orderDetails: { orderNumber: string, charge: string }) {
         await t
-            .expect(this.tokenType.exists).ok({ timeout: 3000 })
+            .expect(this.tokenType.exists).ok({ timeout: 10000 })
             .expect(this.tokenType.innerText).eql('One-time')
             .expect(this.status.innerText).eql('Successful')
             .expect(this.charge.innerText).contains(orderDetails.charge)

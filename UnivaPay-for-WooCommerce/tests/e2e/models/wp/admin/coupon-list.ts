@@ -1,10 +1,19 @@
 import { Selector } from "testcafe"
 
 class WCCouponListPage {
-    coupon: Selector
+    tableBody: Selector
 
     constructor() {
-        this.coupon = Selector("#post-12 td")
+        this.tableBody = Selector("tbody#the-list")
+    }
+
+    getRowByCouponName(name: string) {
+        return this.tableBody.find('tr').withText(name);
+    }
+
+    getRowByCouponDiscount(name: string, discount: string) {
+        const row = this.tableBody.find('tr').withText(name);
+        return row.find('td').withText(discount);
     }
 }
 

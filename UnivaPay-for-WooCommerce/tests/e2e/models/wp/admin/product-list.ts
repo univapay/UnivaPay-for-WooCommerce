@@ -1,12 +1,24 @@
 import { Selector } from "testcafe"
 
 class WCProductListPage {
-    product1: Selector
-    product2: Selector
+    tableBody: Selector
 
     constructor() {
-        this.product1 = Selector("#post-10 td")
-        this.product2 = Selector("#post-11 td")
+        this.tableBody = Selector("tbody#the-list")
+    }
+
+    getRowByProductName(productName: string) {
+        return this.tableBody.find('tr').withText(productName);
+    }
+
+    getRowByProductSku(productName: string, sku: string) {
+        const row = this.tableBody.find('tr').withText(productName);
+        return row.find('td').withText(sku);
+    }
+
+    getRowByProductPrice(productName: string, price: string) {
+        const row = this.tableBody.find('tr').withText(productName);
+        return row.find('td').withText(price);
     }
 }
 

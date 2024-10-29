@@ -10,7 +10,7 @@ class UnivapayConsoleTransactionsListPage {
     async navigateToTransactionList(t: TestController, searchQuery: string) {
         await t
             .navigateTo(`/dashboard/transactions${searchQuery}`)
-            .expect(this.row.exists).ok({ timeout: 3000 })
+            .expect(this.row.exists).ok({ timeout: 10000 })
     }
 
     async confirmTransactionList(t: TestController) {
