@@ -2,9 +2,9 @@
   "scripts": {
     "build": "wp-scripts build --config webpack.config.js --mode production",
     "start": "wp-scripts start --config webpack.config.js --mode development",
-    "test:e2e:preliminary": "testcafe firefox:headless tests/e2e/pages/preliminary tests/e2e/preliminary-check.spec.ts",
-    "test:e2e:block": "testcafe firefox:headless tests/e2e/pages/block tests/e2e/pages/mypage -e",
-    "test:e2e:classic": "testcafe firefox:headless tests/e2e/pages/classic tests/e2e/pages/mypage -e",
+    "test:e2e:preliminary": "testcafe firefox:headless tests/e2e/pages/preliminary tests/e2e/preliminary-check.spec.ts -e --speed 0.7",
+    "test:e2e:block": "testcafe firefox:headless tests/e2e/pages/block tests/e2e/pages/mypage -e --speed 0.7",
+    "test:e2e:classic": "testcafe firefox:headless tests/e2e/pages/classic tests/e2e/pages/mypage -e --speed 0.7",
     "packages-update": "wp-scripts packages-update"
   },
   "devDependencies": {

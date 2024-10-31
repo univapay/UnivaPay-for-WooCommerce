@@ -19,6 +19,10 @@
             "php ./bin/set-univapay-gateway.php",
             "./bin/wc-add-test-fixtures.sh"
         ],
+        "init:dependencies": [
+            "composer install",
+            "npm ci"
+        ],
         "fix:lint": "phpcbf --standard=phpcs.xml",
         "lint": "phpcs --standard=phpcs.xml",
         "test": [

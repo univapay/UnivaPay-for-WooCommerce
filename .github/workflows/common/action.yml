@@ -23,6 +23,10 @@ runs:
     with:
       php-version: ${{ inputs.php-version }}
 
+  - name: Install SVN
+    shell: bash
+    run: sudo apt-get update && sudo apt-get install -y subversion
+
   - name: Install Composer Dependencies
     working-directory: UnivaPay-for-WooCommerce
     shell: bash
