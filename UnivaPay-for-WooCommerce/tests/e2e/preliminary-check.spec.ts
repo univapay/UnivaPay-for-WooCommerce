@@ -16,7 +16,7 @@ test('Test Environment should be Ready', async t => {
         .expect(wcUnivapaySettingPage.enabled.checked).eql(true)
         .expect(wcUnivapaySettingPage.widget.value).eql(process.env.E2E_WIDGET_URL)
         .expect(wcUnivapaySettingPage.api.value).eql(process.env.E2E_API_URL)
-        .expect(wcUnivapaySettingPage.formUrl.value).contains(process.env.E2E_FORMURL)
+        .expect(wcUnivapaySettingPage.formUrl.value).contains(process.env.E2E_FORM_URL)
         .navigateTo('/wp-admin/edit.php?post_type=product')
         .expect(wcProductListPage.getRowByProductName(mockProduct1.name).exists).ok()
         .expect(wcProductListPage.getRowByProductSku(mockProduct1.name, mockProduct1.sku).exists).ok()

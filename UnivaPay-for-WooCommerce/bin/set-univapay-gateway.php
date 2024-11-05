@@ -13,5 +13,5 @@ update_option('woocommerce_upfw_settings', array(
     'token' => getenv('E2E_TOKEN'),
     'secret' => getenv('E2E_SECRET'),
     'capture' => getenv('E2E_CAPTURE'),
-    'formurl' => getenv('E2E_FORMURL'),
+    'formurl' => getenv('E2E_FORM_URL'),
 ));

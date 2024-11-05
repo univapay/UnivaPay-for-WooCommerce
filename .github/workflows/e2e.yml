@@ -20,7 +20,7 @@ jobs:
       E2E_UNIVAPAY_ADMIN_CONSOLE_URL: ${{ vars.E2E_UNIVAPAY_ADMIN_CONSOLE_URL }}
       E2E_API_URL: ${{ vars.E2E_API_URL }}
       E2E_WIDGET_URL: ${{ vars.E2E_WIDGET_URL }}
-      E2E_FORMURL: ${{ vars.E2E_FORMURL }}
+      E2E_FORM_URL: ${{ vars.E2E_FORM_URL }}
       E2E_CAPTURE: yes
 
     steps:
