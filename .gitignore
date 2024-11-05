@@ -1,6 +1,8 @@
 .DS_Store
+.env
+.phpunit.result.cache
+
+artifact/
+dist/
 node_modules/
 vendor/
-dist/
-.phpunit.result.cache
-artifact/
