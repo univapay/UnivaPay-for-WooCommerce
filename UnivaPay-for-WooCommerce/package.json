@@ -2,20 +2,27 @@
   "scripts": {
     "build": "wp-scripts build --config webpack.config.js --mode production",
     "start": "wp-scripts start --config webpack.config.js --mode development",
+    "test:e2e:preliminary": "testcafe firefox:headless tests/e2e/pages/preliminary tests/e2e/preliminary-check.spec.ts -e --speed 0.7",
+    "test:e2e:block": "testcafe firefox:headless tests/e2e/pages/block tests/e2e/pages/mypage -e --speed 0.7",
+    "test:e2e:classic": "testcafe firefox:headless tests/e2e/pages/classic tests/e2e/pages/mypage -e --speed 0.7",
     "packages-update": "wp-scripts packages-update"
   },
   "devDependencies": {
     "@babel/core": "^7.25.7",
     "@babel/preset-env": "^7.25.7",
     "@babel/preset-react": "^7.25.7",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@types/node": "^22.7.9",
     "@woocommerce/dependency-extraction-webpack-plugin": "^3.0.1",
     "@woocommerce/settings": "^1.0.0",
-    "@wordpress/scripts": "^28.4.0",
+    "@wordpress/scripts": "^30.2.0",
     "babel-loader": "^9.2.1",
     "css-loader": "^7.1.2",
     "glob": "^11.0.0",
     "mini-css-extract-plugin": "^2.9.1",
+    "short-uuid": "^5.2.0",
     "style-loader": "^4.0.0",
+    "testcafe": "^3.6.2",
     "webpack": "^5.93.0"
   }
 }
