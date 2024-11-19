@@ -1,11 +1,7 @@
 import { Selector } from "testcafe"
 
 class WCProductListPage {
-    tableBody: Selector
-
-    constructor() {
-        this.tableBody = Selector("tbody#the-list")
-    }
+    tableBody = Selector("tbody#the-list")
 
     getRowByProductName(productName: string) {
         return this.tableBody.find('tr').withText(productName);

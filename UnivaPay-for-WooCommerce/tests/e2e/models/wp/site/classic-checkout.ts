@@ -2,39 +2,21 @@ import { Selector } from "testcafe"
 import { MockBillingData } from "../../../helper/mock"
 
 class WCClassicCheckoutPage {
-    billingLastName: Selector
-    billingFirstName: Selector
-    billingCountry: Selector
-    billingPostcode: Selector
-    billingState: Selector
-    billingStateSearch: Selector
-    billingCity: Selector
-    billingAddress: Selector
-    billingPhone: Selector
-    orderSummary: Selector
-    email: Selector
-    couponLink: Selector
-    couponText: Selector
-    couponApplyButton: Selector
-    placeOrderButton: Selector
-
-    constructor() {
-        this.billingLastName = Selector('input#billing_last_name')
-        this.billingFirstName = Selector('input#billing_first_name')
-        this.billingCountry = Selector('main span').withText('Japan').nth(3)
-        this.billingPostcode = Selector('input#billing_postcode')
-        this.billingState = Selector('main span').withText('Select an option…').nth(4)
-        this.billingStateSearch = Selector('input.select2-search__field')
-        this.billingCity = Selector('input#billing_city')
-        this.billingAddress = Selector('input#billing_address_1')
-        this.billingPhone = Selector('input#billing_phone')
-        this.email = Selector('input#billing_email')
-        this.orderSummary = Selector('main h3').withText('Your order')
-        this.couponLink = Selector('a.showcoupon')
-        this.couponText = Selector('input#coupon_code')
-        this.couponApplyButton = Selector('button[name="apply_coupon"]')
-        this.placeOrderButton = Selector('a#upfw_order').withText('注文する');
-    }
+    billingLastName = Selector('input#billing_last_name')
+    billingFirstName = Selector('input#billing_first_name')
+    billingCountry = Selector('main span').withText('Japan').nth(3)
+    billingPostcode = Selector('input#billing_postcode')
+    billingState = Selector('main span').withText('Select an option…').nth(4)
+    billingStateSearch = Selector('input.select2-search__field')
+    billingCity = Selector('input#billing_city')
+    billingAddress = Selector('input#billing_address_1')
+    billingPhone = Selector('input#billing_phone')
+    orderSummary = Selector('main h3').withText('Your order')
+    email = Selector('input#billing_email')
+    couponLink = Selector('a.showcoupon')
+    couponText = Selector('input#coupon_code')
+    couponApplyButton = Selector('button[name="apply_coupon"]')
+    placeOrderButton = Selector('a#upfw_order').withText('注文する');
 
     async navigateToCheckout(t: TestController) {
         await t

@@ -1,11 +1,7 @@
 import { Selector } from "testcafe"
 
 class UnivapayConsoleTransactionsListPage {
-    row: Selector
-
-    constructor() {
-        this.row = Selector('table[data-name="transaction-table"] tbody tr')
-    }
+    row = Selector('table[data-name="transaction-table"] tbody tr')
 
     async navigateToTransactionList(t: TestController, searchQuery: string) {
         await t

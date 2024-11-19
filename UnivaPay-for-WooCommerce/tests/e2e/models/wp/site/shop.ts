@@ -1,15 +1,9 @@
 import { Selector } from "testcafe"
 
 class WCShopPage {
-    title: Selector
-    product1: Selector
-    product2: Selector
-
-    constructor() {
-        this.title = Selector('h1').withText('Shop')
-        this.product1 = Selector('button[data-product_sku="test-product-1"]')
-        this.product2 = Selector('button[data-product_sku="test-product-2"]')
-    }
+    title = Selector('h1').withText('Shop')
+    product1 = Selector('button[data-product_sku="test-product-1"]')
+    product2 = Selector('button[data-product_sku="test-product-2"]')
 
     async navigateToShop(t: TestController) {
         await t

@@ -1,19 +1,11 @@
 import { Selector } from "testcafe"
 
 class UnivapayConsoleTransactionDetailPage {
-    tokenType: Selector
-    status: Selector
-    charge: Selector
-    chargeMetadata: Selector
-    tokenMetadata: Selector
-
-    constructor() {
-        this.tokenType = Selector('div[data-name="token-type-field"]').find('div[data-name="static-field-body"]')
-        this.status = Selector('div[data-name="status-field"]').find('div[data-name="static-field-body"]')
-        this.charge = Selector('div[data-name="charged-amount-field"]').find('div[data-name="static-field-body"]')
-        this.chargeMetadata = Selector('div[data-name="charge-metadata-field"]').find('div[data-name="static-field-body"]')
-        this.tokenMetadata = Selector('div[data-name="token-metadata-field"]').find('div[data-name="static-field-body"]')
-    }
+    tokenType = Selector('div[data-name="token-type-field"]').find('div[data-name="static-field-body"]')
+    status = Selector('div[data-name="status-field"]').find('div[data-name="static-field-body"]')
+    charge = Selector('div[data-name="charged-amount-field"]').find('div[data-name="static-field-body"]')
+    chargeMetadata = Selector('div[data-name="charge-metadata-field"]').find('div[data-name="static-field-body"]')
+    tokenMetadata = Selector('div[data-name="token-metadata-field"]').find('div[data-name="static-field-body"]')
 
     async confimTransactionDetail(t: TestController, orderDetails: { orderNumber: string, charge: string }) {
         await t

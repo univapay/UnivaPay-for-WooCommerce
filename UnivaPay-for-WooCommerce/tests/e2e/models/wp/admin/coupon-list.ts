@@ -1,11 +1,7 @@
 import { Selector } from "testcafe"
 
 class WCCouponListPage {
-    tableBody: Selector
-
-    constructor() {
-        this.tableBody = Selector("tbody#the-list")
-    }
+    tableBody = Selector("tbody#the-list")
 
     getRowByCouponName(name: string) {
         return this.tableBody.find('tr').withText(name);
