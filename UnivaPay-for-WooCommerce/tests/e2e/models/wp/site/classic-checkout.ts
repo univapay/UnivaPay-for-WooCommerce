@@ -21,7 +21,7 @@ class WCClassicCheckoutPage {
     constructor() {
         this.billingLastName = Selector('input#billing_last_name')
         this.billingFirstName = Selector('input#billing_first_name')
-        this.billingCountry = Selector('select#billing_country')
+        this.billingCountry = Selector('main span').withText('Japan').nth(3)
         this.billingPostcode = Selector('input#billing_postcode')
         this.billingState = Selector('main span').withText('Select an option…').nth(4)
         this.billingStateSearch = Selector('input.select2-search__field')
@@ -45,8 +45,8 @@ class WCClassicCheckoutPage {
     async fillCheckoutForm(t: TestController, mockBillingData: MockBillingData) {
         await t
             .typeText(this.email, mockBillingData.email)
-            // .click(this.billingCountry).wait(500)
-            // .click(this.billingCountry.find('option').withText(mockBillingData.billingCountry))
+            .click(this.billingCountry).wait(500)
+            .click(Selector('li').withText('Japan'))
             .typeText(this.billingLastName, mockBillingData.billingLastName)
             .typeText(this.billingFirstName, mockBillingData.billingFirstName)
             .typeText(this.billingPostcode, mockBillingData.billingPostcode)
