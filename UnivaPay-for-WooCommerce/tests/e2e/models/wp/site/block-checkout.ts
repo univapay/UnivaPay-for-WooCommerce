@@ -11,7 +11,7 @@ class WCBlockCheckoutPage {
     billingCity = Selector('input#billing-city')
     billingAddress = Selector('input#billing-address_1')
     billingPhone = Selector('input#billing-phone')
-    couponLink = Selector('button.wc-block-components-panel__button').withText('Add a coupon')
+    couponLink = Selector('div.wc-block-components-totals-coupon.wc-block-components-panel').find('div[role=button]') .withText('Add a coupon')
     couponText = Selector('input#wc-block-components-totals-coupon__input-0')
     couponApplyButton = Selector('form#wc-block-components-totals-coupon__form').find('button[type="submit"]')
     orderSummary = Selector('span.wc-block-components-order-summary__button-text')
