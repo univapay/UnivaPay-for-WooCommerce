@@ -6,6 +6,7 @@ if (! defined('ABSPATH')) {
 
 use Money\Money;
 use Money\Currency;
+use Univapay\Enums\ChargeStatus;
 use Univapay\Resources\Authentication\AppJWT;
 use Univapay\Resources\Charge;
 use Univapay\UnivapayClient;
@@ -310,6 +311,13 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
         if ($charge->error) {
             return false;
         }
+
+        // prevent pending / awaiting charge
+        if (!in_array($charge->status, [ChargeStatus::SUCCESSFUL(), ChargeStatus::AUTHORIZED()])) {
+            error_log('Invalid order ID: ' . $order->get_id() . ' with charge status: ' . $charge->status->getValue());
+            return false;
+        }
+
         return true;
     }
 
