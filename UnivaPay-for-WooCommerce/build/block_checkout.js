@@ -28,6 +28,7 @@ const Content = (props) => {
     const univapayChargeIdRef = useRef('');
     const [isVisible, setIsVisible] = useState(false);
     const [email, setEmail] = useState(emailFromStore);
+    const [phone, setPhone] = useState(phoneFromStore);
     const [totalPrice, setTotalPrice] = useState(totalPriceFromStore);
 
     const rendering = () => {
@@ -47,6 +48,12 @@ const Content = (props) => {
         const store = select('wc/store/cart');
         const customer = store.getCustomerData();
         return customer.billingAddress.email;
+    });
+
+    const phoneFromStore = useSelect((select) => {
+        const store = select('wc/store/cart');
+        const customer = store.getCustomerData();
+        return customer.billingAddress.phone;
     });
     
     const totalPriceFromStore = useSelect((select) => {
@@ -126,8 +133,9 @@ const Content = (props) => {
 
     useEffect(() => {
         setEmail(emailFromStore);
+        setPhone(phoneFromStore);
         setTotalPrice(totalPriceFromStore);
-    }, [emailFromStore, totalPriceFromStore]);
+    }, [emailFromStore, phoneFromStore, totalPriceFromStore]);
 
     return (
         <>
@@ -136,6 +144,7 @@ const Content = (props) => {
                 isVisible={isVisible}
                 amount={totalPrice}
                 email={email}
+                phone={phone}
                 orderId={orderId}
                 optional={handleOptionalClick}
             />

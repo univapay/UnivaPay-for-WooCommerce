@@ -26,8 +26,6 @@ class WCBlockCheckoutPage {
     async fillCheckoutForm(t: TestController, mockBillingData: MockBillingData) {
         await t
             .typeText(this.email, mockBillingData.email)
-            .click(this.billingCountry).wait(500)
-            .click(this.billingCountry.find('option').withText(mockBillingData.billingCountry)).wait(500)
             .typeText(this.billingLastName, mockBillingData.billingLastName)
             .typeText(this.billingFirstName, mockBillingData.billingFirstName)
             .typeText(this.billingPostcode, mockBillingData.billingPostcode)
@@ -47,7 +45,7 @@ class WCBlockCheckoutPage {
 
     async finishCheckout(t: TestController) {
         await t
-            .click(this.placeOrderButton)
+            .click(this.placeOrderButton).wait(10000)
     }
 }
 

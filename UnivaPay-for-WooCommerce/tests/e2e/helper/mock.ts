@@ -13,6 +13,7 @@ export class MockBillingData {
 }
 
 export class MockCardData {
+    phoneNumber = "09012345678"
     cardName = "Test Test"
     cardNumber = "4242424242424242"
     expiry = "12/99"
