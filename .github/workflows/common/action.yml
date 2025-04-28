@@ -12,9 +12,8 @@ runs:
   - name: Cache Composer Dependencies
     id: composer-cache
     uses: actions/cache@v4
-    working-directory: UnivaPay-for-WooCommerce
     with:
-      path: vendor
+      path: UnivaPay-for-WooCommerce/vendor
       key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
       restore-keys: |
         ${{ runner.os }}-composer-
@@ -27,6 +26,11 @@ runs:
   - name: Install SVN
     shell: bash
     run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install -y subversion
+
+  - name : Debug cache hit
+    shell: bash
+    run: |
+      echo "Cache hit: ${{ steps.composer-cache.outputs.cache-hit }}"
 
   - name: Install Composer Dependencies
     if: steps.composer-cache.outputs.cache-hit != 'true'
