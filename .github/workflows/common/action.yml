@@ -28,6 +28,7 @@ runs:
     run: sudo apt-get update && sudo apt-get install -y subversion
 
   - name: Install Composer Dependencies
+    if: steps.composer-cache.outputs.cache-hit != 'true'
     working-directory: UnivaPay-for-WooCommerce
     shell: bash
     run: composer install
