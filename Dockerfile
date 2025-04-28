@@ -1,4 +1,4 @@
-FROM wordpress:latest 
+FROM wordpress:latest
 
 ENV TZ=Asia/Tokyo
 

@@ -21,6 +21,11 @@ create_coupon() {
     $BASE_WC_CMD shop_coupon create --code="testcoupon" --amount=10 --discount_type=percent --individual_use=true
 }
 
+wc_live_active() {
+    $BASE_WP_CMD woocommerce_coming_soon "no"
+}
+
 update_store
 create_product
 create_coupon
+wc_live_active

@@ -13,7 +13,7 @@ export class UnivapayInlinePage {
     async fillInlineForm(t: TestController, mockCardData: MockCardData) {
         await t
             .switchToIframe(this.iframe)
-            .typeText(this.phone, mockCardData.phoneNumber)
+            .typeText(this.phone, mockCardData.phoneNumber, { replace: true })
             .typeText(this.name, mockCardData.cardName)
             .typeText(this.card, mockCardData.cardNumber)
             .typeText(this.expiry, mockCardData.expiry)
