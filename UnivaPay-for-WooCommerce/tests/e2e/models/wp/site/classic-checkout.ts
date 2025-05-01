@@ -48,7 +48,7 @@ class WCClassicCheckoutPage {
 
     async finishCheckout(t: TestController) {
         await t
-            .click(this.placeOrderButton)
+            .click(this.placeOrderButton).wait(10000)
     }
 }
 

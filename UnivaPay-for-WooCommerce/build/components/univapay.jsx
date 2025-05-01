@@ -3,18 +3,19 @@ import { getSetting } from '@woocommerce/settings';
 
 const settings = getSetting('upfw_data', {});
 
-const UnivapayComponent = ({ isVisible, email, amount, orderId, optional }) => {
+const UnivapayComponent = ({ isVisible, email, phone, amount, orderId, optional }) => {
     if (!isVisible) {
         return null;
     }
 
     return (
-        <div key={`${email}-${amount}`}>
+        <div key={`${email}-${phone}-${amount}`}>
             <div id="upfw_checkout">
                 <span
                     data-app-id={settings.app_id}
                     data-checkout="payment"
                     data-email={email}
+                    data-phone-number={phone}
                     data-amount={amount}
                     data-capture={settings.capture}
                     data-currency={settings.currency}

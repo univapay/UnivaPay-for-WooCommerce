@@ -84,6 +84,10 @@ function getEmail() {
     return jQuery("#billing_email").val();
 }
 
+function getPhone() {
+    return jQuery("#billing_phone").val();
+}
+
 function fetchCartData() {
     const api_cart_path = '/index.php?rest_route=/wc/store/v1/cart';
     return new Promise((resolve, reject) => {
@@ -116,6 +120,7 @@ const renderUnivapayInlineForm = (function() {
                 'data-app-id': univapay_params.app_id,
                 'data-checkout': "payment",
                 'data-email': getEmail(),
+                'data-phone-number': getPhone(),
                 'data-amount': univapay_params.total,
                 'data-capture': univapay_params.capture,
                 'data-currency': univapay_params.currency,
@@ -137,6 +142,7 @@ const renderUnivapayInlineForm = (function() {
                 'data-app-id': univapay_params.app_id,
                 'data-checkout': "payment",
                 'data-email': getEmail(),
+                'data-phone-number': getPhone(),
                 'data-amount': totalPrice,
                 'data-capture': univapay_params.capture,
                 'data-currency': univapay_params.currency,

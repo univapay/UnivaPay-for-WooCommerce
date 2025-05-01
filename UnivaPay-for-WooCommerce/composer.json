@@ -4,7 +4,7 @@
     "scripts": {
         "reset:db": "wp db reset --yes",
         "activate:plugin": [
-            "wp plugin install woocommerce --activate --path=/var/www/html",
+            "wp plugin install woocommerce --version=9.7.1 --activate --path=/var/www/html",
             "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html"
         ],
         "init:local": [
@@ -36,7 +36,7 @@
     },
     "require": {
         "php": ">=7.4",
-        "univapay/php-sdk": "6.6.1"
+        "univapay/php-sdk": "^6.7"
     },
     "require-dev": {
         "wp-cli/wp-cli-bundle": "^2.10",
