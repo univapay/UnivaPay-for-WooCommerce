@@ -1,4 +1,5 @@
 import { Selector } from "testcafe"
+import WCOrderCompletePage from './order-complete'
 import { MockBillingData } from "../../../helper/mock"
 
 class WCBlockCheckoutPage {
@@ -45,7 +46,8 @@ class WCBlockCheckoutPage {
 
     async finishCheckout(t: TestController) {
         await t
-            .click(this.placeOrderButton).wait(10000)
+            .click(this.placeOrderButton)
+            .expect(WCOrderCompletePage.orderConfirmation.exists).ok({ timeout: 20000 })
     }
 }
 
