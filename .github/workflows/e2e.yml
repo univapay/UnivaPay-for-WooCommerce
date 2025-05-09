@@ -12,6 +12,7 @@ jobs:
     name: Run E2E Tests
     runs-on: ubuntu-latest
     environment: E2E
+    if: github.actor != 'dependabot[bot]'
     env:
       E2E_SECRET: ${{ secrets.E2E_SECRET }}
       E2E_TOKEN: ${{ secrets.E2E_TOKEN }}

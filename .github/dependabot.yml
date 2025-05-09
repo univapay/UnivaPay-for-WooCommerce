@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "composer"
+    directory: "/UnivaPay-for-WooCommerce"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    target-branch: "develop"
+  - package-ecosystem: "npm"
+    directory: "/UnivaPay-for-WooCommerce"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    target-branch: "develop"
