@@ -13,7 +13,7 @@
     "@babel/preset-react": "^7.27.1",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@types/node": "^24.1.0",
-    "@woocommerce/dependency-extraction-webpack-plugin": "^3.0.1",
+    "@woocommerce/dependency-extraction-webpack-plugin": "^4.0.0",
     "@woocommerce/settings": "^1.0.0",
     "@wordpress/scripts": "^30.20.0",
     "babel-loader": "^10.0.0",
