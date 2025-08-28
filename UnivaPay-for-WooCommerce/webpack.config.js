@@ -1,7 +1,6 @@
 const path = require('path');
 const glob = require('glob');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const WooCommerceDependencyExtractionWebpackPlugin = require('@woocommerce/dependency-extraction-webpack-plugin');
 const webpack = require('webpack');
 
@@ -34,7 +33,7 @@ const entries = glob.sync(`${buildDir}/*.js`).reduce((acc, file) => {
     return acc;
 }, {});
 
-module.exports = (env, argv) => {
+module.exports = (argv) => {
     const isProduction = argv.mode === 'production';
 
     return {

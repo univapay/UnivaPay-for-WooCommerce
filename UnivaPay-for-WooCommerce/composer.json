@@ -4,7 +4,7 @@
     "scripts": {
         "reset:db": "wp db reset --yes",
         "activate:plugin": [
-            "wp plugin install woocommerce --version=9.7.1 --activate --path=/var/www/html",
+            "wp plugin install woocommerce --version=10.1.2 --activate --path=/var/www/html",
             "wp plugin activate UnivaPay-for-WooCommerce --path=/var/www/html"
         ],
         "init:local": [

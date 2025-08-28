@@ -21,11 +21,10 @@ const mockBillingData = new MockBillingData()
 test('WC Block Checkout Inline Payment Should Be Able To Complete Order', async t => {
     const univapayInlinePage = new UnivapayInlinePage()
 
-    await wcShopPage.navigateToShop(t)
     await wcShopPage.addProductToCart(t)
     await wcBlockCheckoutPage.navigateToCheckout(t)
     await wcBlockCheckoutPage.fillCheckoutForm(t, mockBillingData)
-    await wcBlockCheckoutPage.appplyCoupon(t)
+    await wcBlockCheckoutPage.applyCoupon(t)
     await univapayInlinePage.fillInlineForm(t, new MockCardData())
     await wcBlockCheckoutPage.finishCheckout(t)
     await wcOrderCompletePage.confirmOrderComplete(t, mockBillingData)

@@ -7,7 +7,6 @@ Requires PHP: 7.4
 Stable tag: 0.4.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
-WC tested up to: 9.8.2
 
 UnivaPayを使用して、WooCommerceでクレジットカード決済を可能にするプラグインです。
 
@@ -16,6 +15,10 @@ UnivaPayを使用して、WooCommerceでクレジットカード決済を可能�
 UnivaPayを使用して、WooCommerceでVisa、MasterCard、American Express、Discover、JCB、Diners Clubの決済が利用可能になります。
 利用には別途、申込が必要です。
 https://www.univapay.com/contactus/form/
+
+== Compatibility ==
+
+このプラグインは WooCommerce 10.1.2 まで対応しています。
 
 = Privacy Policy =
 
