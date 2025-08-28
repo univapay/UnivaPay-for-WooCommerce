@@ -1,6 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
-import { useSelect } from '@wordpress/data';
+import { useSelect, select } from '@wordpress/data';
 import { getSetting } from '@woocommerce/settings';
 import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 
@@ -19,7 +19,6 @@ const Label = ( props ) => {
     const { PaymentMethodLabel } = props.components;
     return <PaymentMethodLabel text={ defaultLabel } />;
 };
-    
 
 const Content = (props) => {
     const { eventRegistration, emitResponse } = props;
@@ -72,7 +71,7 @@ const Content = (props) => {
         const store = select( CHECKOUT_STORE_KEY );
         return store.getOrderId();
     });
-    
+
     const univapaySubmit = () => {
         return new Promise((resolve, reject) => {
             const iFrame = document.getElementById('upfw_checkout').querySelector('iframe');
@@ -101,7 +100,20 @@ const Content = (props) => {
         if (paymentMethodElement)
             paymentMethodElement.addEventListener('change', handlePaymentMethodChange);
 
-        const runUnivapay = onPaymentSetup( async() => {
+        const univapayWidget = onPaymentSetup( async() => {
+
+            const { validationStore } = window.wc?.wcBlocksData ?? {};
+            if ( validationStore ) {
+                const store = select( validationStore );
+                const hasValidationErrors = store.hasValidationErrors();
+                if ( hasValidationErrors ) {
+                    return {
+                        type: emitResponse.responseTypes.ERROR,
+                        message: __( '入力内容にエラーがあります。内容をご確認ください。' ),
+                    }
+                }
+            }
+
             try {
                 if (univapayOptionalRef.current !== 'true') {
                     await univapaySubmit();
@@ -127,7 +139,7 @@ const Content = (props) => {
         return () => {
             if (paymentMethodElement)
                 paymentMethodElement.removeEventListener('change', handlePaymentMethodChange);
-            runUnivapay();
+            univapayWidget();
         };
     }, []);
 
