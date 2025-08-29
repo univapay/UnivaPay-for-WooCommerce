@@ -2,9 +2,9 @@
 Contributors: yui5m
 Tags: credit card, payment request, woocommerce
 Requires at least: 6.2.2
-Tested up to: 6.8
+Tested up to: 6.8.2
 Requires PHP: 7.4
-Stable tag: 0.4.5
+Stable tag: 0.4.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,9 @@ https://www.univapay.com/yakkan/
 3. リンクフォーム「支払画面」
 
 == Changelog ==
+
+= 0.4.6 - 2025-08-29 =
+* WooCommerce9.8以降チェックアウトフォームバリデーション対応
 
 = 0.4.5 - 2025-04-24 =
 * 3DS、タイムアウト対応、電話番号

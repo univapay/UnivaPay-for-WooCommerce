@@ -107,10 +107,7 @@ const Content = (props) => {
                 const store = select( validationStore );
                 const hasValidationErrors = store.hasValidationErrors();
                 if ( hasValidationErrors ) {
-                    return {
-                        type: emitResponse.responseTypes.ERROR,
-                        message: __( '入力内容にエラーがあります。内容をご確認ください。' ),
-                    }
+                    return
                 }
             }
 
