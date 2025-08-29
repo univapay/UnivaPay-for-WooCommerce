@@ -40,7 +40,7 @@ class WCClassicCheckoutPage {
             .typeText(this.billingPhone, mockBillingData.billingPhone)
     }
 
-    async appplyCoupon(t: TestController) {
+    async applyCoupon(t: TestController) {
         await t
             .click(this.couponLink).wait(500)
             .typeText(this.couponText, 'testcoupon')

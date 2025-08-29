@@ -12,8 +12,8 @@ class WCBlockCheckoutPage {
     billingCity = Selector('input#billing-city')
     billingAddress = Selector('input#billing-address_1')
     billingPhone = Selector('input#billing-phone')
-    couponLink = Selector('div.wp-block-woocommerce-checkout-order-summary-coupon-form-block').find('div[role="button"]').withText('Add a coupon')
-    couponText = Selector('main div').withText('Add a coupon').nth(6)
+    couponLink = Selector('div.wc-block-components-panel__button').withText('Add coupons')
+    couponText = Selector('input#wc-block-components-totals-coupon__input-coupon')
     couponApplyButton = Selector('form#wc-block-components-totals-coupon__form').find('button[type="submit"]')
     orderSummary = Selector('main div').withText('Order summary')
     placeOrderButton = Selector('button.wc-block-components-checkout-place-order-button').withText('Place Order')
@@ -37,7 +37,7 @@ class WCBlockCheckoutPage {
             .typeText(this.billingPhone, mockBillingData.billingPhone)
     }
 
-    async appplyCoupon(t: TestController) {
+    async applyCoupon(t: TestController) {
         await t
             .click(this.couponLink).wait(500)
             .typeText(this.couponText, 'testcoupon')
