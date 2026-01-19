@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.28.6",
-    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-env": "^7.28.6",
     "@babel/preset-react": "^7.28.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@types/node": "^25.0.9",
