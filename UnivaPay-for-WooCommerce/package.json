@@ -19,7 +19,7 @@
     "babel-loader": "^10.1.1",
     "css-loader": "^7.1.4",
     "glob": "^13.0.6",
-    "mini-css-extract-plugin": "^2.10.1",
+    "mini-css-extract-plugin": "^2.10.2",
     "short-uuid": "^6.0.3",
     "style-loader": "^4.0.0",
     "testcafe": "^3.7.4",
