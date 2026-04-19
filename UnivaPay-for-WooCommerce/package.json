@@ -15,7 +15,7 @@
     "@types/node": "^25.6.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "^3.0.1",
     "@woocommerce/settings": "^1.0.0",
-    "@wordpress/scripts": "^31.8.0",
+    "@wordpress/scripts": "^32.0.0",
     "babel-loader": "^10.1.1",
     "css-loader": "^7.1.4",
     "glob": "^13.0.6",
