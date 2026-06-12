@@ -53,7 +53,14 @@ function univapay_init_gateway_class()
         if (empty($paymentMethod) || $paymentMethod[0] !== 'upfw') {
             return;
         }
-        add_meta_box('univapay_status_box', __('UnivaPayステータス'), 'custom_metabox_content', 'shop_order', 'side', 'default');
+        add_meta_box(
+            'univapay_status_box',
+            __('UnivaPayステータス'),
+            'custom_metabox_content',
+            'shop_order',
+            'side',
+            'default'
+        );
     }
 
     function custom_metabox_content($post)
@@ -88,7 +95,8 @@ function univapay_init_gateway_class()
         echo '<h4>ステータス: ' . $charge->status->getValue() . '</h4>';
         switch ($charge->status->getValue()) {
             case 'authorized':
-                echo '<button type="button" class="button button-primary" onclick="update(event)" value="capture">キャプチャ</button>';
+                echo '<button type="button" class="button button-primary"' .
+                    ' onclick="update(event)" value="capture">キャプチャ</button>';
                 break;
             default:
                 break;

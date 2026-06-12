@@ -1,9 +1,9 @@
-import { Selector } from "testcafe"
+import { Selector } from 'testcafe';
 
 class UnivapayConsoleLoginPage {
-    email = Selector('#email')
-    password = Selector('#password')
-    submit = Selector('button[type="submit"]')
+	email = Selector( '#email' );
+	password = Selector( '#password' );
+	submit = Selector( 'button[type="submit"]' );
 }
 
-export default new UnivapayConsoleLoginPage()
+export default new UnivapayConsoleLoginPage();

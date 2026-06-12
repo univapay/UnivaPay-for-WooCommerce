@@ -20,8 +20,8 @@
             "php ./bin/set-univapay-gateway.php",
             "./bin/wc-add-test-fixtures.sh"
         ],
-        "fix:lint": "phpcbf --standard=phpcs.xml",
         "lint": "phpcs --standard=phpcs.xml",
+        "lint:fix": "phpcbf --standard=phpcs.xml || true",
         "test": [
             "rm -rf /tmp/wordpress",
             "bin/install-wp-tests.sh wordpress_test root wordpress wp-db latest",
@@ -45,10 +45,5 @@
         "yoast/phpunit-polyfills": "^4.0",
         "mockery/mockery": "^1.6",
         "fakerphp/faker": "^1.23"
-    },
-    "config": {
-        "platform": {
-            "php": "7.4"
-        }
     }
 }
