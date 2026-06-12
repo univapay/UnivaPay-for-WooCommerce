@@ -291,13 +291,11 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway
             );
         }
 
-        $chargeId = isset($_POST["univapayChargeId"]) ? $_POST["univapayChargeId"] : $_POST["univapay_charge_id"];
+        $chargeId = $_POST["univapayChargeId"] ?? $_POST["univapay_charge_id"] ?? null;
         if (empty($chargeId)) {
             $this->logger->error('Charge ID is missing in the request for order ID: ' . $chargeId);
-            wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。'), 'error');
-            return array(
-                'result' => 'failure',
-            );
+            wc_add_notice(__('決済エラーサイト管理者にお問い合わせください。', 'upfw'), 'error');
+            return;
         }
 
         return array(

@@ -6,8 +6,10 @@ use Mockery;
 use Mockery\MockInterface;
 use Money\Money;
 use Money\Currency;
+use Univapay\Enums\ChargeStatus;
 use Univapay\Resources\Authentication\AppJWT;
 use Univapay\UnivapayClient;
+use WC_Order;
 
 class TestPaymentProcessing extends BasePluginTest
 {
@@ -37,17 +39,33 @@ class TestPaymentProcessing extends BasePluginTest
 
     /**
      * Initiates a mock charge
-     * @param WC_Order $order The order to be used in the mock charge.
+     * @param WC_Order $order
+     * @param ChargeStatus $expected_charge_status
      * @return object The initiated mock charge.
      */
-    private function initiate_mock_charge($order): object
+    private function initiate_mock_charge($order, $expected_charge_status)
     {
-        return (object) [
-            'id' => $this->faker->uuid,
-            'metadata' => ['order_id' => $order->get_id()],
-            'transactionTokenId' => $this->faker->uuid,
-            'error' => false,
-        ];
+        return new class ($this->faker, $order, $expected_charge_status) {
+            public $id;
+            public array $metadata;
+            public $transactionTokenId;
+            public ChargeStatus $status;
+            public bool $error = false;
+
+            public function __construct($faker, $order, $expected_charge_status)
+            {
+                $this->id = $faker->uuid;
+                $this->metadata = ['order_id' => $order->get_id()];
+                $this->transactionTokenId = $faker->uuid;
+                $this->status = $expected_charge_status;
+            }
+
+            // mock attempt to patch the charge
+            public function patch($data)
+            {
+                return null;
+            }
+        };
     }
 
     /**
@@ -103,16 +121,16 @@ class TestPaymentProcessing extends BasePluginTest
         // pending, processing, on-hold, completed, cancelled, refunded, failed
         return [
             // Scenario 1: Capture is set to 'no', check base plugin test for the expected status
-            ['no', 'pending', 'UnivaPayでのオーソリが完了いたしました。'],
+            ['no', ChargeStatus::AUTHORIZED(), 'pending', 'UnivaPayでのオーソリが完了いたしました。'],
             // Scenario 2: Capture is set to 'yes'
-            ['yes', 'processing', 'UnivaPayでの支払が完了いたしました。'],
+            ['yes', ChargeStatus::SUCCESSFUL(), 'processing', 'UnivaPayでの支払が完了いたしました。'],
         ];
     }
 
     /**
-     * @dataProvider order_data_provider
+     * @dataProvider order_payment_data_provider
      */
-    public function test_process_order_payment($capture, $expected_status, $expected_note)
+    public function test_process_order_payment($capture, $expected_charge_status, $expected_status, $expected_note)
     {
         $this->payment_gateways['upfw']->capture = $capture;
         $_POST['univapay_optional'] = "false";
@@ -131,7 +149,7 @@ class TestPaymentProcessing extends BasePluginTest
         $_GET['univapayChargeId'] = $mock_charge_token;
         global $wp;
         $wp->query_vars['order-received'] = $mock_order->get_id();
-        $mock_charge = $this->initiate_mock_charge($mock_order);
+        $mock_charge = $this->initiate_mock_charge($mock_order, $expected_charge_status);
         $mock_client = $this->initiate_mock_client($mock_charge);
         $mock_app_jwt = $this->initiate_mock_app_jwt();
         $this->payment_gateways['upfw']->app_jwt = $mock_app_jwt;

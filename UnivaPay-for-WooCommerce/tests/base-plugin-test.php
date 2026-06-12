@@ -38,7 +38,7 @@ class BasePluginTest extends WP_UnitTestCase
     protected $faker;
 
     /**
-     * @var WC_Univapay_Gateway
+     * @var array
      */
     protected $payment_gateways;
 
