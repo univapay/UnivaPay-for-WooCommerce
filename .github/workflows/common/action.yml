@@ -11,12 +11,11 @@ runs:
   steps:
   - name: Cache Composer Dependencies
     id: composer-cache
-    uses: actions/cache@v4
+    uses: actions/cache@v5
     with:
       path: UnivaPay-for-WooCommerce/vendor
-      key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-      restore-keys: |
-        ${{ runner.os }}-composer-
+      key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+      restore-keys: ${{ runner.os }}-composer-
 
   - name: Set Up PHP
     uses: shivammathur/setup-php@v2
@@ -41,7 +40,7 @@ runs:
       chmod +x wp-cli.phar
       sudo mv wp-cli.phar /usr/local/bin/wp
 
-  - uses: actions/setup-node@v4
+  - uses: actions/setup-node@v6
     with:
       node-version: '20'
 
