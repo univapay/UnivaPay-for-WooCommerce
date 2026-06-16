@@ -1,5 +1,4 @@
 jQuery(function ($) {
-
     const $form = $('form.checkout');
     
     function stateUnivapay(key, value) {
@@ -8,6 +7,12 @@ jQuery(function ($) {
         }
         $form.data(`upfw-${key}`, value);
     }
+    
+    $form.on('click', '#univapay_optional_button', function (event) {
+        event.preventDefault();
+        $('#univapay_optional').val('true');
+        $form.trigger('submit');
+    });
 
     $form.on('checkout_place_order_upfw', function (event) {
         event.preventDefault();
@@ -22,7 +27,6 @@ jQuery(function ($) {
         if (stateUnivapay('processing')) {
             return false;
         }
-
 
         const iframe = document.querySelector('#upfw_checkout iframe');
         if (!iframe) {
@@ -47,5 +51,4 @@ jQuery(function ($) {
 
         return false;
     });
-
 });

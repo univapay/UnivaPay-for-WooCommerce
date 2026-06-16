@@ -1,30 +1,30 @@
 {
-  "scripts": {
-    "build": "wp-scripts build --config webpack.config.js --mode production",
-    "start": "wp-scripts start --config webpack.config.js --mode development",
-    "lint": "wp-scripts lint-js",
-    "lint:fix": "wp-scripts lint-js --fix",
-    "test:e2e:preliminary": "testcafe firefox:headless tests/e2e/pages/preliminary tests/e2e/preliminary-check.spec.ts -e --speed 0.7",
-    "test:e2e:block": "testcafe firefox:headless tests/e2e/pages/block tests/e2e/pages/mypage -e --speed 0.7",
-    "test:e2e:classic": "testcafe firefox:headless tests/e2e/pages/classic tests/e2e/pages/mypage -e --speed 0.7",
-    "packages-update": "wp-scripts packages-update"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.29.7",
-    "@babel/preset-env": "^7.29.7",
-    "@babel/preset-react": "^7.29.7",
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@types/node": "^25.9.2",
-    "@woocommerce/dependency-extraction-webpack-plugin": "^3.0.1",
-    "@woocommerce/settings": "^1.0.0",
-    "@wordpress/scripts": "^32.4.0",
-    "babel-loader": "^10.1.1",
-    "css-loader": "^7.1.4",
-    "glob": "^13.0.6",
-    "mini-css-extract-plugin": "^2.10.2",
-    "short-uuid": "^6.0.3",
-    "style-loader": "^4.0.0",
-    "testcafe": "^3.7.4",
-    "webpack": "^5.107.2"
-  }
+	"scripts": {
+		"build": "wp-scripts build --config webpack.config.js --mode production",
+		"start": "wp-scripts start --config webpack.config.js --mode development",
+		"lint": "wp-scripts lint-js",
+		"lint:fix": "wp-scripts lint-js --fix",
+		"test:e2e:preliminary": "testcafe firefox:headless tests/e2e/pages/preliminary tests/e2e/preliminary-check.spec.ts -e --speed 0.7",
+		"test:e2e:block": "testcafe firefox:headless tests/e2e/pages/block tests/e2e/pages/mypage -e --speed 0.7",
+		"test:e2e:classic": "testcafe firefox:headless tests/e2e/pages/classic tests/e2e/pages/mypage -e --speed 0.7",
+		"packages-update": "wp-scripts packages-update"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.29.7",
+		"@babel/preset-env": "^7.29.7",
+		"@babel/preset-react": "^7.29.7",
+		"@ffmpeg-installer/ffmpeg": "^1.1.0",
+		"@types/node": "^25.9.2",
+		"@woocommerce/dependency-extraction-webpack-plugin": "^3.0.1",
+		"@woocommerce/settings": "^1.0.0",
+		"@wordpress/scripts": "^32.4.0",
+		"babel-loader": "^10.1.1",
+		"css-loader": "^7.1.4",
+		"glob": "^13.0.6",
+		"mini-css-extract-plugin": "^2.10.2",
+		"short-uuid": "^6.0.3",
+		"style-loader": "^4.0.0",
+		"testcafe": "^3.7.4",
+		"webpack": "^5.107.2"
+	}
 }

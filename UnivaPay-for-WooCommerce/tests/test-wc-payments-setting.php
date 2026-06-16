@@ -3,75 +3,84 @@
 namespace Univapay\WooCommerce\Tests;
 
 /**
- * WooCommerce Payments setting test case.
+ * Univapay Config Settings Tests
  */
-class TestWCPaymentsSetting extends BasePluginTest
-{
-    public function test_univapay_payment_methods_displayed_on_settings_page()
-    {
-        $installed_payment_methods = WC()->payment_gateways->payment_gateways();
+class TestWCPaymentsSetting extends BasePluginTest {
 
-        $payment_method_ids = array_map(function ($method) {
-            return $method->id;
-        }, $installed_payment_methods);
+	/**
+	 * Test that the Univapay payment method is registered and displayed on the WooCommerce settings page.
+	 */
+	public function test_univapay_payment_methods_displayed_on_settings_page() {
+		$installed_payment_methods = WC()->payment_gateways->payment_gateways();
 
-        $this->assertContains('upfw', $payment_method_ids, 'Payment method Univapay ID "upfw" is not present.');
-    }
+		$payment_method_ids = array_map(
+			function ( $method ) {
+				return $method->id;
+			},
+			$installed_payment_methods
+		);
 
-    public function test_univapay_settings_fields_displayed()
-    {
-        $univapay_gateway = WC()->payment_gateways()->payment_gateways()['upfw'];
+		$this->assertContains( 'upfw', $payment_method_ids, 'Payment method Univapay ID "upfw" is not present.' );
+	}
 
-        $settings_fields = $univapay_gateway->get_form_fields();
+	/**
+	 * Test that all expected settings fields are present in the Univapay settings form and have the correct titles.
+	 */
+	public function test_univapay_settings_fields_displayed() {
+		$univapay_gateway = WC()->payment_gateways()->payment_gateways()['upfw'];
 
-        $expected_fields = [
-            'enabled' => '有効/無効',
-            'title' => 'タイトル',
-            'description' => '説明',
-            'widget' => 'ウィジェット URL',
-            'api' => 'API URL',
-            'token' => 'トークン',
-            'secret' => 'シークレット',
-            'capture' => '有効/無効',
-            'status' => 'オーソリ時のステータス',
-            'formurl' => 'フォームURL',
-        ];
+		$settings_fields = $univapay_gateway->get_form_fields();
 
-        foreach ($expected_fields as $field_key => $field_title) {
-            $this->assertArrayHasKey($field_key, $settings_fields, "Field '$field_key' is not present in Univapay settings.");
-            $this->assertEquals($field_title, $settings_fields[$field_key]['title'], "Field '$field_key' does not have the expected title '$field_title'.");
-        }
-    }
+		$expected_fields = array(
+			'enabled'     => '有効/無効',
+			'title'       => 'タイトル',
+			'description' => '説明',
+			'widget'      => 'ウィジェット URL',
+			'api'         => 'API URL',
+			'token'       => 'トークン',
+			'secret'      => 'シークレット',
+			'capture'     => '有効/無効',
+			'status'      => 'オーソリ時のステータス',
+			'formurl'     => 'フォームURL',
+		);
 
-    public function test_univapay_settings_post_and_get_consistency()
-    {
-        $univapay_gateway = WC()->payment_gateways()->payment_gateways()['upfw'];
+		foreach ( $expected_fields as $field_key => $field_title ) {
+			$this->assertArrayHasKey( $field_key, $settings_fields, "Field '$field_key' is not present in Univapay settings." );
+			$this->assertEquals( $field_title, $settings_fields[ $field_key ]['title'], "Field '$field_key' does not have the expected title '$field_title'." );
+		}
+	}
 
-        $posted_settings = [
-            'enabled' => 'yes',
-            'title' => 'test title',
-            'description' => 'test description',
-            'widget' => 'https://test.example.com/widget/checkout.js',
-            'api' => 'https://test.api.example.com',
-            'token' => 'test token',
-            'secret' => 'test secret',
-            'capture' => 'yes',
-            'status' => 'on-hold',
-        ];
+	/**
+	 * Test that when settings are updated via the admin interface, the new values are correctly saved and can be retrieved using the get_option method.
+	 */
+	public function test_univapay_settings_post_and_get_consistency() {
+		$univapay_gateway = WC()->payment_gateways()->payment_gateways()['upfw'];
 
-        foreach ($posted_settings as $key => $value) {
-            $univapay_gateway->update_option($key, $value);
-        }
+		$posted_settings = array(
+			'enabled'     => 'yes',
+			'title'       => 'test title',
+			'description' => 'test description',
+			'widget'      => 'https://test.example.com/widget/checkout.js',
+			'api'         => 'https://test.api.example.com',
+			'token'       => 'test token',
+			'secret'      => 'test secret',
+			'capture'     => 'yes',
+			'status'      => 'on-hold',
+		);
 
-        $univapay_gateway = WC()->payment_gateways()->payment_gateways()['upfw'];
+		foreach ( $posted_settings as $key => $value ) {
+			$univapay_gateway->update_option( $key, $value );
+		}
 
-        $updated_settings = [];
-        foreach ($posted_settings as $key => $value) {
-            $updated_settings[$key] = $univapay_gateway->get_option($key);
-        }
+		$univapay_gateway = WC()->payment_gateways()->payment_gateways()['upfw'];
 
-        foreach ($posted_settings as $key => $value) {
-            $this->assertEquals($value, $updated_settings[$key], "Setting '$key' was not updated correctly.");
-        }
-    }
+		$updated_settings = array();
+		foreach ( $posted_settings as $key => $value ) {
+			$updated_settings[ $key ] = $univapay_gateway->get_option( $key );
+		}
+
+		foreach ( $posted_settings as $key => $value ) {
+			$this->assertEquals( $value, $updated_settings[ $key ], "Setting '$key' was not updated correctly." );
+		}
+	}
 }

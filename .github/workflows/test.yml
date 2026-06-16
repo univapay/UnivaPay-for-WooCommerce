@@ -21,13 +21,13 @@ jobs:
             woocommerce-version: '9.9.5'
           - php-version: '7.4'
             wordpress-version: 'latest'
-            woocommerce-version: '10.1.2'
-          - php-version: '8.2'
+            woocommerce-version: '10.8.1'
+          - php-version: '8.3'
             wordpress-version: 'latest'
             woocommerce-version: '9.9.5'
-          - php-version: '8.2'
+          - php-version: '8.3'
             wordpress-version: 'latest'
-            woocommerce-version: '10.1.2'
+            woocommerce-version: '10.8.1'
       max-parallel: 2
     name: Run Tests
     runs-on: ubuntu-latest
@@ -68,6 +68,9 @@ jobs:
 
     - name: Update WP-Config for Tests
       run: sed -i "s/define('DB_HOST', .*/define('DB_HOST', '127.0.0.1:3306');/" /tmp/wordpress-tests-lib/wp-tests-config.php
+      
+    - name: Linter
+      run: composer run lint
 
     - name: Run Test
       run: ./vendor/bin/phpunit --configuration phpunit.xml
