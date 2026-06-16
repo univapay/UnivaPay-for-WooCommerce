@@ -7,6 +7,7 @@ use Mockery\MockInterface;
 use Money\Money;
 use Money\Currency;
 use Univapay\Enums\ChargeStatus;
+use Univapay\Enums\PaymentType;
 use Univapay\Resources\Authentication\AppJWT;
 use Univapay\UnivapayClient;
 use WC_Order;
@@ -70,7 +71,7 @@ class TestPaymentProcessing extends BasePluginTest {
 			 *
 			 * @var string
 			 */
-			public $transaction_token_id;
+			public $transactionTokenId; // phpcs:ignore
 
 			/**
 			 * Status of the charge.
@@ -94,10 +95,10 @@ class TestPaymentProcessing extends BasePluginTest {
 			 * @param ChargeStatus     $expected_charge_status The expected status of the charge.
 			 */
 			public function __construct( $faker, $order, $expected_charge_status ) {
-				$this->id                   = $faker->uuid;
-				$this->metadata             = array( 'order_id' => $order->get_id() );
-				$this->transaction_token_id = $faker->uuid;
-				$this->status               = $expected_charge_status;
+				$this->id                 = $faker->uuid;
+				$this->metadata           = array( 'order_id' => $order->get_id() );
+				$this->transactionTokenId = $faker->uuid;
+				$this->status             = $expected_charge_status;
 			}
 
 			/**
@@ -135,11 +136,8 @@ class TestPaymentProcessing extends BasePluginTest {
 	 * @return MockInterface The initiated mock client.
 	 */
 	private function initiate_mock_client( $mock_charge ): MockInterface {
-		$mock_payment_type = Mockery::mock();
-		$mock_payment_type->shouldReceive( 'getValue' )->andReturn( 'card' );
-
 		$mock_transaction_token              = Mockery::mock();
-		$mock_transaction_token->paymentType = $mock_payment_type;
+		$mock_transaction_token->paymentType = PaymentType::CARD();
 
 		$mock_client = Mockery::mock( UnivapayClient::class );
 		$mock_client->shouldReceive( 'getCharge' )->andReturn( $mock_charge );
