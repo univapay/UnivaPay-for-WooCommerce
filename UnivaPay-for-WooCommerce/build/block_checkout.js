@@ -11,7 +11,7 @@ const settings = getSetting('upfw_data', {});
 const { CHECKOUT_STORE_KEY } = window.wc.wcBlocksData;
 
 const defaultLabel = __(
-    'UnivaPay',
+    settings.title || 'UnivaPay',
     'woo-gutenberg-products-block'
 );
 
