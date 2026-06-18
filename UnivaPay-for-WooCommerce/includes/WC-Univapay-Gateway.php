@@ -342,7 +342,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
             <span
                 data-app-id="' . esc_attr( $this->token ) . '"
                 data-email="' . esc_attr( WC()->customer->get_billing_email() ) . '"
-                data-phone="' . esc_attr( WC()->customer->get_billing_phone() ) . '"
+                data-phone-number="' . esc_attr( WC()->customer->get_billing_phone() ) . '"
                 data-amount="' . esc_attr( WC()->cart->total ) . '"
                 data-checkout="payment"
                 data-capture="' . esc_attr( 'yes' === $this->capture ? 'true' : 'false' ) . '"

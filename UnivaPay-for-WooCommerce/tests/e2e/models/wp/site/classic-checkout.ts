@@ -19,7 +19,7 @@ class WCClassicCheckoutPage {
 	couponLink = Selector( 'a.showcoupon' );
 	couponText = Selector( 'input#coupon_code' );
 	couponApplyButton = Selector( 'button[name="apply_coupon"]' );
-	placeOrderButton = Selector( 'a#upfw_order' ).withText( '注文する' );
+	placeOrderButton = Selector( 'button#place_order' );
 
 	async navigateToCheckout( t: TestController ) {
 		await t

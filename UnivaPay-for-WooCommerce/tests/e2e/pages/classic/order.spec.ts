@@ -24,7 +24,11 @@ test( 'WC Classic Checkout Inline Payment Should Be Able To Complete Order', asy
 	await wcClassicCheckoutPage.navigateToCheckout( t );
 	await wcClassicCheckoutPage.applyCoupon( t );
 	await wcClassicCheckoutPage.fillCheckoutForm( t, mockBillingData );
-	await univapayInlinePage.fillInlineForm( t, new MockCardData() );
+	await univapayInlinePage.fillInlineForm(
+		t,
+		new MockCardData(),
+		mockBillingData
+	);
 	await wcClassicCheckoutPage.finishCheckout( t );
 	await wcOrderCompletePage.confirmOrderComplete( t, mockBillingData );
 
