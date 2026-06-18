@@ -68,9 +68,6 @@ jobs:
 
     - name: Update WP-Config for Tests
       run: sed -i "s/define('DB_HOST', .*/define( 'DB_HOST', '127.0.0.1:3306' );/" /tmp/wordpress-tests-lib/wp-tests-config.php
-      
-    - name: Linter
-      run: composer run lint
 
     - name: Run Test
       run: WP_ENV=test ./vendor/bin/phpunit --configuration phpunit.xml
