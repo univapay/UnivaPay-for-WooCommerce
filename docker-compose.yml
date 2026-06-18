@@ -26,6 +26,9 @@ services:
       wp-db:
         condition: service_healthy
     environment:
+      WORDPRESS_CONFIG_EXTRA: |
+        define('AUTOMATIC_UPDATER_DISABLED', true);
+        define('WP_AUTO_UPDATE_CORE', false);
       WORDPRESS_DB_HOST: wp-db:3306
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: wordpress
