@@ -4,7 +4,7 @@ Tags: credit card, payment request, woocommerce
 Requires at least: 6.2.2
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.4.7
+Stable tag: 0.4.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -40,9 +40,12 @@ https://www.univapay.com/yakkan/
 
 == Changelog ==
 
-= 0.4.7 - 2026-06-20 =
+= 0.4.8 - 2026-06-20 =
 * クラシックチェックアウトフローの改善
 * WooCommerceログの記録機能を追加
+
+= 0.4.7 - 2025-06-17 =
+* ブロックチェックアウトタイトル対応
 
 = 0.4.6 - 2025-08-29 =
 * WooCommerce9.8以降チェックアウトフォームバリデーション対応
