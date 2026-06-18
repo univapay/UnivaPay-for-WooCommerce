@@ -73,4 +73,4 @@ jobs:
       run: composer run lint
 
     - name: Run Test
-      run: ./vendor/bin/phpunit --configuration phpunit.xml
+      run: WP_ENV=test ./vendor/bin/phpunit --configuration phpunit.xml
