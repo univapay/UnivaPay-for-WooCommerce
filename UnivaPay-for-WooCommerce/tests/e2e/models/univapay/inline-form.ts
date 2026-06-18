@@ -17,12 +17,13 @@ export class UnivapayInlinePage {
 		mockCardData: MockCardData,
 		mockBillingData?: MockBillingData
 	) {
-        await t.switchToIframe( this.iframe );
+		await t.switchToIframe( this.iframe );
 
-        if ( mockBillingData ) {
-            await t
-                .typeText( this.email, mockBillingData.email, { replace: true } )
-        }
+		if ( mockBillingData ) {
+			await t.typeText( this.email, mockBillingData.email, {
+				replace: true,
+			} );
+		}
 
 		await t
 			.typeText( this.phone, mockCardData.phoneNumber, { replace: true } )

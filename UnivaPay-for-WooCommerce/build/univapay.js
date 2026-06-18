@@ -1,6 +1,30 @@
 jQuery(function ($) {
     const $form = $('form.checkout');
     
+    function waitForUnivapayChargeId(timeout = 5000) {
+        const selector = 'input[name="univapayChargeId"]';
+
+        return new Promise((resolve, reject) => {
+            const existing = document.querySelector(selector);
+            if (existing) return resolve(existing);
+
+            const observer = new MutationObserver(() => {
+                const el = document.querySelector(selector);
+                if (el) {
+                    observer.disconnect();
+                    resolve(el);
+                }
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+
+            setTimeout(() => {
+                observer.disconnect();
+                reject(new Error('Timeout: univapayChargeId not found'));
+            }, timeout);
+        });
+    }
+    
     function stateUnivapay(key, value) {
         if (typeof value === 'undefined') {
             return $form.data(`upfw-${key}`);
@@ -37,7 +61,8 @@ jQuery(function ($) {
         stateUnivapay('processing', true);
 
         UnivapayCheckout.submit(iframe)
-            .then(() => {
+            .then(async (res) => {
+                await waitForUnivapayChargeId();
                 stateUnivapay('complete', true);
                 $form.trigger('submit');
             })
