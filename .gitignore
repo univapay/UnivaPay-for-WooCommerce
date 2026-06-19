@@ -2,8 +2,6 @@
 .env
 .phpunit.result.cache
 
-composer.lock
-
 artifact/
 dist/
 node_modules/
