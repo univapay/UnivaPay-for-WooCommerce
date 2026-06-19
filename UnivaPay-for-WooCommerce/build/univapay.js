@@ -39,6 +39,10 @@ jQuery(function ($) {
     });
 
     $form.on('checkout_place_order_upfw', function (event) {
+        if ($('#univapay_optional').val() === 'true') {
+            return true; // Allow form submission for optional payment method
+        }
+
         event.preventDefault();
 
         $('#place_order').prop('disabled', true);

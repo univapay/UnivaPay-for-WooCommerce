@@ -443,7 +443,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 			if (
 				$capture &&
 				in_array( $payment_type, array( PaymentType::CARD(), PaymentType::PAIDY() ), true ) &&
-				in_array( $charge->status, array( ChargeStatus::AUTHORIZED(), ChargeStatus::SUCCESSFUL() ), true )
+				$charge->status === ChargeStatus::SUCCESSFUL()
 			) {
 				$order->payment_complete();
 				$order->add_order_note( __( 'UnivaPayでの支払が完了いたしました。', 'upfw' ), true );
