@@ -432,7 +432,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 				// NOTE: notice does not show up on block checkout page.
 				wc_add_notice( __( '決済エラー入力内容を確認してください', 'upfw' ), 'error' );
 				wp_safe_redirect( wc_get_cart_url() );
-				return;
+				exit;
 			}
 
 			// TODO: add validation so order status does not get overwritten, when page is refreshed.
@@ -457,7 +457,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 			$this->logger->error( 'Error processing UnivaPay payment: ' . $e->getMessage(), array( 'exception' => $e ) );
 			wc_add_notice( __( '決済エラーサイト管理者にお問合せください', 'upfw' ), 'error' );
 			wp_safe_redirect( wc_get_cart_url() );
-			return;
+			exit;
 		}
 
 		// Attempt to patch the charge with the order_id.
