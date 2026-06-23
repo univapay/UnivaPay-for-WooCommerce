@@ -439,11 +439,10 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 			$capture      = 'yes' === $this->capture;
 			$payment_type = $this->univapay_client->getTransactionToken( $charge->transactionTokenId )->paymentType;
 
-			// capture only support card & paidy & charge status can be either authorized or successful.
+			// capture only support by card & paidy
 			if (
-				$capture &&
-				in_array( $payment_type, array( PaymentType::CARD(), PaymentType::PAIDY() ), true ) &&
-				$charge->status === ChargeStatus::SUCCESSFUL()
+				$capture ||
+				!in_array( $payment_type, array( PaymentType::CARD(), PaymentType::PAIDY() ), true )
 			) {
 				$order->payment_complete();
 				$order->add_order_note( __( 'UnivaPayでの支払が完了いたしました。', 'upfw' ), true );
