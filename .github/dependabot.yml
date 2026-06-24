@@ -1,5 +1,11 @@
 version: 2
 updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+    target-branch: "develop"
   - package-ecosystem: "composer"
     directory: "/UnivaPay-for-WooCommerce"
     schedule:
