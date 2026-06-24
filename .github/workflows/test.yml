@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - master
   pull_request:
 
 jobs:
@@ -14,15 +13,9 @@ jobs:
       matrix:
         include:
           - php-version: '7.4'
-            wordpress-version: '6.2.2'
-            woocommerce-version: '8.2.0'
-          - php-version: '7.4'
             wordpress-version: 'latest'
             woocommerce-version: '9.9.5'
-          - php-version: '7.4'
-            wordpress-version: 'latest'
-            woocommerce-version: '10.8.1'
-          - php-version: '8.3'
+          - php-version: '8.2'
             wordpress-version: 'latest'
             woocommerce-version: '9.9.5'
           - php-version: '8.3'
@@ -36,7 +29,7 @@ jobs:
         working-directory: UnivaPay-for-WooCommerce
     services:
       wp-db:
-        image: mysql:8.0
+        image: mysql:8.4
         ports:
           - 3306:3306
         env:

@@ -3,8 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main
-      - master
+      - develop
     tags:
       - '*'
   workflow_dispatch:
