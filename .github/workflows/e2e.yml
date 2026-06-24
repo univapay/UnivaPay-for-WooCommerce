@@ -25,7 +25,7 @@ jobs:
       E2E_CAPTURE: yes
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Setup Environment
       uses: ./.github/workflows/common
