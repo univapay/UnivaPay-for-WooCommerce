@@ -14,7 +14,7 @@
     </php>
 	<testsuites>
 		<testsuite name="testing">
-			<directory prefix="test-" suffix=".php">./tests/</directory>
+			<directory prefix="Test" suffix=".php">./tests/</directory>
 			<exclude>./tests/bootstrap.php</exclude>
 		</testsuite>
 	</testsuites>

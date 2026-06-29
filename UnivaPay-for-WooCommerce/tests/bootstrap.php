@@ -46,4 +46,4 @@ tests_add_filter('setup_theme', function () {
 require_once $_tests_dir . '/includes/bootstrap.php';
 
 // Helper
-require_once $_wp_tests_plugins_dir . 'UnivaPay-for-WooCommerce/tests/base-plugin-test.php';
+require_once $_wp_tests_plugins_dir . 'UnivaPay-for-WooCommerce/tests/BasePluginTest.php';

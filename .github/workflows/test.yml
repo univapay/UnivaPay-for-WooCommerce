@@ -62,5 +62,10 @@ jobs:
     - name: Update WP-Config for Tests
       run: sed -i "s/define('DB_HOST', .*/define('DB_HOST', '127.0.0.1:3306');/" /tmp/wordpress-tests-lib/wp-tests-config.php
 
-    - name: Run Test
-      run: ./vendor/bin/phpunit --configuration phpunit.xml
+    - name: Lint Code
+      if: matrix.php-version == '8.3'
+      run: composer lint
+
+    # not using composer test, not using docker on github actions
+    - name: Run Tests
+      run: WP_ENV=test ./vendor/bin/phpunit --configuration phpunit.xml

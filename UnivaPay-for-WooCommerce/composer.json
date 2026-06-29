@@ -20,8 +20,8 @@
             "php ./bin/set-univapay-gateway.php",
             "./bin/wc-add-test-fixtures.sh"
         ],
-        "fix:lint": "phpcbf --standard=phpcs.xml",
-        "lint": "phpcs --standard=phpcs.xml",
+        "lint": "phpcs",
+        "lint:fix": "phpcbf",
         "test": [
             "rm -rf /tmp/wordpress",
             "bin/install-wp-tests.sh wordpress_test root wordpress wp-db latest",
@@ -40,15 +40,16 @@
     },
     "require-dev": {
         "wp-cli/wp-cli-bundle": "^2.10",
-        "phpunit/phpunit": "^8.5",
-        "squizlabs/php_codesniffer": "^4.0",
+        "phpunit/phpunit": "^8.5 || ^9.6",
         "yoast/phpunit-polyfills": "^4.0",
         "mockery/mockery": "^1.6",
-        "fakerphp/faker": "^1.23"
+        "fakerphp/faker": "^1.23",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "wp-coding-standards/wpcs": "^3.3"
     },
     "config": {
-        "platform": {
-            "php": "7.4"
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     }
 }
