@@ -1,195 +1,84 @@
-function selected() {
-    return jQuery('#payment_method_upfw').prop('checked');
-}
+jQuery(function ($) {
+    const $form = $('form.checkout');
+    
+    // Wait for the univapayChargeId input to be added to the DOM
+    function waitForUnivapayChargeId(timeout = 10000) {
+        const selector = 'input[name="univapayChargeId"]';
 
-function reqCheckoutValidation() {
-    return new Promise((resolve, reject) => {
-        jQuery.ajax({
-            type: 'POST',
-            url: wc_checkout_params.checkout_url,
-            data: jQuery('form.woocommerce-checkout').serialize() + '&validation_only=true',
-            dataType: 'json',
-            success: function(response) {
-                if (response.result === "success") {
-                    resolve(true);
-                } else {
-                    resolve(false);
+        return new Promise((resolve, reject) => {
+            const existing = document.querySelector(selector);
+            if (existing) return resolve(existing);
+
+            const observer = new MutationObserver(() => {
+                const el = document.querySelector(selector);
+                if (el) {
+                    observer.disconnect();
+                    resolve(el);
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('request checkout validation ERROR:', status, error);
-                reject(error);
-            }
-        });
-    });
-}
-
-function isPayForOrderPage() {
-    return window.location.href.includes('pay_for_order');
-}
-
-function doCheckout() {
-    // TODO: why we need to do this logic?
-    // clear before token
-    document.querySelectorAll('[name="univapayChargeId"]').forEach(function(v) {
-        v.parentNode.removeChild(v);
-    });
-    // -----------------------------------
-
-    var iFrame = document.querySelector("#upfw_checkout iframe");
-
-    // TODO: split pay for order and checkout page logic
-    // pay for order page (myaccount)
-    if (isPayForOrderPage()) {
-        // no validation, as only payment is editable
-        UnivapayCheckout.submit(iFrame)
-            .then(() => {
-                document.querySelector('#place_order').click();
-            })
-            .catch((errors) => {
-                alert(`決済処理に失敗しました。再度お試しください。\nエラー: ${errors.message}`);
             });
-    } else {
-        // checkout page
-        reqCheckoutValidation().then((res) => {
-            if (res) {
-                UnivapayCheckout.submit(iFrame)
-                    .then(() => {
-                        // continue process order
-                        document.querySelector('#place_order').click();
-                    })
-                    .catch((errors) => {
-                        alert(`決済処理に失敗しました。再度お試しください。\nエラー: ${errors.message}`);
-                    });
-            } else {
-                // show error messages by calling the place order button, will call the same wc-ajax=checkout again
-                document.querySelector('#place_order').click();
-            }
-        }).catch((error) => {
-            console.error('システムエラー・エラ：', error.messages);
+
+            observer.observe(document.body, { childList: true, subtree: true });
+
+            setTimeout(() => {
+                observer.disconnect();
+                reject(new Error('Timeout: univapayChargeId not found'));
+            }, timeout);
         });
     }
-}
-
-function optional() {
-    jQuery('<input>').attr({
-        'type': 'hidden',
-        'name': 'univapay_optional',
-        'value': 'true'
-    }).appendTo('form.woocommerce-checkout');
-    jQuery('#place_order').click();
-}
-
-function getEmail() {
-    return jQuery("#billing_email").val();
-}
-
-function getPhone() {
-    return jQuery("#billing_phone").val();
-}
-
-function fetchCartData() {
-    const api_cart_path = '/index.php?rest_route=/wc/store/v1/cart';
-    return new Promise((resolve, reject) => {
-        jQuery.ajax({
-            url: `${window.location.origin}${api_cart_path}`,
-            method: 'GET',
-            dataType: 'json',
-            success: function(response) {
-                resolve(response);
-            },
-            error: function(error) {
-                reject(error);
-            }
-        });
+    
+    function stateUnivapay(key, value) {
+        if (typeof value === 'undefined') {
+            return $form.data(`upfw-${key}`);
+        }
+        $form.data(`upfw-${key}`, value);
+    }
+    
+    $form.on('click', '#univapay_optional_button', function (event) {
+        event.preventDefault();
+        $('#univapay_optional').val('true');
+        $form.trigger('submit');
     });
-}
 
-const renderUnivapayInlineForm = (function() {
-    let isRendering = false;
-    return async function () {
-        if (isRendering) return;
-        isRendering = true;
-
-        if (isPayForOrderPage()) {
-            jQuery("#place_order").before(
-                jQuery('<div></div>').attr({
-                    'id': 'upfw_checkout'
-            }));
-            jQuery('<span></span>').attr({
-                'data-app-id': univapay_params.app_id,
-                'data-checkout': "payment",
-                'data-email': getEmail(),
-                'data-phone-number': getPhone(),
-                'data-amount': univapay_params.total,
-                'data-capture': univapay_params.capture,
-                'data-currency': univapay_params.currency,
-                'data-inline': true,
-                'data-inline-item-style': 'padding: 0 2px',
-            }).appendTo("#upfw_checkout");
-        } else {
-            const cart = await fetchCartData();
-            let totalPrice = cart.totals.total_price;
-            if (cart.totals.currency_minor_unit > 0) {
-                totalPrice = cart.totals.total_price / Math.pow(10, cart.totals.currency_minor_unit);
-            }
-
-            jQuery("#place_order").before(
-                jQuery('<div></div>').attr({
-                    'id': 'upfw_checkout'
-            }));
-            jQuery('<span></span>').attr({
-                'data-app-id': univapay_params.app_id,
-                'data-checkout': "payment",
-                'data-email': getEmail(),
-                'data-phone-number': getPhone(),
-                'data-amount': totalPrice,
-                'data-capture': univapay_params.capture,
-                'data-currency': univapay_params.currency,
-                'data-inline': true,
-                'data-inline-item-style': 'padding: 0 2px',
-            }).appendTo("#upfw_checkout");
+    $form.on('checkout_place_order_upfw', function (event) {
+        if ($('#univapay_optional').val() === 'true') {
+            return true; // Allow form submission for optional payment method
         }
 
-        jQuery("#place_order").after(
-            jQuery('<a>注文する</a>').attr({
-                type: 'button',
-                id: 'upfw_order',
-                class: 'button wp-element-button',
-            }).css({
-                'width': '100%',
-                'box-sizing': 'border-box',
-                'line-height': '1.2'
-            }).on("click", doCheckout));
+        event.preventDefault();
 
-        if(univapay_params.formurl !== '') {
-            jQuery("#place_order").after(
-                jQuery('<a>その他決済</a>').attr({
-                    type: 'button',
-                    id: 'upfw_optional',
-                    class: 'button wp-element-button'
-                }).css({
-                    'width': '100%',
-                    'box-sizing': 'border-box',
-                    'line-height': '1.2'
-                }).on("click", optional)); 
+        $('#place_order').prop('disabled', true);
+
+        // prevent multiple submissions
+        if (stateUnivapay('complete')) {
+            return true;
         }
-        isRendering = false;
-    }
-})();
 
-function checkSelect() {
-    jQuery("#place_order").hide();
-    jQuery("#upfw_checkout").remove();
-    jQuery("#upfw_order").remove();
-    jQuery("#upfw_optional").remove();
-    if(selected()) {
-        renderUnivapayInlineForm();
-    } else {
-        jQuery("#place_order").show();
-    }
-}
+        if (stateUnivapay('processing')) {
+            return false;
+        }
 
-jQuery(document).ready(function($) {
-    $(document.body).on("updated_checkout payment_method_selected", checkSelect);
+        const iframe = document.querySelector('#upfw_checkout iframe');
+        if (!iframe) {
+            console.error('Univapay iframe not found.');
+            return false;
+        }
+
+        stateUnivapay('processing', true);
+
+        UnivapayCheckout.submit(iframe)
+            .then(async (res) => {
+                await waitForUnivapayChargeId();
+                stateUnivapay('complete', true);
+                $form.trigger('submit');
+            })
+            .catch((error) => {
+                alert('決済処理に失敗しました。エラー: ' + error.message);
+            })
+            .finally(() => {
+                stateUnivapay('processing', false);
+                $('#place_order').prop('disabled', false);
+            });
+
+        return false;
+    });
 });
