@@ -18,6 +18,13 @@ runs:
     shell: bash
     run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install -y subversion
 
+  - name: Cache Composer Dependencies
+    uses: actions/cache@v3
+    with:
+      path: ~/.composer/cache
+      key: ${{ runner.os }}-composer-php${{ inputs.php-version }}-${{ hashFiles('UnivaPay-for-WooCommerce/composer.json') }}
+      restore-keys: ${{ runner.os }}-composer-php${{ inputs.php-version }}-
+
   - name: Install Composer Dependencies
     working-directory: UnivaPay-for-WooCommerce
     shell: bash
