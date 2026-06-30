@@ -1,6 +1,5 @@
-import { Selector } from "testcafe"
+// import { Selector } from 'testcafe';
 
 export class UnivapayLinkFormPage {
-    constructor() {
-    }
+	// constructor() {}
 }

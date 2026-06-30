@@ -1,8 +1,7 @@
-import { Selector } from "testcafe"
+// import { Selector } from 'testcafe';
 
 class WCMypageOrderPage {
-    constructor() {
-    }
+	// constructor() {}
 }
 
-export default new WCMypageOrderPage()
+export default new WCMypageOrderPage();
