@@ -306,9 +306,9 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 					'&amount=' . $money->getAmount() .
 					'&currency=' . $money->getCurrency() .
 					'&order_id=' . $order_id .
-					'&successRedirectUrl=' . rawurldecode( $this->get_return_url( $order ) ) .
-					'&failureRedirectUrl=' . rawurldecode( $this->get_return_url( $order ) ) .
-					'&pendingRedirectUrl=' . rawurldecode( $this->get_return_url( $order ) ),
+					'&successRedirectUrl=' . rawurlencode( $this->get_return_url( $order ) ) .
+					'&failureRedirectUrl=' . rawurlencode( $this->get_return_url( $order ) ) .
+					'&pendingRedirectUrl=' . rawurlencode( $this->get_return_url( $order ) ),
 			);
 		}
 

@@ -145,7 +145,13 @@ class TestPaymentProcessing extends BasePluginTest {
 		$mock_order1 = $this->initiate_mock_order( $this->initiate_mock_product() );
 		$result1     = $this->payment_gateways['upfw']->process_payment( $mock_order1->get_id() );
 
-		$this->assertNull( $result1 );
+		$this->assertEquals(
+			array(
+				'result'   => 'failure',
+				'redirect' => 'http://example.org',
+			),
+			$result1
+		);
 		$error_messages = array_column( wc_get_notices( 'error' ), 'notice' );
 		$this->assertContains( '決済エラーサイト管理者にお問い合わせください。', $error_messages );
 	}
