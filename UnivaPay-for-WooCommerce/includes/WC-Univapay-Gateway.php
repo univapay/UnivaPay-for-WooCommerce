@@ -246,34 +246,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 			$univapay_asset_file['version'],
 			true
 		);
-
-		if ( isset( $_GET['order-pay'] ) ) {
-			$order = wc_get_order( get_query_var( 'order-pay' ) );
-			wp_localize_script(
-				'univapay_woocommerce',
-				'univapay_params',
-				array(
-					'app_id'   => $this->token,
-					'formurl'  => $this->formurl,
-					'total'    => $order->get_total(),
-					'capture'  => ( 'yes' === $this->capture ) ? 'true' : 'false',
-					'currency' => strtolower( get_woocommerce_currency() ),
-					'order_id' => $order->get_id(),
-				)
-			);
-		} else {
-			// cart & checkout page
-			wp_localize_script(
-				'univapay_woocommerce',
-				'univapay_params',
-				array(
-					'app_id'   => $this->token,
-					'formurl'  => $this->formurl,
-					'capture'  => ( 'yes' === $this->capture ) ? 'true' : 'false',
-					'currency' => strtolower( get_woocommerce_currency() ),
-				)
-			);
-		}
 	}
 
 	/**

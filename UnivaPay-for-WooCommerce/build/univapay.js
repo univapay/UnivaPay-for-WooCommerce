@@ -1,5 +1,5 @@
 jQuery(function ($) {
-    const $form = $('form.checkout');
+    const $form = $('form.checkout, form#order_review');
     
     // Wait for the univapayChargeId input to be added to the DOM
     function waitForUnivapayChargeId(timeout = 10000) {
