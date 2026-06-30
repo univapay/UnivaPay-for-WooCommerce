@@ -1,7 +1,7 @@
 # UnivaPay-for-WooCommerce
 
-[![Test](https://github.com/univapay/UnivaPay-for-WooCommerce/actions/workflows/test.yml/badge.svg)](https://github.com/univapay/UnivaPay-for-WooCommerce/actions/workflows/test.yml)
-[![E2E Test](https://github.com/univapay/UnivaPay-for-WooCommerce/actions/workflows/e2e.yml/badge.svg)](https://github.com/univapay/UnivaPay-for-WooCommerce/actions/workflows/e2e.yml)
+[![Test](https://github.com/univapay/UnivaPay-for-WooCommerce/actions/workflows/test.yml/badge.svg)](https://github.com/univapay/UnivaPay-for-WooCommerce/actions/workflows/test.yml?branch=main)
+[![E2E Test](https://github.com/univapay/UnivaPay-for-WooCommerce/actions/workflows/e2e.yml/badge.svg)](https://github.com/univapay/UnivaPay-for-WooCommerce/actions/workflows/e2e.yml?branch=main)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 WooCommerce用のUnivaPay導入プラグイン
