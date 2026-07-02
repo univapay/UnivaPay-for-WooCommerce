@@ -48,9 +48,17 @@ class WCBlockCheckoutPage {
 	) {
 		await t
 			.typeText( this.email, mockBillingData.email, { replace: true } )
-			.typeText( this.billingLastName, mockBillingData.billingLastName, { replace: true } )
-			.typeText( this.billingFirstName, mockBillingData.billingFirstName, { replace: true } )
-			.typeText( this.billingPostcode, mockBillingData.billingPostcode, { replace: true } )
+			.typeText( this.billingLastName, mockBillingData.billingLastName, {
+				replace: true,
+			} )
+			.typeText(
+				this.billingFirstName,
+				mockBillingData.billingFirstName,
+				{ replace: true }
+			)
+			.typeText( this.billingPostcode, mockBillingData.billingPostcode, {
+				replace: true,
+			} )
 			.click( this.billingState )
 			.wait( 500 )
 			.click(
@@ -59,9 +67,15 @@ class WCBlockCheckoutPage {
 					.withText( mockBillingData.billingState )
 			)
 			.wait( 500 )
-			.typeText( this.billingCity, mockBillingData.billingCity, { replace: true } )
-			.typeText( this.billingAddress, mockBillingData.billingAddress, { replace: true } )
-			.typeText( this.billingPhone, mockBillingData.billingPhone, { replace: true } );
+			.typeText( this.billingCity, mockBillingData.billingCity, {
+				replace: true,
+			} )
+			.typeText( this.billingAddress, mockBillingData.billingAddress, {
+				replace: true,
+			} )
+			.typeText( this.billingPhone, mockBillingData.billingPhone, {
+				replace: true,
+			} );
 	}
 
 	async applyCoupon( t: TestController ) {

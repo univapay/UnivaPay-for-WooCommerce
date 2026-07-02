@@ -11,7 +11,7 @@ fixture`Block Checkout`.page`${ config.wpUrl }`;
 
 test( 'WC MyPage Order Pay Should Be Able To Complete Payment', async ( t ) => {
 	const univapayInlinePage = new UnivapayInlinePage();
-    const mockBillingData = new MockBillingData();
+	const mockBillingData = new MockBillingData();
 
 	await myAccountPage.login( t );
 
@@ -26,9 +26,6 @@ test( 'WC MyPage Order Pay Should Be Able To Complete Payment', async ( t ) => {
 	await wcMypageOrderPage.navigateToMyAccount( t );
 	await wcMypageOrderPage.navigateToOrders( t );
 	await wcMypageOrderPage.clickPayOnFirstOrder( t );
-	await univapayInlinePage.fillInlineForm(
-		t,
-		new MockCardData()
-	);
+	await univapayInlinePage.fillInlineForm( t, new MockCardData() );
 	await wcMypageOrderPage.finishPayment( t );
 } );

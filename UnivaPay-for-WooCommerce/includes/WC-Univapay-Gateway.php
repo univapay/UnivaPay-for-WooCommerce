@@ -224,7 +224,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
-     * Enqueue scripts for classic checkout and my account order pay page
+	 * Enqueue scripts for classic checkout and my account order pay page
 	 */
 	public function payment_scripts() {
 		if ( ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) {

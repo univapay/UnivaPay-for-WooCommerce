@@ -38,9 +38,9 @@ const mockCoupon = {
 };
 
 export {
-    MockBillingData,
-    MockCardData,
-    mockProduct1,
-    mockProduct2,
-    mockCoupon
-}
+	MockBillingData,
+	MockCardData,
+	mockProduct1,
+	mockProduct2,
+	mockCoupon,
+};
