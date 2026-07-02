@@ -1,5 +1,5 @@
-// import { Selector } from 'testcafe';
+import { Selector } from 'testcafe';
 
 export class UnivapayLinkFormPage {
-	// constructor() {}
+	page = Selector( 'div[data-name="payment-methods-page"]' );
 }

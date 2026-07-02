@@ -5,8 +5,8 @@
     "lint": "wp-scripts lint-js --ignore-pattern 'node_modules/**' --ignore-pattern 'dist/**'",
     "lint:fix": "wp-scripts lint-js --fix --ignore-pattern 'node_modules/**' --ignore-pattern 'dist/**'",
     "test:e2e:preliminary": "testcafe firefox:headless tests/e2e/pages/preliminary tests/e2e/preliminary-check.spec.ts -e --speed 0.7",
-    "test:e2e:block": "testcafe firefox:headless tests/e2e/pages/block tests/e2e/pages/mypage -e --speed 0.7",
-    "test:e2e:classic": "testcafe firefox:headless tests/e2e/pages/classic tests/e2e/pages/mypage -e --speed 0.7",
+    "test:e2e:block": "testcafe firefox:headless tests/e2e/pages/block -e --speed 0.7",
+    "test:e2e:classic": "testcafe firefox:headless tests/e2e/pages/classic -e --speed 0.7",
     "packages-update": "wp-scripts packages-update"
   },
   "devDependencies": {

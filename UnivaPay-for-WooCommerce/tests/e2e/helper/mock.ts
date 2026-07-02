@@ -1,6 +1,6 @@
 const short = require( 'short-uuid' );
 
-export class MockBillingData {
+class MockBillingData {
 	email = `${ short.generate() }@e2e-wc.com`;
 	billingCountry = 'Japan';
 	billingLastName = 'LastName';
@@ -12,7 +12,7 @@ export class MockBillingData {
 	billingPhone = '09012345678';
 }
 
-export class MockCardData {
+class MockCardData {
 	phoneNumber = '09012345678';
 	cardName = 'Test Test';
 	cardNumber = '4242424242424242';
@@ -20,19 +20,27 @@ export class MockCardData {
 	cvv = '123';
 }
 
-export const mockProduct1 = {
+const mockProduct1 = {
 	name: 'Test Product 1',
 	sku: 'test-product-1',
 	price: '¥1,000.00',
 };
 
-export const mockProduct2 = {
+const mockProduct2 = {
 	name: 'Test Product 2',
 	sku: 'test-product-2',
 	price: '¥2,000.00',
 };
 
-export const mockCoupon = {
+const mockCoupon = {
 	name: 'testcoupon',
 	discount: '10',
 };
+
+export {
+    MockBillingData,
+    MockCardData,
+    mockProduct1,
+    mockProduct2,
+    mockCoupon
+}

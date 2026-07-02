@@ -12,20 +12,20 @@ export class UnivapayInlinePage {
 	expiry = Selector( 'input[name="data.exp"]' );
 	cvv = Selector( 'input[name="data.cvv"]' );
 
-	async fillInlineForm( 
-        t: TestController, 
-        mockCardData: MockCardData,
-        mockBillingData?: MockBillingData,
-    ) {
+	async fillInlineForm(
+		t: TestController,
+		mockCardData: MockCardData,
+		mockBillingData?: MockBillingData
+	) {
+		await t.switchToIframe( this.iframe );
+
+		if ( mockBillingData ) {
+			await t.typeText( this.email, mockBillingData.email, {
+				replace: true,
+			} );
+		}
+
 		await t
-			.switchToIframe( this.iframe );
-
-        if (mockBillingData) {
-            await t
-                .typeText( this.email, mockBillingData.email, { replace: true } );
-        }
-
-        await t
 			.typeText( this.phone, mockCardData.phoneNumber, { replace: true } )
 			.typeText( this.name, mockCardData.cardName )
 			.typeText( this.card, mockCardData.cardNumber )
