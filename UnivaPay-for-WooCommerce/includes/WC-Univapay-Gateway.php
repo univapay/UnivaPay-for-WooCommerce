@@ -224,10 +224,9 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * TODO: split pay for order and checkout page logic
+     * Enqueue scripts for classic checkout and my account order pay page
 	 */
 	public function payment_scripts() {
-		// pay_for_order = my account order pay page
 		if ( ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) {
 			return;
 		}
