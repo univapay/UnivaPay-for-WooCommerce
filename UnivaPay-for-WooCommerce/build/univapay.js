@@ -1,5 +1,6 @@
 jQuery(function ($) {
-    const $form = $('form.checkout, form#order_review');
+    const form = $('form.checkout, form#order_review');
+    const orderPayPlaceOrderButton = form.find('button#place_order');
     
     // Wait for the univapayChargeId input to be added to the DOM
     function waitForUnivapayChargeId(timeout = 10000) {
@@ -28,26 +29,28 @@ jQuery(function ($) {
     
     function stateUnivapay(key, value) {
         if (typeof value === 'undefined') {
-            return $form.data(`upfw-${key}`);
+            return form.data(`upfw-${key}`);
         }
-        $form.data(`upfw-${key}`, value);
+        form.data(`upfw-${key}`, value);
     }
     
-    $form.on('click', '#univapay_optional_button', function (event) {
+    form.on('click', '#univapay_optional_button', function (event) {
         event.preventDefault();
         $('#univapay_optional').val('true');
-        $form.trigger('submit');
+        form.trigger('submit');
     });
 
     // classic checkout form submission handler
-    $form.on('checkout_place_order_upfw', function (event) {
+    form.on('checkout_place_order_upfw', function (event) {
+        const checkoutPlaceOrderButton = form.find('#place_order');
+        const univapayOptionalButton = form.find('#univapay_optional_button');
         if ($('#univapay_optional').val() === 'true') {
             return true; // Allow form submission for optional payment method
         }
 
         event.preventDefault();
 
-        $('#place_order').prop('disabled', true);
+        checkoutPlaceOrderButton.prop('disabled', true);
 
         // prevent multiple submissions
         if (stateUnivapay('complete')) {
@@ -65,27 +68,31 @@ jQuery(function ($) {
         }
 
         stateUnivapay('processing', true);
+        univapayOptionalButton.prop('disabled', true);
 
         UnivapayCheckout.submit(iframe)
             .then(async (res) => {
                 await waitForUnivapayChargeId();
                 stateUnivapay('complete', true);
-                $form.trigger('submit');
+                form.trigger('submit');
             })
             .catch((error) => {
                 alert('決済処理に失敗しました。エラー: ' + error.message);
             })
             .finally(() => {
                 stateUnivapay('processing', false);
-                $('#place_order').prop('disabled', false);
+                checkoutPlaceOrderButton.prop('disabled', false);
+                univapayOptionalButton.prop('disabled', false);
             });
 
         return false;
     });
     
     // order-pay page form submission handler
-    $('button#place_order').on('click', function (event) {
+    orderPayPlaceOrderButton.on('click', function (event) {
         const selectedPayment = $('input[name="payment_method"]:checked').val();
+        const univapayOptionalButton = form.find('#univapay_optional_button');
+
         if (selectedPayment && selectedPayment !== 'upfw') {
             return true;
         }
@@ -96,7 +103,7 @@ jQuery(function ($) {
 
         event.preventDefault();
 
-        $('button[type="submit"]').prop('disabled', true);
+        orderPayPlaceOrderButton.prop('disabled', true);
 
         // prevent multiple submissions
         if (stateUnivapay('complete')) {
@@ -114,21 +121,21 @@ jQuery(function ($) {
         }
 
         stateUnivapay('processing', true);
-        $('button#univapay_optional_button').prop('disabled', true);
+        univapayOptionalButton.prop('disabled', true);
 
         UnivapayCheckout.submit(iframe)
             .then(async (res) => {
                 await waitForUnivapayChargeId();
                 stateUnivapay('complete', true);
-                $('form#order_review').trigger('submit');
+                form.trigger('submit');
             })
             .catch((error) => {
                 alert('決済処理に失敗しました。エラー: ' + error.message);
             })
             .finally(() => {
                 stateUnivapay('processing', false);
-                $('button#univapay_optional_button').prop('disabled', false);
-                $('button[type="submit"]').prop('disabled', false);
+                univapayOptionalButton.prop('disabled', false);
+                orderPayPlaceOrderButton.prop('disabled', false);
             });
 
         return false;
