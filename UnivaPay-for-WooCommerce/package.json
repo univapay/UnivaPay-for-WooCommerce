@@ -10,13 +10,13 @@
     "packages-update": "wp-scripts packages-update"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
-    "@babel/preset-env": "^7.29.7",
-    "@babel/preset-react": "^7.29.7",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "@babel/preset-react": "^8.0.1",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@types/node": "^26.0.0",
-    "@woocommerce/dependency-extraction-webpack-plugin": "^3.0.1",
-    "@wordpress/scripts": "^32.4.1",
+    "@types/node": "^26.1.0",
+    "@woocommerce/dependency-extraction-webpack-plugin": "^5.1.0",
+    "@wordpress/scripts": "^32.6.0",
     "babel-loader": "^10.1.1",
     "css-loader": "^7.1.4",
     "glob": "^13.0.6",
@@ -24,6 +24,6 @@
     "short-uuid": "^6.0.3",
     "style-loader": "^4.0.0",
     "testcafe": "^3.7.5",
-    "webpack": "^5.107.2"
+    "webpack": "^5.108.3"
   }
 }
