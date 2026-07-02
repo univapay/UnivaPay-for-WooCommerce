@@ -5,7 +5,7 @@
  * Description: UnivaPayを使用して店舗でクレジットカード決済が可能です。
  * Author: UnivaPay
  * Author URI: https://univapay.com/service/
- * Version: 0.4.7
+ * Version: 0.4.8
  *
  * @package UnivaPay-for-WooCommerce
  */

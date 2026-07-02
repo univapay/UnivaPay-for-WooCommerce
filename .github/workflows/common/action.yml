@@ -9,15 +9,6 @@ runs:
   using: "composite"
 
   steps:
-  - name: Cache Composer Dependencies
-    id: composer-cache
-    uses: actions/cache@v4
-    with:
-      path: UnivaPay-for-WooCommerce/vendor
-      key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-      restore-keys: |
-        ${{ runner.os }}-composer-
-
   - name: Set Up PHP
     uses: shivammathur/setup-php@v2
     with:
@@ -27,8 +18,14 @@ runs:
     shell: bash
     run: sudo apt-get update --allow-releaseinfo-change && sudo apt-get install -y subversion
 
+  - name: Cache Composer Dependencies
+    uses: actions/cache@v3
+    with:
+      path: ~/.composer/cache
+      key: ${{ runner.os }}-composer-php${{ inputs.php-version }}-${{ hashFiles('UnivaPay-for-WooCommerce/composer.json') }}
+      restore-keys: ${{ runner.os }}-composer-php${{ inputs.php-version }}-
+
   - name: Install Composer Dependencies
-    if: steps.composer-cache.outputs.cache-hit != 'true'
     working-directory: UnivaPay-for-WooCommerce
     shell: bash
     run: composer install

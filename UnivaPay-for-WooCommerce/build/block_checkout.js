@@ -1,13 +1,12 @@
 import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
 import { useSelect, select } from '@wordpress/data';
-import { getSetting } from '@woocommerce/settings';
 import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 
 import { useEffect, useRef, useState } from 'react';
 import UnivapayComponent from '@components/univapay';
 
-const settings = getSetting('upfw_data', {});
+const settings = window.wc.wcSettings.getSetting('upfw_data') || {};
 const { CHECKOUT_STORE_KEY } = window.wc.wcBlocksData;
 
 const defaultLabel = __(

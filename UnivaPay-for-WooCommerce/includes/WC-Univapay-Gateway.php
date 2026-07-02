@@ -144,8 +144,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 				$univapay_charge_id = get_post_meta( $order_id, 'univapay_charge_id', true );
 				if ( $univapay_charge_id ) {
 					echo '<div class="form-field form-field-wide">';
-                    // phpcs:ignore
-					echo '<p><strong>' . __( '課金ID' ) . ':</strong> ' . $univapay_charge_id . '</p>';
+					echo '<p><strong>' . esc_html__( '課金ID', 'upfw' ) . ':</strong> ' . esc_html( $univapay_charge_id ) . '</p>';
 					echo '</div>';
 				}
 			}
@@ -225,24 +224,19 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * TODO: split pay for order and checkout page logic
+	 * Enqueue scripts for classic checkout and my account order pay page
 	 */
 	public function payment_scripts() {
-		// pay_for_order = my account order pay page
 		if ( ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) {
 			return;
 		}
-		// if our payment gateway is disabled, we do not have to enqueue JS too
-		if ( 'no' === $this->enabled ) {
-			return;
-		}
-		// no reason to enqueue JavaScript if App token are not set
-		if ( empty( $this->token ) ) {
+		if ( 'no' === $this->enabled || empty( $this->token ) ) {
 			return;
 		}
 
 		$univapay_asset_file = include plugin_dir_path( __DIR__ ) . 'dist/univapay.bundle.asset.php';
 
+        // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion
 		wp_enqueue_script( 'univapay_checkout', $this->widget . '/client/checkout.js', array(), null, true );
 		wp_enqueue_script(
 			'univapay_woocommerce',
@@ -251,34 +245,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 			$univapay_asset_file['version'],
 			true
 		);
-
-		if ( isset( $_GET['order-pay'] ) ) {
-			$order = wc_get_order( get_query_var( 'order-pay' ) );
-			wp_localize_script(
-				'univapay_woocommerce',
-				'univapay_params',
-				array(
-					'app_id'   => $this->token,
-					'formurl'  => $this->formurl,
-					'total'    => $order->get_total(),
-					'capture'  => ( 'yes' === $this->capture ) ? 'true' : 'false',
-					'currency' => strtolower( get_woocommerce_currency() ),
-					'order_id' => $order->get_id(),
-				)
-			);
-		} else {
-			// cart & checkout page
-			wp_localize_script(
-				'univapay_woocommerce',
-				'univapay_params',
-				array(
-					'app_id'   => $this->token,
-					'formurl'  => $this->formurl,
-					'capture'  => ( 'yes' === $this->capture ) ? 'true' : 'false',
-					'currency' => strtolower( get_woocommerce_currency() ),
-				)
-			);
-		}
 	}
 
 	/**
@@ -287,15 +253,7 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 	 * @param int $order_id Order ID.
 	 */
 	public function process_payment( $order_id ) {
-		// In legacy checkout, there is no built-in mechanism to validate the checkout form without processing the order.
-		// Reaching this point indicates that the form has been validated successfully.
-		// Nonce verification is handled by WooCommerce core before process_payment() is invoked.
-		// phpcs:ignore
-		if ( isset( $_POST['validation_only'] ) ) {
-			return array(
-				'result' => 'success',
-			);
-		}
+		$this->logger->info( 'Processing payment for order ID: ' . $order_id );
 
 		$order   = wc_get_order( $order_id );
 		$capture = 'yes' === $this->capture;
@@ -306,8 +264,8 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 		// Reference: https://woocommerce.com/document/managing-orders/order-statuses/#draft-order-status
 		// Therefore, the redirect payment process should be handled at this stage to ensure order information is available.
 		// Handling this on the front end would require extensive work to match cart information and user session data.
-		// phpcs:ignore
-		if ( isset( $_POST['univapay_optional'] ) && 'true' === $_POST['univapay_optional'] ) {
+		$optional = sanitize_text_field( wp_unslash( $_POST['univapay_optional'] ?? 'false' ) );
+		if ( 'true' === $optional ) {
 			return array(
 				'result'   => 'success',
 				'redirect' => $this->formurl .
@@ -319,26 +277,69 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 					'&amount=' . $money->getAmount() .
 					'&currency=' . $money->getCurrency() .
 					'&order_id=' . $order_id .
-					'&successRedirectUrl=' . urlencode( $this->get_return_url( $order ) ) .
-					'&failureRedirectUrl=' . urlencode( $this->get_return_url( $order ) ) .
-					'&pendingRedirectUrl=' . urlencode( $this->get_return_url( $order ) ),
+					'&successRedirectUrl=' . rawurlencode( $this->get_return_url( $order ) ) .
+					'&failureRedirectUrl=' . rawurlencode( $this->get_return_url( $order ) ) .
+					'&pendingRedirectUrl=' . rawurlencode( $this->get_return_url( $order ) ),
 			);
 		}
 
-        // phpcs:ignore
-		if ( ! isset( $_POST['univapayChargeId'] ) && ! isset( $_POST['univapay_charge_id'] ) ) {
+		$charge_id = sanitize_text_field( wp_unslash( $_POST['univapayChargeId'] ?? $_POST['univapay_charge_id'] ?? null ) );
+		if ( empty( $charge_id ) ) {
+			$this->logger->error( 'Charge ID is missing in the request for order ID: ' . $order_id );
 			wc_add_notice( __( '決済エラーサイト管理者にお問い合わせください。', 'upfw' ), 'error' );
-			return;
+			return array(
+				'result'   => 'failure',
+				'redirect' => wc_get_checkout_url(),
+			);
 		}
 
-        // phpcs:ignore
-		$charge_id = isset( $_POST['univapayChargeId'] ) ? $_POST['univapayChargeId'] : $_POST['univapay_charge_id'];
-
-		// Redirect to the thank you page
 		return array(
 			'result'   => 'success',
 			'redirect' => add_query_arg( 'univapayChargeId', $charge_id, $this->get_return_url( $order ) ),
 		);
+	}
+
+	/**
+	 * Classic checkout payment fields, this will be ignored on block checkout.
+	 */
+	public function payment_fields() {
+		echo '<div id="upfw_checkout">
+            <span
+                data-app-id="' . esc_attr( $this->token ) . '"
+                data-email="' . esc_attr( WC()->customer->get_billing_email() ) . '"
+                data-phone-number="' . esc_attr( WC()->customer->get_billing_phone() ) . '"
+                data-amount="' . esc_attr( WC()->cart->total ) . '"
+                data-checkout="payment"
+                data-capture="' . esc_attr( 'yes' === $this->capture ? 'true' : 'false' ) . '"
+                data-currency="' . esc_attr( strtolower( get_woocommerce_currency() ) ) . '"
+                data-inline="true"
+                data-inline-item-style="padding: 0 2px"
+                data-auto-submit="true">
+            </span>
+        </div>';
+
+		if ( $this->formurl ) {
+			echo '<input type="hidden" id="univapay_optional" name="univapay_optional" value="false">
+            <button type="button" class="button wp-element-button" id="univapay_optional_button" name="univapay_optional_button">その他</button>';
+		}
+	}
+
+	/**
+	 * Validate payment fields
+	 */
+	public function validate_fields() {
+		$optional = sanitize_text_field( wp_unslash( $_POST['univapay_optional'] ?? 'false' ) );
+		if ( 'true' === $optional ) {
+			return true;
+		}
+
+		$charge_id = sanitize_text_field( wp_unslash( $_POST['univapayChargeId'] ?? $_POST['univapay_charge_id'] ?? null ) );
+		if ( empty( $charge_id ) ) {
+			wc_add_notice( __( '課金IDが見つかりませんでした。', 'upfw' ), 'error' );
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -353,7 +354,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 			return false;
 		}
 
-		// prevent pending / awaiting charge.
 		if ( ! in_array( $charge->status, array( ChargeStatus::SUCCESSFUL(), ChargeStatus::AUTHORIZED() ), true ) ) {
 			$this->logger->error( 'Invalid charge status: ' . $charge->status->getValue() . ' for order ID: ' . $order->get_id() );
 			return false;
@@ -372,7 +372,6 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 		}
 
 		$charge_id = sanitize_text_field( wp_unslash( $_GET['univapayChargeId'] ?? null ) );
-
 		if ( empty( $charge_id ) ) {
 			$this->logger->info( 'No charge ID found in redirect payment request' );
 			return;
@@ -422,11 +421,5 @@ class WC_Univapay_Gateway extends WC_Payment_Gateway {
 		// This is a best-effort request; if it fails, we do not catch or handle the error,
 		// as the order processing should continue regardless of this request's outcome.
 		$charge->patch( array( 'order_id' => $order->get_id() ) );
-	}
-
-	/**
-	 * In case you need a webhook, like PayPal IPN etc
-	 */
-	public function webhook() {
 	}
 }
