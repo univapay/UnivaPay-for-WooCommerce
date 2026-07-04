@@ -24,6 +24,6 @@
     "short-uuid": "^6.0.3",
     "style-loader": "^4.0.0",
     "testcafe": "^3.7.5",
-    "webpack": "^5.107.2"
+    "webpack": "^5.108.3"
   }
 }
