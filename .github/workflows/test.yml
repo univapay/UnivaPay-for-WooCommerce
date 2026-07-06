@@ -21,7 +21,7 @@ jobs:
             woocommerce-version: '9.9.5'
           - php-version: '8.3'
             wordpress-version: 'latest'
-            woocommerce-version: '10.8.1'
+            woocommerce-version: '10.9.3'
       max-parallel: 2
     name: Run Tests
     runs-on: ubuntu-latest
