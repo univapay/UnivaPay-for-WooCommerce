@@ -18,7 +18,7 @@ https://www.univapay.com/contactus/form/
 
 == Compatibility ==
 
-このプラグインは WooCommerce 10.1.2 まで対応しています。
+このプラグインは WooCommerce 10.9.3 まで対応しています。
 
 = Privacy Policy =
 
@@ -42,6 +42,7 @@ https://www.univapay.com/yakkan/
 
 = 0.4.8 =
 * クラシックチェックアウトのフローを標準の動作に合わせて修正しました
+* ログ改善
 
 = 0.4.7 - 2025-06-17 =
 * ブロックチェックアウトタイトル対応
