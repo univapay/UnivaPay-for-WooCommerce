@@ -16,7 +16,7 @@
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "^5.1.0",
     "@wordpress/scripts": "^32.6.0",
-    "babel-loader": "^9.2.1",
+    "babel-loader": "^10.1.1",
     "css-loader": "^7.1.4",
     "glob": "^13.0.6",
     "mini-css-extract-plugin": "^2.10.2",
