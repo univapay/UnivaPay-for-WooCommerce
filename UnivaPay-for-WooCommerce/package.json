@@ -22,7 +22,7 @@
     "mini-css-extract-plugin": "^2.10.2",
     "short-uuid": "^6.0.3",
     "style-loader": "^4.0.0",
-    "testcafe": "^3.7.5",
+    "testcafe": "^3.7.6",
     "webpack": "^5.108.4"
   }
 }
