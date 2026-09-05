@@ -17,7 +17,7 @@
     "@woocommerce/dependency-extraction-webpack-plugin": "^5.1.0",
     "@wordpress/scripts": "^32.6.0",
     "babel-loader": "^9.2.1",
-    "css-loader": "^7.1.4",
+    "css-loader": "^7.1.5",
     "glob": "^13.0.6",
     "mini-css-extract-plugin": "^2.10.2",
     "short-uuid": "^6.0.3",
